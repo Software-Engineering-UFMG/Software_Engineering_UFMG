@@ -12,11 +12,11 @@ Este projeto é uma aplicação web desenvolvida como parte do curso de Engenhar
 
 ## Cargos
 
-- **PO:** [Adicionar nome]
+- **PO:** Riquelme
 - **SM:** [Adicionar nome]
 - **Backend:** [Adicionar nomes]
 - **Frontend:** [Adicionar nomes]
-- **DevOps:** [Adiciona nome]
+- **DevOps:** André
 - **UI/UX:** [Adicionar nome]
 
 ## Tecnologias Utilizadas
