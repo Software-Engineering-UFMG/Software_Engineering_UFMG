@@ -14,11 +14,11 @@ Este projeto é uma aplicação web desenvolvida como parte do curso de Engenhar
 ## Cargos
 
 - **PO:** Riquelme
-- **SM:** [André]
-- **Backend:** [Riquelme,André,Thalys e Jonas]
-- **Frontend:** [Riquelme,André,Thalys e Jonas]
+- **SM:** André
+- **Backend:** Riquelme,André,Thalys e Jonas
+- **Frontend:** Riquelme,André,Thalys e Jonas
 - **DevOps:** André
-- **UI/UX:** [Riquelme]
+- **UI/UX:** Riquelme
 
 ## Tecnologias Utilizadas
 
