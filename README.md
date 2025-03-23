@@ -1,8 +1,34 @@
 # TP de Engenharia de Software UFMG
 
 ## Descrição do Projeto
+Aplicativo para implementação da metodologia SAFER Patient Flow Bundle e Red2Green days que visa basicamente melhorar o desempenho no tempo de internação no Hospital das Clínicas da UFMG.
 
-Este projeto é uma aplicação web desenvolvida como parte do curso de Engenharia de Software da UFMG. Ele inclui um backend para gerenciamento de dados, um frontend para interação com o usuário e uma infraestrutura DevOps para automação e deploy.
+### Autenticação e Gerenciamento de Usuários
+Sistema de login seguro com suporte para três tipos de usuários: Admin, NIR e Assistencial.
+
+Cadastro de usuários disponível para os perfis NIR e Assistencial.
+
+Edição de cadastro para usuários dos tipos NIR e Assistencial.
+
+### Funcionalidades Específicas por Tipo de Usuário
+### Usuários Assistenciais:
+Seleção de Preceptor: Interface para escolha de um preceptor.
+
+Dashboard: Exibe a lista de pacientes atribuídos para acompanhamento e gestão.
+
+Questionário : Interface para preenchimento do questionário RED2GREEN.
+
+### Usuários NIR:
+Dashboard: Visão geral dos preceptores e seus respectivos pacientes, facilitando a coordenação.
+
+Questionário : Interface para preenchimento do questionário RED2GREEN.
+
+### Usuários Admin:
+Dashboard Completo: Exibe uma visão centralizada de todos os usuários da aplicação, com informações detalhadas e ferramentas de gerenciamento.
+
+### Arquitetura
+
+O sistema inclui um backend para gerenciamento de dados, um frontend para interação com o usuário e uma infraestrutura DevOps para automação e deploy. 
 
 ## Membros da Equipe
 
