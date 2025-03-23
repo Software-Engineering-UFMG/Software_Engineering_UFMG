@@ -9,15 +9,16 @@ Este projeto é uma aplicação web desenvolvida como parte do curso de Engenhar
 - André Luiz Alves Costa
 - Riquelme Batista
 - Thalys Vinícius Barbosa Gonzaga
+- Jonas Lopes
 
 ## Cargos
 
 - **PO:** Riquelme
-- **SM:** [Adicionar nome]
-- **Backend:** [Adicionar nomes]
-- **Frontend:** [Adicionar nomes]
+- **SM:** [André]
+- **Backend:** [Riquelme,André,Thalys e Jonas]
+- **Frontend:** [Riquelme,André,Thalys e Jonas]
 - **DevOps:** André
-- **UI/UX:** [Adicionar nome]
+- **UI/UX:** [Riquelme]
 
 ## Tecnologias Utilizadas
 
