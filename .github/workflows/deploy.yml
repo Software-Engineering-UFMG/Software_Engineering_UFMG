@@ -1,0 +1,66 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy Application
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy on VM
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} << 'EOF'
+            set -e
+            cd ~/Software_Engineering_UFMG
+            echo "Ensuring we are on the correct branch..."
+            git fetch https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/${{ secrets.REPO_OWNER }}/agencia-minas.git
+            git checkout homologacao
+            echo "Pulling latest changes..."
+            git pull https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/${{ secrets.REPO_OWNER }}/agencia-minas.git homologacao
+
+            echo "Creating .env file..."
+            echo "DATABASE_CONTAINER_NAME=${{ secrets.DATABASE_CONTAINER_NAME }}" > .env
+            echo "DATABASE_VERSION=${{ secrets.DATABASE_VERSION }}" >> .env
+            echo "DATABASE_PORT=${{ secrets.DATABASE_PORT }}" >> .env
+            echo "DATABASE_ROOT_PASSWORD=${{ secrets.DATABASE_ROOT_PASSWORD }}" >> .env
+            echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
+            echo "DATABASE_USER=${{ secrets.DATABASE_USER }}" >> .env
+            echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
+            echo "API_CONTAINER_NAME=${{ secrets.API_CONTAINER_NAME }}" >> .env
+            echo "API_IMAGE_NAME=${{ secrets.API_IMAGE_NAME }}" >> .env
+            echo "NODE_VERSION=${{ secrets.NODE_VERSION }}" >> .env
+            echo "API_PORT=${{ secrets.API_PORT }}" >> .env
+            echo "ENVIRONMENT=${{ secrets.ENVIRONMENT }}" >> .env
+            echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+            echo "JWT_EXPIRATION=${{ secrets.JWT_EXPIRATION }}" >> .env
+            echo "ADMIN_CONTAINER_NAME=${{ secrets.ADMIN_CONTAINER_NAME }}" >> .env
+            echo "ADMIN_IMAGE_NAME=${{ secrets.ADMIN_IMAGE_NAME }}" >> .env
+            echo "NGINX_VERSION=${{ secrets.NGINX_VERSION }}" >> .env
+            echo "ADMIN_PORT=${{ secrets.ADMIN_PORT }}" >> .env
+            echo "CLIENT_CONTAINER_NAME=${{ secrets.CLIENT_CONTAINER_NAME }}" >> .env
+            echo "CLIENT_IMAGE_NAME=${{ secrets.CLIENT_IMAGE_NAME }}" >> .env
+            echo "CLIENT_PORT=${{ secrets.CLIENT_PORT }}" >> .env
+            echo "NGINX_CONTAINER_NAME=${{ secrets.NGINX_CONTAINER_NAME }}" >> .env
+            echo "NGINX_IMAGE_NAME=${{ secrets.NGINX_IMAGE_NAME }}" >> .env
+            echo "RESTART_POLICY=${{ secrets.RESTART_POLICY }}" >> .env
+
+            echo "Stopping Docker containers..."
+            docker compose down
+            echo "Removing unused Docker resources..."
+            docker system prune -a -f
+            echo "Starting Docker containers..."
+            docker compose up --build -d
+          EOF

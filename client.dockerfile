@@ -1,9 +1,13 @@
 # Declarando argumentos
-ARG NODE_VERSION=latest
-ARG NGINX_VERSION=latest
+ARG NODE_VERSION=22.14.0-alpine
+ARG NGINX_VERSION=1.27.4-alpine
 
 # Construindo o container com a imagem do Node
 FROM node:${NODE_VERSION} AS builder
+
+# Declarando as variáveis de ambiente
+ARG ENVIRONMENT
+ARG API_URL
 
 # Atualizando o sistema operacional e instalando o bash
 RUN apk update && apk upgrade
@@ -16,6 +20,10 @@ RUN rm -rf ./client/package-lock.json
 # Copiando os arquivos da aplicação para o container
 RUN mkdir /client
 COPY ./client /client
+
+# Criando o arquivo .env com as variáveis de ambiente
+RUN echo "VITE_ENVIRONMENT=${ENVIRONMENT}" > /client/.env && \
+    echo "VITE_API_URL=${API_URL}" >> /client/.env
 
 # Definindo o diretório de trabalho para a aplicação
 WORKDIR /client

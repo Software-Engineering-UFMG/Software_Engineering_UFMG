@@ -1,9 +1,11 @@
 # TP de Engenharia de Software UFMG
 
 ## Descrição do Projeto
+
 Aplicativo para implementação da metodologia SAFER Patient Flow Bundle e Red2Green days que visa basicamente melhorar o desempenho no tempo de internação no Hospital das Clínicas da UFMG.
 
 ### Autenticação e Gerenciamento de Usuários
+
 Sistema de login seguro com suporte para três tipos de usuários: Admin, NIR e Assistencial.
 
 Cadastro de usuários disponível para os perfis NIR e Assistencial.
@@ -11,7 +13,9 @@ Cadastro de usuários disponível para os perfis NIR e Assistencial.
 Edição de cadastro para usuários dos tipos NIR e Assistencial.
 
 ### Funcionalidades Específicas por Tipo de Usuário
+
 ### Usuários Assistenciais:
+
 Seleção de Preceptor: Interface para escolha de um preceptor.
 
 Dashboard: Exibe a lista de pacientes atribuídos para acompanhamento e gestão.
@@ -19,16 +23,18 @@ Dashboard: Exibe a lista de pacientes atribuídos para acompanhamento e gestão.
 Questionário : Interface para preenchimento do questionário RED2GREEN.
 
 ### Usuários NIR:
+
 Dashboard: Visão geral dos preceptores e seus respectivos pacientes, facilitando a coordenação.
 
 Questionário : Interface para preenchimento do questionário RED2GREEN.
 
 ### Usuários Admin:
+
 Dashboard Completo: Exibe uma visão centralizada de todos os usuários da aplicação, com informações detalhadas e ferramentas de gerenciamento.
 
 ### Arquitetura
 
-O sistema inclui um backend para gerenciamento de dados, um frontend para interação com o usuário e uma infraestrutura DevOps para automação e deploy. 
+O sistema inclui um backend para gerenciamento de dados, um frontend para interação com o usuário e uma infraestrutura DevOps para automação e deploy.
 
 ## Membros da Equipe
 
@@ -102,27 +108,30 @@ Siga os passos abaixo para executar o projeto utilizando Docker:
    - Exemplo de `.env`:
 
    ```env
-   DB_CONTAINER_NAME=db_container
-   DB_VERSION=17.4-alpine
-   DB_PORT=5432
-   DB_NAME=db_software_engineering
-   DB_USER=admin
-   DB_PASSWORD=admin123
+      DATABASE_CONTAINER_NAME=db_container
+      DATABASE_VERSION=17.4-alpine
+      DATABASE_PORT=5432
+      DATABASE_NAME=db_engenharia_software
+      DATABASE_USER=db_user
+      DATABASE_PASSWORD=123Seguro
 
-   API_CONTAINER_NAME=api_container
-   API_IMAGE_NAME=api_image
-   API_PORT=5050
-   NODE_VERSION=22.14-alpine
+      API_CONTAINER_NAME=api_container
+      API_IMAGE_NAME=api_image
+      NODE_VERSION=22.14-alpine
+      API_PORT=5050
+      ENVIRONMENT=development
+      SECRET_KEY=3NG3NH4R14S0FTW4R3
+      JWT_EXPIRATION=30d
 
-   CLIENT_CONTAINER_NAME=client_container
-   CLIENT_IMAGE_NAME=client_image
-   CLIENT_PORT=5000
+      CLIENT_CONTAINER_NAME=client_container
+      CLIENT_IMAGE_NAME=client_image
+      CLIENT_PORT=5000
 
-   NGINX_CONTAINER_NAME=nginx_container
-   NGINX_IMAGE_NAME=nginx_image
-   NGINX_VERSION=1.27.4-alpine
+      NGINX_CONTAINER_NAME=nginx_container
+      NGINX_IMAGE_NAME=nginx_image
+      NGINX_VERSION=1.27.4-alpine
 
-   RESTART_POLICY=always
+      RESTART_POLICY=no
    ```
 
 3. **Construir e Iniciar os Contêineres**
