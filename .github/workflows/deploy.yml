@@ -26,16 +26,15 @@ jobs:
             set -e
             cd ~/Software_Engineering_UFMG
             echo "Ensuring we are on the correct branch..."
-            git fetch https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/${{ secrets.REPO_OWNER }}/agencia-minas.git
-            git checkout homologacao
+            git fetch https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/${{ secrets.REPO_OWNER }}/Software_Engineering_UFMG.git
+            git checkout main
             echo "Pulling latest changes..."
-            git pull https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/${{ secrets.REPO_OWNER }}/agencia-minas.git homologacao
+            git pull https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/${{ secrets.REPO_OWNER }}/Software_Engineering_UFMG.git main
 
             echo "Creating .env file..."
             echo "DATABASE_CONTAINER_NAME=${{ secrets.DATABASE_CONTAINER_NAME }}" > .env
             echo "DATABASE_VERSION=${{ secrets.DATABASE_VERSION }}" >> .env
             echo "DATABASE_PORT=${{ secrets.DATABASE_PORT }}" >> .env
-            echo "DATABASE_ROOT_PASSWORD=${{ secrets.DATABASE_ROOT_PASSWORD }}" >> .env
             echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
             echo "DATABASE_USER=${{ secrets.DATABASE_USER }}" >> .env
             echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
@@ -46,10 +45,7 @@ jobs:
             echo "ENVIRONMENT=${{ secrets.ENVIRONMENT }}" >> .env
             echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
             echo "JWT_EXPIRATION=${{ secrets.JWT_EXPIRATION }}" >> .env
-            echo "ADMIN_CONTAINER_NAME=${{ secrets.ADMIN_CONTAINER_NAME }}" >> .env
-            echo "ADMIN_IMAGE_NAME=${{ secrets.ADMIN_IMAGE_NAME }}" >> .env
             echo "NGINX_VERSION=${{ secrets.NGINX_VERSION }}" >> .env
-            echo "ADMIN_PORT=${{ secrets.ADMIN_PORT }}" >> .env
             echo "CLIENT_CONTAINER_NAME=${{ secrets.CLIENT_CONTAINER_NAME }}" >> .env
             echo "CLIENT_IMAGE_NAME=${{ secrets.CLIENT_IMAGE_NAME }}" >> .env
             echo "CLIENT_PORT=${{ secrets.CLIENT_PORT }}" >> .env
