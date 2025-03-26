@@ -154,3 +154,11 @@ Siga os passos abaixo para executar o projeto utilizando Docker:
    ```bash
    docker compose down
    ```
+
+6. **Acessar Sistema Hospedado**
+
+   - O frontend estará disponível em:
+     - http://135.234.180.253:5000
+     - http://135.234.180.253:81
+   - O backend estará disponível em: http://135.234.180.253:5050
+   - O banco de dados estará disponível em: http://135.234.180.253:5432
