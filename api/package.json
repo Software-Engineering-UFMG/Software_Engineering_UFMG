@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx watch index.ts",
     "generate": "prisma generate",
+    "migrate:dev": "prisma migrate dev --name init",
     "migrate": "prisma migrate deploy",
     "build": "npm run generate && tsc",
     "start": "npm run migrate && node dist/index.js"
@@ -15,6 +16,8 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@fastify/cors": "^11.0.1",
+    "@prisma/client": "^6.5.0",
     "dotenv": "^16.4.7",
     "fastify": "^5.2.1"
   },

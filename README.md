@@ -111,7 +111,7 @@ Siga os passos abaixo para executar o projeto utilizando Docker:
       DATABASE_CONTAINER_NAME=db_container
       DATABASE_VERSION=17.4-alpine
       DATABASE_PORT=5432
-      DATABASE_NAME=db_engenharia_software
+      DATABASE_NAME=db_red_2_green
       DATABASE_USER=db_user
       DATABASE_PASSWORD=123Seguro
 
