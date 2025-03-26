@@ -18,9 +18,9 @@ const allowedOriginsProduction = [
 ];
 
 const allowedOrigins =
-  environment === "development"
-    ? allowedOriginsDevelopment
-    : [...allowedOriginsDevelopment, ...allowedOriginsProduction];
+  environment === "production"
+    ? [...allowedOriginsDevelopment, ...allowedOriginsProduction]
+    : allowedOriginsDevelopment;
 
 fastify.register(cors, {
   origin: (origin, cb) => {
