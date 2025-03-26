@@ -98,7 +98,7 @@ Siga os passos abaixo para executar o projeto utilizando Docker:
 1. **Clonar o Repositório**
 
    ```bash
-   git clone https://github.com/Riquelme3m/Software_Engineering_UFMG.git
+   git clone https://github.com/Software-Engineering-UFMG/Software_Engineering_UFMG.git
    cd Software_Engineering_UFMG
    ```
 
