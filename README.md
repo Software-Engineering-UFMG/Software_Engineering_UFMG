@@ -104,34 +104,33 @@ Siga os passos abaixo para executar o projeto utilizando Docker:
 
 2. **Configurar Variáveis de Ambiente**
 
-   - Criar .env do docker compose na raiz do projeto.
-   - Exemplo de `.env`:
+   - Criar .env do docker compose na raiz do projeto com as variáveis:
 
    ```env
-      DATABASE_CONTAINER_NAME=db_container
-      DATABASE_VERSION=17.4-alpine
-      DATABASE_PORT=5432
-      DATABASE_NAME=db_red_2_green
-      DATABASE_USER=db_user
-      DATABASE_PASSWORD=123Seguro
+      DATABASE_CONTAINER_NAME=
+      DATABASE_VERSION=
+      DATABASE_PORT=
+      DATABASE_NAME=
+      DATABASE_USER=
+      DATABASE_PASSWORD=
 
-      API_CONTAINER_NAME=api_container
-      API_IMAGE_NAME=api_image
-      NODE_VERSION=22.14-alpine
-      API_PORT=5050
-      ENVIRONMENT=development
-      SECRET_KEY=3NG3NH4R14S0FTW4R3
-      JWT_EXPIRATION=30d
+      API_CONTAINER_NAME=
+      API_IMAGE_NAME=
+      NODE_VERSION=
+      API_PORT=
+      ENVIRONMENT=
+      SECRET_KEY=
+      JWT_EXPIRATION=
 
-      CLIENT_CONTAINER_NAME=client_container
-      CLIENT_IMAGE_NAME=client_image
-      CLIENT_PORT=5000
+      CLIENT_CONTAINER_NAME=
+      CLIENT_IMAGE_NAME=
+      CLIENT_PORT=
 
-      NGINX_CONTAINER_NAME=nginx_container
-      NGINX_IMAGE_NAME=nginx_image
-      NGINX_VERSION=1.27.4-alpine
+      NGINX_CONTAINER_NAME=
+      NGINX_IMAGE_NAME=
+      NGINX_VERSION=
 
-      RESTART_POLICY=no
+      RESTART_POLICY=
    ```
 
 3. **Construir e Iniciar os Contêineres**
