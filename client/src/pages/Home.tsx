@@ -18,7 +18,7 @@ export const Home = () => {
   }, []);
 
   return (
-    <div>
+    <Container>
       <h1>Lista de Usuários</h1>
       <ul>
         {users.map((user) => (
@@ -28,6 +28,6 @@ export const Home = () => {
           </li>
         ))}
       </ul>
-    </div>
+    </Container>
   );
 };
