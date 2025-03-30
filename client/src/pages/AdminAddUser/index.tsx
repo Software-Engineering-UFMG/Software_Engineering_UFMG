@@ -16,7 +16,7 @@ import {
 import { Link as RouterLink, useNavigate } from "react-router"; // Add useNavigate import
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
 
-export const Registration = () => {
+export const RegisterUserAsAdmin = () => {
   const navigate = useNavigate(); // Initialize useNavigate
 
   const [formData, setFormData] = useState({
@@ -117,7 +117,7 @@ export const Registration = () => {
       console.log("Simulating successful submission...");
       setTimeout(() => {
         console.log("Data successfully submitted!");
-        navigate("/success"); // Navigate to the success page
+        navigate("/dashboard/addUserAsAdmin/successAdminAddUser"); // Navigate to the success page
       }, 1000); // Simulate a delay of 1 second
     } else {
       console.log("Form contains errors.");
@@ -140,7 +140,7 @@ export const Registration = () => {
         <div className="flex flex-col items-center gap-3">
             <img src={hospitalLogo} alt="Hospital logo"  className="h-[100px] rounded-3xl"/>
             <Typography variant="h4" gutterBottom>
-        Cadastro de usuário
+        Cadastro de usuário como administrador
       </Typography>
         </div>
       
@@ -260,7 +260,7 @@ export const Registration = () => {
         </Button>
         <Button
           component={RouterLink}
-          to="/"
+          to="/dashboard"
           variant="text"
           color="secondary"
           fullWidth
@@ -273,4 +273,4 @@ export const Registration = () => {
   );
 };
 
-export default Registration;
+export default RegisterUserAsAdmin;
