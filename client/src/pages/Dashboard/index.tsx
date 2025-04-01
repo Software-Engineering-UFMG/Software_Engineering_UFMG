@@ -17,6 +17,10 @@ import {
     Button,
     TextField,
     Grid,
+    Select,
+    MenuItem,
+    InputLabel,
+    FormControl,
 } from "@mui/material";
 import { Edit, Delete, ToggleOn, ToggleOff, NoteAdd } from "@mui/icons-material";
 import { useNavigate } from "react-router";
@@ -108,13 +112,20 @@ export const Dashboard = () => {
                     />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                    <TextField
-                        label="Pesquisar por Função"
-                        variant="outlined"
-                        fullWidth
-                        value={filters.role}
-                        onChange={(e) => handleFilterChange("role", e.target.value)}
-                    />
+                    <FormControl fullWidth>
+                        <InputLabel id="role-filter-label">Pesquisar por Função</InputLabel>
+                        <Select
+                            labelId="role-filter-label"
+                            value={filters.role}
+                            onChange={(e) => handleFilterChange("role", e.target.value)}
+                            label="Pesquisar por Função"
+                        >
+                            <MenuItem value="">Todos</MenuItem>
+                            <MenuItem value="Administrador">Administrador</MenuItem>
+                            <MenuItem value="NIR">NIR</MenuItem>
+                            <MenuItem value="Assistencial">Assistencial</MenuItem>
+                        </Select>
+                    </FormControl>
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <TextField

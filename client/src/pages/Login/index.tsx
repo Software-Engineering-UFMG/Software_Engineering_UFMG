@@ -75,11 +75,26 @@ export const Login = React.memo(() => {
 
       const userData = await login({ username, password });
       handleLogin(userData);
-      navigate("/dashboard"); // Redirect to dashboard
-    } catch (error) {
+
+      // Mock role-based redirection
+      switch (userData.role) {
+        case "ADMIN":
+          navigate("/dashboard");
+          break;
+        case "ASSISTENCIAL":
+          navigate("/preceptor");
+          break;
+        case "NIR":
+          navigate("/NIRMainpage"); // Replace with the actual NIR route
+          break;
+        default:
+          throw new Error("Invalid user role");
+      }
+    } catch (error: any) {
+      console.error("Login error:", error.message); // Log the error for debugging
       setErrorMessage((prevState) => ({
         ...prevState,
-        password: "E-mail ou senha inválidos",
+        userAccountWrong: "E-mail ou senha inválidos", // Update the correct error field
       }));
     } finally {
       setLoading(false);
