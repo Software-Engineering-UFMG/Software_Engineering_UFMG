@@ -1,7 +1,6 @@
-import React from "react";
+// import React from "react";
 import { useNavigate } from "react-router";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
-import { List } from "@mui/icons-material";
 
 export const Information = () => {
   const navigate = useNavigate();
@@ -13,7 +12,7 @@ export const Information = () => {
         flexDirection: "column",
         alignItems: "center", // Center the image and button
         justifyContent: "start",
-        height: "100vh",
+        minHeight: "100vh",
         textAlign: "justify",
         padding: "20px",
       }}
@@ -33,46 +32,64 @@ export const Information = () => {
           lineHeight: "1.6", // Improve line spacing
         }}
       >
-        <h1 style={{ fontSize: "24px", letterSpacing: "1px", textAlign: "center" }}>
+        <h1 style={{ fontSize: "24px", letterSpacing: "1px", textAlign: "center", marginBottom: "20px" }}>
           <strong>SAFER Patient Flow Bundle e Red2Green Days:
             Estratégias para Otimização do Fluxo de Pacientes</strong>
         </h1>
-        <br />
-        <p>
-          O <strong>SAFER Patient Flow Bundle</strong> é um conjunto de práticas recomendadas desenvolvido para aprimorar o fluxo de pacientes em unidades de internação adulta, visando reduzir atrasos e melhorar a eficiência hospitalar. Quando implementado de forma consistente, o SAFER pode diminuir o tempo de permanência hospitalar e aprimorar a segurança do paciente.
-        </p>
-        <br />
         <p style={{ marginBottom: "20px" }}>
-          <strong>Componentes do SAFER:</strong>
+          O Hospital das Clínicas da UFMG (HC-UFMG) tem implementado estratégias inovadoras para aprimorar a gestão de leitos e reduzir o tempo de permanência hospitalar dos pacientes. Uma dessas iniciativas é a adoção do método <strong>Red2Green Days</strong>, que, aliado ao <strong>SAFER Patient Flow Bundle</strong>, tem demonstrado resultados significativos na otimização do fluxo de pacientes.
         </p>
-
-        <ol style={{
-          listStyleType: "decimal",
-          paddingLeft: "20px",
-          marginBottom: "20px"
-        }}>
-          <li><strong>Revisão Sênior:</strong> Todos os pacientes devem ser avaliados por um profissional sênior antes do meio-dia, garantindo decisões informadas sobre o plano de tratamento e alta.​</li>
-
-          <li><strong>Data e Critérios de Alta Esperados:</strong> Estabelecer uma data prevista de alta e critérios clínicos claros para sua realização, facilitando o planejamento e a coordenação do cuidado.</li>
-
-          <li><strong>Fluxo Antecipado:</strong> Iniciar o atendimento aos pacientes o mais cedo possível após a admissão, promovendo um fluxo contínuo e eficiente.</li>
-
-          <li><strong>Alta Antecipada:</strong> Esforçar-se para que os pacientes sejam liberados antes do meio-dia, liberando leitos mais cedo e permitindo a preparação adequada para a alta.</li>
-
-          <li><strong>Revisão de Pacientes com Longa Permanência:</strong> Avaliar regularmente pacientes que estão internados por períodos prolongados para identificar e remover barreiras à alta.</li>
-        </ol>
-        <p>
-          O <strong>Red2Green Days</strong> complementa o <strong>SAFER</strong>, sendo uma ferramenta visual que ajuda a identificar períodos de internação que não agregam valor ao paciente. Classificando os dias como "verdes" (quando o paciente recebe cuidados que avançam sua recuperação) ou "vermelhos" (quando há atrasos ou falta de progresso), a equipe pode identificar áreas que necessitam de atenção para melhorar o fluxo e a experiência do paciente.
-        </p>
-        <br />
+        <h2 style={{ fontSize: "20px", letterSpacing: "1px", textAlign: "center", marginBottom: "20px" }}>
+          <strong>O que é o Red2Green Days?</strong>
+        </h2>
         <p style={{ marginBottom: "20px" }}>
-          <strong>Benefícios Comprovados:</strong>
+          O <strong>Red2Green Days</strong> é uma ferramenta visual projetada para identificar e minimizar períodos de internação que não agregam valor ao cuidado do paciente. Cada dia de internação é classificado como:
+        </p>
+        <ul style={{ marginBottom: "20px", paddingLeft: "20px" }}>
+          <li>
+            <strong>Dia Verde:</strong> O paciente recebe cuidados que efetivamente contribuem para sua recuperação e avançam seu plano de tratamento.
+          </li>
+          <li>
+            <strong>Dia Vermelho:</strong> Ocorrem atrasos ou interrupções no tratamento, sem progresso significativo na recuperação do paciente.
+          </li>
+        </ul>
+        <p style={{ marginBottom: "20px" }}>
+          Essa classificação diária permite que a equipe multidisciplinar identifique e aborde prontamente os fatores que contribuem para os "dias vermelhos", promovendo um fluxo de atendimento mais eficiente.
+        </p>
+        <h2 style={{ fontSize: "20px", letterSpacing: "1px", textAlign: "center", marginBottom: "20px" }}>
+          <strong>Implementação no HC-UFMG</strong>
+        </h2>
+        <p style={{ marginBottom: "20px" }}>
+          No HC-UFMG, a gestão de leitos é coordenada pela Unidade de Regulação Assistencial, que monitora indicadores-chave, como o tempo médio de internação hospitalar (<strong>Length of Stay - LOS</strong>). Reduzir o <strong>LOS</strong> é essencial para aumentar a disponibilidade de leitos sem a necessidade de expansão física, além de diminuir os custos associados ao cuidado hospitalar.
         </p>
         <p style={{ marginBottom: "20px" }}>
-          Estudos demonstram que a implementação conjunta do SAFER e do Red2Green pode levar a uma redução significativa no tempo de permanência hospitalar. Por exemplo, uma pesquisa em um hospital universitário no Brasil revelou que, após a adoção dessas estratégias, a mediana do tempo de internação caiu de 19 para 14,2 dias, sem aumento nas taxas de mortalidade ou readmissão.
+          A implementação conjunta do <strong>SAFER Patient Flow Bundle</strong> e do <strong>Red2Green Days</strong> no hospital tem como objetivo principal otimizar o fluxo de pacientes nas unidades de internação adulta. O <strong>SAFER</strong> é um conjunto de práticas recomendadas que inclui:
+        </p>
+        <ul style={{ marginBottom: "20px", paddingLeft: "20px" }}>
+          <li>
+            <strong>Revisão Sênior:</strong> Avaliação diária dos pacientes por um profissional sênior antes do meio-dia, assegurando decisões informadas sobre o plano de tratamento e alta.
+          </li>
+          <li>
+            <strong>Data e Critérios de Alta Esperados:</strong> Definição de uma data prevista de alta e critérios clínicos claros para sua realização, facilitando o planejamento e a coordenação do cuidado.
+          </li>
+          <li>
+            <strong>Fluxo Antecipado:</strong> Início precoce do atendimento aos pacientes após a admissão, promovendo um fluxo contínuo e eficiente.
+          </li>
+          <li>
+            <strong>Alta Antecipada:</strong> Esforço para que os pacientes sejam liberados antes do meio-dia, liberando leitos mais cedo e permitindo a preparação adequada para novas admissões.
+          </li>
+          <li>
+            <strong>Revisão de Pacientes com Longa Permanência:</strong> Avaliação regular de pacientes internados por períodos prolongados para identificar e remover barreiras à alta.
+          </li>
+        </ul>
+        <p style={{ marginBottom: "20px" }}>
+          A combinação dessas estratégias tem mostrado resultados promissores. O estudo realizado na Unidade de Clínica Médica do HC-UFMG revelou que, após a adoção do <strong>SAFER</strong> e do <strong>Red2Green Days</strong>, a mediana do tempo de internação reduziu de 19 para 14,2 dias, sem aumento nas taxas de mortalidade ou readmissão.
+        </p>
+        <p style={{ marginBottom: "20px" }}>
+          A redução do tempo de internação não apenas otimiza a utilização dos recursos hospitalares, mas também melhora a experiência do paciente, permitindo uma transição mais rápida para o cuidado ambulatorial, que é menos dispendioso e pode ser mais confortável para o paciente.
         </p>
         <p>
-          Para uma compreensão mais detalhada sobre a aplicação do Red2Green, confira o vídeo abaixo que ilustra sua implementação prática:
+          Para uma compreensão mais detalhada sobre a aplicação do <strong>Red2Green Days</strong>, confira o vídeo abaixo que ilustra sua implementação prática:
         </p>
       </div>
 
@@ -82,25 +99,30 @@ export const Information = () => {
           display: "flex",
           justifyContent: "center",
           marginTop: "20px",
-          borderRadius: "20px",
+          borderRadius: "15px",
         }}>
         <iframe
           width="560"
           height="315"
-          src="https://www.youtube.com/embed/RZJfvdCjGiQ"
-          title="YouTube video player"
+          src="https://www.youtube.com/embed/YXvMj0IY5Ak"
+          title="Webinar: Redução do tempo de internação de pacientes"
           frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        ></iframe>
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerPolicy="strict-origin-when-cross-origin"
+          style={{
+            borderRadius: "5px",
+            overflow: "hidden",
+          }}
+        >
+        </iframe>
       </div>
 
       <button
         onClick={() => navigate("/")}
         style={{
-          marginTop: "20px",
-          marginBottom: "20px",
-          padding: "10px 20px",
+          marginTop: "30px",
+          marginBottom: "10px",
+          padding: "10px 80px",
           backgroundColor: "#86efac",
           border: "none",
           borderRadius: "5px",
