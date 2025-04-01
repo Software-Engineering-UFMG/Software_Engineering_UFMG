@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
+import { List } from "@mui/icons-material";
 
 export const Information = () => {
   const navigate = useNavigate();
@@ -33,34 +34,72 @@ export const Information = () => {
         }}
       >
         <h1 style={{ fontSize: "24px", letterSpacing: "1px", textAlign: "center" }}>
-          SAFER Patient Flow Bundle e Red2Green2 Days
+          <strong>SAFER Patient Flow Bundle e Red2Green Days:
+            Estratégias para Otimização do Fluxo de Pacientes</strong>
         </h1>
         <br />
         <p>
-          A gestão de leitos do Hospital das Clínicas da UFMG é realizada pela
-          Unidade de Regulação Assistencial e um dos principais indicadores do
-          serviço é o tempo de permanência hospitalar dos pacientes.
+          O <strong>SAFER Patient Flow Bundle</strong> é um conjunto de práticas recomendadas desenvolvido para aprimorar o fluxo de pacientes em unidades de internação adulta, visando reduzir atrasos e melhorar a eficiência hospitalar. Quando implementado de forma consistente, o SAFER pode diminuir o tempo de permanência hospitalar e aprimorar a segurança do paciente.
         </p>
         <br />
+        <p style={{ marginBottom: "20px" }}>
+          <strong>Componentes do SAFER:</strong>
+        </p>
+
+        <ol style={{
+          listStyleType: "decimal",
+          paddingLeft: "20px",
+          marginBottom: "20px"
+        }}>
+          <li><strong>Revisão Sênior:</strong> Todos os pacientes devem ser avaliados por um profissional sênior antes do meio-dia, garantindo decisões informadas sobre o plano de tratamento e alta.​</li>
+
+          <li><strong>Data e Critérios de Alta Esperados:</strong> Estabelecer uma data prevista de alta e critérios clínicos claros para sua realização, facilitando o planejamento e a coordenação do cuidado.</li>
+
+          <li><strong>Fluxo Antecipado:</strong> Iniciar o atendimento aos pacientes o mais cedo possível após a admissão, promovendo um fluxo contínuo e eficiente.</li>
+
+          <li><strong>Alta Antecipada:</strong> Esforçar-se para que os pacientes sejam liberados antes do meio-dia, liberando leitos mais cedo e permitindo a preparação adequada para a alta.</li>
+
+          <li><strong>Revisão de Pacientes com Longa Permanência:</strong> Avaliar regularmente pacientes que estão internados por períodos prolongados para identificar e remover barreiras à alta.</li>
+        </ol>
         <p>
-          A média do tempo de internação hospitalar (
-          <strong>length of stay, LOS</strong>) de pacientes é um indicador de
-          eficiência dos serviços de saúde. Internações mais rápidas reduzem o
-          custo do cuidado, transferindo o paciente para o tratamento
-          ambulatorial, menos dispendioso.
+          O <strong>Red2Green Days</strong> complementa o <strong>SAFER</strong>, sendo uma ferramenta visual que ajuda a identificar períodos de internação que não agregam valor ao paciente. Classificando os dias como "verdes" (quando o paciente recebe cuidados que avançam sua recuperação) ou "vermelhos" (quando há atrasos ou falta de progresso), a equipe pode identificar áreas que necessitam de atenção para melhorar o fluxo e a experiência do paciente.
         </p>
         <br />
+        <p style={{ marginBottom: "20px" }}>
+          <strong>Benefícios Comprovados:</strong>
+        </p>
+        <p style={{ marginBottom: "20px" }}>
+          Estudos demonstram que a implementação conjunta do SAFER e do Red2Green pode levar a uma redução significativa no tempo de permanência hospitalar. Por exemplo, uma pesquisa em um hospital universitário no Brasil revelou que, após a adoção dessas estratégias, a mediana do tempo de internação caiu de 19 para 14,2 dias, sem aumento nas taxas de mortalidade ou readmissão.
+        </p>
         <p>
-          A redução do LOS também aumenta a oferta de leitos, sem incremento de
-          área física em hospitais. A maior disponibilização de leitos torna-se
-          fundamental com o envelhecimento da população e aumento da carga de
-          doenças crônicas.
+          Para uma compreensão mais detalhada sobre a aplicação do Red2Green, confira o vídeo abaixo que ilustra sua implementação prática:
         </p>
       </div>
+
+      {/* Vídeo do YouTube incorporado */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          marginTop: "20px",
+          borderRadius: "20px",
+        }}>
+        <iframe
+          width="560"
+          height="315"
+          src="https://www.youtube.com/embed/RZJfvdCjGiQ"
+          title="YouTube video player"
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        ></iframe>
+      </div>
+
       <button
         onClick={() => navigate("/")}
         style={{
           marginTop: "20px",
+          marginBottom: "20px",
           padding: "10px 20px",
           backgroundColor: "#86efac",
           border: "none",
