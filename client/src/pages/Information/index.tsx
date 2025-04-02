@@ -121,6 +121,7 @@ export const Information = () => {
         onClick={() => navigate("/")}
         style={{
           marginTop: "30px",
+          marginBottom: "10px",
           padding: "10px 90px",
           backgroundColor: "#86efac",
           border: "none",
