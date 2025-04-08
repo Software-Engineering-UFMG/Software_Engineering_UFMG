@@ -47,13 +47,13 @@ export const createUserHandler = async (
   reply: FastifyReply
 ) => {
   try {
-    const { name, email } = req.body;
+    const { name, username } = req.body;
 
-    if (!name || !email) {
+    if (!name || !username) {
       return sendErrorResponse(
         reply,
         400,
-        "Missing required fields: 'name' and 'email'"
+        "Missing required fields: 'name' and 'username'"
       );
     }
 
@@ -70,17 +70,17 @@ export const updateUserHandler = async (
 ) => {
   try {
     const { id } = req.params;
-    const { name, email } = req.body;
+    const { name, username } = req.body;
 
     if (!id || isNaN(Number(id))) {
       return sendErrorResponse(reply, 400, "Invalid or missing 'id' parameter");
     }
 
-    if (!name && !email) {
+    if (!name && !username) {
       return sendErrorResponse(
         reply,
         400,
-        "At least one field ('name' or 'email') must be provided"
+        "At least one field ('name' or 'username') must be provided"
       );
     }
 
