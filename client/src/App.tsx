@@ -7,6 +7,10 @@ import Success from "./pages/Success";
 import RegisterUserAsAdmin from "./pages/AdminAddUser";
 import SuccessAdminAddUser from "./pages/SuccessAdminAddUser";
 import EditUser from "./pages/AdminEditUser/EditUser";
+import Preceptor from "./pages/PreceptorSelectionAssistencial";
+import Edit from "./pages/EditRegistration";
+import { NIRMainpage } from "./pages/NIRMainPage";
+import EditNir from "./pages/EditRegistrationNIR";
 
 function App() {
   return (
@@ -15,6 +19,10 @@ function App() {
         <Route index element={<Login />} />
         <Route path="/information" element={<Information/>} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/NIRMainpage" element = {<NIRMainpage/>}/>
+        <Route path="/NIRMainpage/editNir" element = {<EditNir/>}/>
+        <Route path="/preceptor" element ={<Preceptor/>}/>
+        <Route path="/preceptor/editRegistration" element={<Edit/>}></Route>
         <Route path="/registration" element={<Registration/>}/>
         <Route path="/sucess" element={<Success/>}/>
         <Route path="/dashboard/addUserAsAdmin" element={<RegisterUserAsAdmin/>} />
