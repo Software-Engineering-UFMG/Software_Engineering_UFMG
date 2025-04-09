@@ -1,8 +1,8 @@
 import { FastifyInstance } from "fastify";
 import { userRoutes } from "./userRoutes";
+import { authRoutes } from "./authRoutes";
 
 export const registerRoutes = (app: FastifyInstance) => {
-  app.log.info("Registrando rotas...");
+  authRoutes(app);
   userRoutes(app);
-  app.log.info("Rotas registradas com sucesso.");
 };

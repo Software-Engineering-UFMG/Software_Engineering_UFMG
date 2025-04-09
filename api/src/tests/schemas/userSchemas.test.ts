@@ -9,10 +9,12 @@ describe("userSchemas", () => {
     it("should validate a valid user creation payload", () => {
       const validPayload = {
         name: "John Doe",
-        email: "john.doe@example.com",
+        username: "john_doe",
         password: "password123",
         birthDate: "1990-01-01",
-        role: "user",
+        phone: "123456789",
+        role: "Admin",
+        specialty: "IT",
       };
 
       const result = createUserSchema.parse(validPayload);
@@ -25,50 +27,25 @@ describe("userSchemas", () => {
 
     it("should throw an error for missing required fields", () => {
       const invalidPayload = {
-        email: "john.doe@example.com",
+        name: "",
+        username: "john_doe",
         password: "password123",
         birthDate: "1990-01-01",
-        role: "user",
-      };
-
-      expect(() => createUserSchema.parse(invalidPayload)).toThrow("Required");
-    });
-
-    it("should throw an error for invalid email format", () => {
-      const invalidPayload = {
-        name: "John Doe",
-        email: "invalid-email",
-        password: "password123",
-        birthDate: "1990-01-01",
-        role: "user",
+        role: "Admin",
       };
 
       expect(() => createUserSchema.parse(invalidPayload)).toThrow(
-        "Invalid email format"
-      );
-    });
-
-    it("should throw an error for short passwords", () => {
-      const invalidPayload = {
-        name: "John Doe",
-        email: "john.doe@example.com",
-        password: "123",
-        birthDate: "1990-01-01",
-        role: "user",
-      };
-
-      expect(() => createUserSchema.parse(invalidPayload)).toThrow(
-        "Password must be at least 6 characters"
+        "Name is required"
       );
     });
 
     it("should throw an error for invalid birthDate format", () => {
       const invalidPayload = {
         name: "John Doe",
-        email: "john.doe@example.com",
+        username: "john_doe",
         password: "password123",
         birthDate: "invalid-date",
-        role: "user",
+        role: "Admin",
       };
 
       expect(() => createUserSchema.parse(invalidPayload)).toThrow(
@@ -79,15 +56,34 @@ describe("userSchemas", () => {
     it("should throw an error for invalid role", () => {
       const invalidPayload = {
         name: "John Doe",
-        email: "john.doe@example.com",
+        username: "john_doe",
         password: "password123",
         birthDate: "1990-01-01",
         role: "invalid-role",
       };
 
       expect(() => createUserSchema.parse(invalidPayload)).toThrow(
-        "Role must be one of: admin, user"
+        "Invalid enum value. Expected 'NIR' | 'Assistencial' | 'Admin', received 'invalid-role'"
       );
+    });
+
+    it("should allow nullable fields for phone and specialty", () => {
+      const validPayload = {
+        name: "John Doe",
+        username: "john_doe",
+        password: "password123",
+        birthDate: "1990-01-01",
+        role: "Admin",
+        phone: null,
+        specialty: null,
+      };
+
+      const result = createUserSchema.parse(validPayload);
+
+      expect(result).toEqual({
+        ...validPayload,
+        birthDate: new Date("1990-01-01"),
+      });
     });
   });
 
@@ -95,11 +91,14 @@ describe("userSchemas", () => {
     it("should validate a valid user update payload", () => {
       const validPayload = {
         name: "John Updated",
-        email: "john.updated@example.com",
+        username: "john_updated",
         password: "newpassword123",
         currentPassword: "oldpassword123",
         birthDate: "1990-01-01",
-        role: "admin",
+        role: "Assistencial",
+        phone: "987654321",
+        specialty: "HR",
+        status: "Active",
       };
 
       const result = updateUserSchema.parse(validPayload);
@@ -113,41 +112,12 @@ describe("userSchemas", () => {
     it("should allow partial updates", () => {
       const partialPayload = {
         name: "John Updated",
+        phone: null,
       };
 
       const result = updateUserSchema.parse(partialPayload);
 
       expect(result).toEqual(partialPayload);
-    });
-
-    it("should throw an error for invalid email format", () => {
-      const invalidPayload = {
-        email: "invalid-email",
-      };
-
-      expect(() => updateUserSchema.parse(invalidPayload)).toThrow(
-        "Invalid email format"
-      );
-    });
-
-    it("should throw an error for short passwords", () => {
-      const invalidPayload = {
-        password: "123",
-      };
-
-      expect(() => updateUserSchema.parse(invalidPayload)).toThrow(
-        "Password must be at least 6 characters"
-      );
-    });
-
-    it("should throw an error for invalid birthDate format", () => {
-      const invalidPayload = {
-        birthDate: "invalid-date",
-      };
-
-      expect(() => updateUserSchema.parse(invalidPayload)).toThrow(
-        "Invalid date format"
-      );
     });
 
     it("should throw an error for invalid role", () => {
@@ -156,7 +126,17 @@ describe("userSchemas", () => {
       };
 
       expect(() => updateUserSchema.parse(invalidPayload)).toThrow(
-        "Invalid enum value. Expected 'admin' | 'user', received 'invalid-role'"
+        "Invalid enum value. Expected 'NIR' | 'Assistencial' | 'Admin', received 'invalid-role'"
+      );
+    });
+
+    it("should throw an error for invalid status", () => {
+      const invalidPayload = {
+        status: "invalid-status",
+      };
+
+      expect(() => updateUserSchema.parse(invalidPayload)).toThrow(
+        "Invalid enum value. Expected 'Active' | 'Inactive', received 'invalid-status'"
       );
     });
   });

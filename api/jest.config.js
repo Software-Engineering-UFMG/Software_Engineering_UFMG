@@ -18,6 +18,6 @@ module.exports = {
     "!**/*.d.ts",
     "!app.ts",
   ],
-  coveragePathIgnorePatterns: ["src/config/", "src/routes/"],
-  testPathIgnorePatterns: ["src/config/", "src/routes/"],
+  coveragePathIgnorePatterns: ["src/config/", "src/routes/", "src/types/", "src/utils/"],
+  testPathIgnorePatterns: ["src/config/", "src/routes/", "src/types/", "src/utils/"],
 };

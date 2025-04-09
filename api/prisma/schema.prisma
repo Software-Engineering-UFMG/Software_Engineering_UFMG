@@ -8,15 +8,25 @@ datasource db {
 }
 
 enum Role {
-  admin
-  user
+  NIR
+  Assistencial
+  Admin
+}
+
+enum Status {
+  Active
+  Inactive
 }
 
 model User {
   id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String
+  name      String   @db.VarChar(100)
   birthDate DateTime
+  phone     String?  @db.VarChar(20)
+  username  String   @unique @db.VarChar(50)
+  password  String   @db.VarChar(255)
   role      Role
+  specialty String?  @db.VarChar(100)
+  status    Status   @default(Active)
+  createdAt DateTime @default(now())
 }

@@ -15,14 +15,9 @@ export const validateSchema =
     schema: T,
     source: "body" | "query" | "params" = "body"
   ) =>
-  async (
-    req: FastifyRequest,
-    reply: FastifyReply,
-    done: (err?: Error) => void
-  ): Promise<void> => {
+  async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
     try {
       req[source] = schema.parse(req[source]) as T["_output"];
-      done();
     } catch (error) {
       if (error instanceof ZodError) {
         req.log.error(`Validation error: ${JSON.stringify(error.errors)}`);
