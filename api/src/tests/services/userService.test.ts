@@ -33,14 +33,31 @@ describe("User Service", () => {
   describe("getAllUsers", () => {
     it("should return all users without passwords", async () => {
       const mockUsers = [
-        { id: 1, name: "John", email: "john@example.com", password: "hashed" },
+        {
+          id: 1,
+          name: "John",
+          username: "john_doe",
+          birthDate: new Date("1990-01-01"),
+          role: "Admin",
+          status: "Active",
+          createdAt: new Date(),
+          password: "hashed",
+        },
       ];
       (prisma.user.findMany as jest.Mock).mockResolvedValue(mockUsers);
 
       const result = await getAllUsers();
 
       expect(result).toEqual([
-        { id: 1, name: "John", email: "john@example.com" },
+        {
+          id: 1,
+          name: "John",
+          username: "john_doe",
+          birthDate: new Date("1990-01-01"),
+          role: "Admin",
+          status: "Active",
+          createdAt: mockUsers[0].createdAt,
+        },
       ]);
       expect(prisma.user.findMany).toHaveBeenCalledTimes(1);
     });
@@ -51,7 +68,11 @@ describe("User Service", () => {
       const mockUser = {
         id: 1,
         name: "John",
-        email: "john@example.com",
+        username: "john_doe",
+        birthDate: new Date("1990-01-01"),
+        role: "Admin",
+        status: "Active",
+        createdAt: new Date(),
         password: "hashed",
       };
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
@@ -61,7 +82,11 @@ describe("User Service", () => {
       expect(result).toEqual({
         id: 1,
         name: "John",
-        email: "john@example.com",
+        username: "john_doe",
+        birthDate: new Date("1990-01-01"),
+        role: "Admin",
+        status: "Active",
+        createdAt: mockUser.createdAt,
       });
       expect(prisma.user.findUnique).toHaveBeenCalledWith({ where: { id: 1 } });
     });
@@ -80,7 +105,11 @@ describe("User Service", () => {
       const mockUser = {
         id: 1,
         name: "John",
-        email: "john@example.com",
+        username: "john_doe",
+        birthDate: new Date("1990-01-01"),
+        role: "Admin",
+        status: "Active",
+        createdAt: new Date(),
         password: "hashed",
       };
       (bcrypt.hash as jest.Mock).mockResolvedValue("hashed");
@@ -88,16 +117,20 @@ describe("User Service", () => {
 
       const result = await createUser({
         name: "John",
-        email: "john@example.com",
+        username: "john_doe",
         password: "password123",
         birthDate: new Date("1990-01-01"),
-        role: "user",
+        role: "Admin",
       });
 
       expect(result).toEqual({
         id: 1,
         name: "John",
-        email: "john@example.com",
+        username: "john_doe",
+        birthDate: new Date("1990-01-01"),
+        role: "Admin",
+        status: "Active",
+        createdAt: mockUser.createdAt,
       });
       expect(bcrypt.hash).toHaveBeenCalledWith("password123", 10);
       expect(prisma.user.create).toHaveBeenCalled();
@@ -109,17 +142,20 @@ describe("User Service", () => {
       const mockUser = {
         id: 1,
         name: "John",
-        email: "john@example.com",
+        username: "john_doe",
+        birthDate: new Date("1990-01-01"),
+        role: "Admin",
+        status: "Active",
+        createdAt: new Date(),
         password: "hashed",
       };
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
       (bcrypt.hash as jest.Mock).mockResolvedValue("newHashed");
 
-      // Ajuste no mock para refletir a atualização
       (prisma.user.update as jest.Mock).mockResolvedValue({
         ...mockUser,
-        name: "John Updated", // Atualização aplicada
+        name: "John Updated",
         password: "newHashed",
       });
 
@@ -132,7 +168,11 @@ describe("User Service", () => {
       expect(result).toEqual({
         id: 1,
         name: "John Updated",
-        email: "john@example.com",
+        username: "john_doe",
+        birthDate: new Date("1990-01-01"),
+        role: "Admin",
+        status: "Active",
+        createdAt: mockUser.createdAt,
       });
       expect(bcrypt.compare).toHaveBeenCalledWith("password123", "hashed");
       expect(bcrypt.hash).toHaveBeenCalledWith("newPassword123", 10);
@@ -143,7 +183,7 @@ describe("User Service", () => {
       const mockUser = {
         id: 1,
         name: "John",
-        email: "john@example.com",
+        username: "john_doe",
         password: "hashed",
       };
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);

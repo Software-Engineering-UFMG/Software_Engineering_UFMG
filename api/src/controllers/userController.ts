@@ -89,7 +89,17 @@ export const updateUserHandler = async (
       return sendErrorResponse(reply, 404, "User not found");
     }
     sendResponse(reply, 200, updatedUser);
-  } catch (error) {
+  } catch (error: any) {
+    if (
+      error.message === "Current password is required to update the password."
+    ) {
+      return sendErrorResponse(reply, 400, error.message);
+    }
+
+    if (error.message === "Current password is incorrect.") {
+      return sendErrorResponse(reply, 401, error.message);
+    }
+
     sendErrorResponse(reply, 500, "An unexpected error occurred");
   }
 };

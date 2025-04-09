@@ -15,7 +15,7 @@ export const loginHandler = async (
       return sendErrorResponse(
         reply,
         400,
-        "Missing required fields: 'username' and 'password'"
+        "Missing required fields: 'username' or 'password'"
       );
     }
 
@@ -62,9 +62,6 @@ export const meHandler = async (req: FastifyRequest, reply: FastifyReply) => {
   } catch (error: any) {
     if (error.message === "User not found") {
       return sendErrorResponse(reply, 404, error.message);
-    }
-    if (error.message === "Invalid or expired token") {
-      return sendErrorResponse(reply, 401, error.message);
     }
     sendErrorResponse(reply, 500, "An unexpected error occurred");
   }

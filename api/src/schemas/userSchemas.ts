@@ -10,9 +10,9 @@ export const createUserSchema = z.object({
       message: "Invalid date format",
     })
     .transform((date) => new Date(date)),
-  phone: z.string().nullable(),
+  phone: z.string().nullable().optional(),
   role: z.enum(["NIR", "Assistencial", "Admin"]),
-  specialty: z.string().nullable(),
+  specialty: z.string().nullable().optional(),
 });
 
 export const updateUserSchema = z.object({
@@ -33,6 +33,7 @@ export const updateUserSchema = z.object({
   phone: z.string().nullable().optional(),
   role: z.enum(["NIR", "Assistencial", "Admin"]).optional(),
   specialty: z.string().nullable().optional(),
+  status: z.enum(["Active", "Inactive"]).optional(),
 });
 
 export const idSchema = z
