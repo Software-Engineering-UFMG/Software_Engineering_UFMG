@@ -1,32 +1,55 @@
 import api from "../../api";
-import {User} from "../../../types/userTypes"
-import { AdminUser } from "../../../types/userTypes";
+import { AdminUser, NirUser, AssistencialUser } from "../../../types/userTypes";
 
-export interface LoginParams{
-    username:string,
-    password:string
+export interface LoginParams {
+    username: string;
+    password: string;
 }
 
-const mockUser: AdminUser = {
-    id: 1,
-    name: "Riquelme",
-    username: "riquelme3m",
-    password: "password123",
-    active: 1,
-    dateOfBirth: new Date("24-06-2002"),
-    cellphone: 38988670683,
-    role: "ADMIN"
-};
+export const login = async ({ username, password }: LoginParams) => {
+    // Mocked user data
+    const mockUsers: (AdminUser | NirUser | AssistencialUser)[] = [
+        {
+            id: 1,
+            name: "Admin User",
+            username: "admin",
+            password: "admin123",
+            role: "ADMIN",
+            active: 1,
+            dateOfBirth: new Date("1980-01-01"),
+            cellphone: 123456789,
+        },
+        {
+            id: 2,
+            name: "Assistencial User",
+            username: "assistencial",
+            password: "assist123",
+            role: "ASSISTENCIAL",
+            active: 1,
+            dateOfBirth: new Date("1990-01-01"),
+            cellphone: 987654321,
+            specialty: "Cardiology", 
+        },
+        {
+            id: 3,
+            name: "NIR User",
+            username: "nir",
+            password: "nir123",
+            role: "NIR",
+            active: 1,
+            dateOfBirth: new Date("1985-01-01"),
+            cellphone: 123123123,
+        },
+    ];
 
-export const login = async({username,password}:LoginParams): Promise<User> =>{
-    if(username === "riquelme3m" && password === "password123@"){
-        return Promise.resolve(mockUser);
+    // Find the user based on username and password
+    const user = mockUsers.find(
+        (u) => u.username === username.trim() && u.password === password.trim()
+    );
+
+    if (!user) {
+        throw new Error("Invalid credentials");
     }
 
-    const response = await api.post("/auth/login",{
-        username,
-        password
-    });
-
-    return response.data;
-}
+    return user; // Return the user object with the role
+};
