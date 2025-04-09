@@ -1,9 +1,7 @@
 import { fastify } from "./src/app";
-import dotenv from "dotenv";
+import { env } from "./src/config/env";
 
-dotenv.config();
-
-const port = Number(process.env.API_PORT) || 5050;
+const port = env.API_PORT;
 
 const start = async () => {
   try {

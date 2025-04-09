@@ -35,5 +35,7 @@ WORKDIR /api
 
 # Instalando as dependências do projeto dentro do container e buildando a aplicação
 RUN npm install
+RUN npm uninstall bcrypt
+RUN npm install bcrypt
 
 RUN npm run build
