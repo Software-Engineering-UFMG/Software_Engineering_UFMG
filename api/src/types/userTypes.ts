@@ -3,6 +3,8 @@ import { createUserSchema, updateUserSchema } from "../schemas/userSchemas";
 
 export type User = {
   id: number;
+  status: "Active" | "Inactive";
+  createdAt: Date;
 } & z.infer<typeof createUserSchema>;
 
 export type UserWithoutPassword = Omit<User, "password">;
