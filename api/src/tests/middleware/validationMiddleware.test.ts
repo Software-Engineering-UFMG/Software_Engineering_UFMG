@@ -29,11 +29,9 @@ describe("validationMiddleware", () => {
     } as unknown as FastifyRequest;
 
     const middleware = validateSchema(schema, "body");
-    const done = jest.fn();
 
-    await middleware(mockRequest, mockReply, done);
+    await middleware(mockRequest, mockReply);
 
-    expect(done).toHaveBeenCalled();
     expect(mockRequest.body).toEqual({ name: "John", age: 25 });
   });
 
@@ -49,9 +47,8 @@ describe("validationMiddleware", () => {
     } as unknown as FastifyRequest;
 
     const middleware = validateSchema(schema, "body");
-    const done = jest.fn();
 
-    await middleware(mockRequest, mockReply, done);
+    await middleware(mockRequest, mockReply);
 
     expect(mockRequest.log.error).toHaveBeenCalledWith(
       expect.stringContaining("Validation error")
@@ -61,7 +58,6 @@ describe("validationMiddleware", () => {
       400,
       "The parameter 'name' is invalid: Name is required"
     );
-    expect(done).not.toHaveBeenCalled();
   });
 
   it("should return a validation error for missing fields", async () => {
@@ -76,9 +72,8 @@ describe("validationMiddleware", () => {
     } as unknown as FastifyRequest;
 
     const middleware = validateSchema(schema, "body");
-    const done = jest.fn();
 
-    await middleware(mockRequest, mockReply, done);
+    await middleware(mockRequest, mockReply);
 
     expect(mockRequest.log.error).toHaveBeenCalledWith(
       expect.stringContaining("Validation error")
@@ -88,7 +83,6 @@ describe("validationMiddleware", () => {
       400,
       "The parameter 'name' is invalid: Required"
     );
-    expect(done).not.toHaveBeenCalled();
   });
 
   it("should validate query parameters", async () => {
@@ -103,11 +97,9 @@ describe("validationMiddleware", () => {
     } as unknown as FastifyRequest;
 
     const middleware = validateSchema(schema, "query");
-    const done = jest.fn();
 
-    await middleware(mockRequest, mockReply, done);
+    await middleware(mockRequest, mockReply);
 
-    expect(done).toHaveBeenCalled();
     expect(mockRequest.query).toEqual({ name: "John", age: 25 });
   });
 
@@ -123,11 +115,9 @@ describe("validationMiddleware", () => {
     } as unknown as FastifyRequest;
 
     const middleware = validateSchema(schema, "params");
-    const done = jest.fn();
 
-    await middleware(mockRequest, mockReply, done);
+    await middleware(mockRequest, mockReply);
 
-    expect(done).toHaveBeenCalled();
     expect(mockRequest.params).toEqual({ name: "John", age: 25 });
   });
 });
