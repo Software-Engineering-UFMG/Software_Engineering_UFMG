@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   TextField,
   Button,
@@ -59,7 +59,9 @@ export const RegisterUserAsAdmin = () => {
       ...prevErrors,
       [name]: false,
       ...(name === "birthDate" && { birthDateFuture: false }),
-      ...(name === "confirmPassword" && { confirmPassword: value !== formData.password }),
+      ...(name === "confirmPassword" && {
+        confirmPassword: value !== formData.password,
+      }),
       ...(name === "userType" && { userType: false }), // Clear userType error
     }));
 
@@ -103,11 +105,13 @@ export const RegisterUserAsAdmin = () => {
       const formattedFormData = {
         ...formData,
         birthDate: formData.birthDate
-          ? new Date(formData.birthDate).toLocaleDateString("pt-BR", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-            }).replace(/\//g, "-") // Replace slashes with dashes
+          ? new Date(formData.birthDate)
+              .toLocaleDateString("pt-BR", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+              .replace(/\//g, "-") // Replace slashes with dashes
           : "",
       };
 
@@ -137,13 +141,17 @@ export const RegisterUserAsAdmin = () => {
         borderRadius: "8px",
       }}
     >
-        <div className="flex flex-col items-center gap-3">
-            <img src={hospitalLogo} alt="Hospital logo"  className="h-[100px] rounded-3xl"/>
-            <Typography variant="h4" gutterBottom>
-        Cadastro de usuário como administrador
-      </Typography>
-        </div>
-      
+      <div className="flex flex-col items-center gap-3">
+        <img
+          src={hospitalLogo}
+          alt="Hospital logo"
+          className="h-[100px] rounded-3xl"
+        />
+        <Typography variant="h4" gutterBottom>
+          Cadastro de usuário como administrador
+        </Typography>
+      </div>
+
       <form onSubmit={handleSubmit}>
         <TextField
           fullWidth
@@ -213,7 +221,11 @@ export const RegisterUserAsAdmin = () => {
           error={errors.confirmPassword}
           helperText={errors.confirmPassword ? "As senhas não coincidem" : ""}
         />
-        <FormControl component="fieldset" margin="normal" error={errors.userType}>
+        <FormControl
+          component="fieldset"
+          margin="normal"
+          error={errors.userType}
+        >
           <Typography variant="subtitle1">Tipo de usuário</Typography>
           <RadioGroup
             name="userType"
@@ -235,7 +247,8 @@ export const RegisterUserAsAdmin = () => {
         </FormControl>
         {formData.userType === "assistencial" && (
           <FormControl fullWidth margin="normal">
-            <InputLabel className="bg-green-50">Especialidade</InputLabel> {/* Add shrink property */}
+            <InputLabel className="bg-green-50">Especialidade</InputLabel>{" "}
+            {/* Add shrink property */}
             <Select
               name="specialty"
               value={formData.specialty}
@@ -254,7 +267,11 @@ export const RegisterUserAsAdmin = () => {
           variant="contained"
           color="primary"
           fullWidth
-          sx={{ marginTop: 2, backgroundColor: "#86efac", "&:hover": { backgroundColor: "#4ade80" }}} // Use sx for custom styles
+          sx={{
+            marginTop: 2,
+            backgroundColor: "#86efac",
+            "&:hover": { backgroundColor: "#4ade80" },
+          }} // Use sx for custom styles
         >
           Registrar
         </Button>
@@ -264,7 +281,11 @@ export const RegisterUserAsAdmin = () => {
           variant="text"
           color="secondary"
           fullWidth
-          sx={{ marginTop: 2, backgroundColor: "#86efac", "&:hover": { backgroundColor: "#4ade80" } }}
+          sx={{
+            marginTop: 2,
+            backgroundColor: "#86efac",
+            "&:hover": { backgroundColor: "#4ade80" },
+          }}
         >
           Voltar
         </Button>

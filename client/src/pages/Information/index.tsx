@@ -1,4 +1,4 @@
-// import React from "react";
+
 import { useNavigate } from "react-router";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
 
