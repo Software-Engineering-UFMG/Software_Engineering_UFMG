@@ -122,7 +122,7 @@ export const Information = () => {
         style={{
           marginTop: "30px",
           marginBottom: "10px",
-          padding: "10px 80px",
+          padding: "10px 90px",
           backgroundColor: "#86efac",
           border: "none",
           borderRadius: "5px",
