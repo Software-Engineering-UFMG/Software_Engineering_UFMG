@@ -1,4 +1,4 @@
-import api from "../../api";
+
 import { AdminUser, NirUser, AssistencialUser } from "../../../types/userTypes";
 
 export interface LoginParams {

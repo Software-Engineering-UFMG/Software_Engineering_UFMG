@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { login } from "../../services/User/Auth/login";
 import { useGlobalContext } from "../../context/GlobalContext";
@@ -6,12 +6,12 @@ import { useAuth } from "../../context/AuthContext";
 import { Input } from "../../components/Input";
 import { Link } from "react-router";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
-
+import {memo} from "react";
 // Services
 
 // Components
 
-export const Login = React.memo(() => {
+export const Login = memo(() => {
   const navigate = useNavigate();
   const { handleLogin } = useAuth();
   const [username, setUsername] = useState("");

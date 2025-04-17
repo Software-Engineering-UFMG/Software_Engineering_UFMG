@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
 import { Typography, Box } from "@mui/material";

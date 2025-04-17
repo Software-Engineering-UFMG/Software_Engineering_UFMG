@@ -1,17 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   TextField,
   Button,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
   Typography,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
   Box,
-  SelectChangeEvent,
+  
 } from "@mui/material";
 import { useNavigate } from "react-router";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
@@ -43,13 +36,6 @@ export const EditNir = () => {
     userType: false,
   });
 
-  const specialties = [
-    "Clínica médica",
-    "Cardiologia",
-    "Pediatria",
-    "Gastroenterologia",
-    "Estudante de medicina",
-  ];
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -76,15 +62,7 @@ export const EditNir = () => {
     }
   };
 
-  const handleSelectChange = (e: SelectChangeEvent<string>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
 
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: false,
-    }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
