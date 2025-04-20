@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { login } from "../../services/User/Auth/login";
+import { login } from "../../services/api";
 import { useGlobalContext } from "../../context/GlobalContext";
 import { useAuth } from "../../context/AuthContext";
 import { Input } from "../../components/Input";
@@ -12,6 +12,7 @@ import {memo} from "react";
 // Components
 
 export const Login = memo(() => {
+
   const navigate = useNavigate();
   const { handleLogin } = useAuth();
   const [username, setUsername] = useState("");
@@ -64,16 +65,22 @@ export const Login = memo(() => {
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
+    
     event.preventDefault();
+
     setLoading(true);
+
     setErrorMessage({ username: null, password: null, userAccountWrong: null });
 
     try {
+
       if (!validateForm()) {
         return;
       }
 
-      const userData = await login({ username, password });
+      const userData = await login(username, password); //Call the function from the api.ts file
+      console.log("Login success", userData); //'Log user data response from server
+
       handleLogin(userData);
 
       // Mock role-based redirection
@@ -92,6 +99,7 @@ export const Login = memo(() => {
       }
     } catch (error: any) {
       console.error("Login error:", error.message); // Log the error for debugging
+      
       setErrorMessage((prevState) => ({
         ...prevState,
         userAccountWrong: "E-mail ou senha inválidos", // Update the correct error field

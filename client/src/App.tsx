@@ -24,7 +24,7 @@ function App() {
         <Route path="/preceptor" element ={<Preceptor/>}/>
         <Route path="/preceptor/editRegistration" element={<Edit/>}></Route>
         <Route path="/registration" element={<Registration/>}/>
-        <Route path="/sucess" element={<Success/>}/>
+        <Route path="/success" element={<Success/>}/>
         <Route path="/dashboard/addUserAsAdmin" element={<RegisterUserAsAdmin/>} />
         <Route path="/dashboard/addUserAsAdmin/successAdminAddUser" element={<SuccessAdminAddUser/>}/>
         <Route path="/dashboard/editUser/:userId" element={<EditUser />} />

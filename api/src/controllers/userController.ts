@@ -60,7 +60,15 @@ export const createUserHandler = async (
     const newUser = await createUser(req.body);
     sendResponse(reply, 201, newUser);
   } catch (error) {
-    sendErrorResponse(reply, 500, "An unexpected error occurred");
+    if (
+      error instanceof Error &&
+      error.message === "Username already exists"
+    ) {
+      return sendErrorResponse(reply, 409, "Username already exists");
+    }
+
+    console.error("Unhandled error:",error);
+    return sendErrorResponse(reply, 500, "An unexpected error occurred");
   }
 };
 

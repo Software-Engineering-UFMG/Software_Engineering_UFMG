@@ -9,6 +9,7 @@ import { loginSchema } from "../schemas/authSchemas";
 import { authMiddleware } from "../middleware/authMiddleware";
 
 export const authRoutes = (app: FastifyInstance) => {
+  
   app.post(
     "/login",
     {
