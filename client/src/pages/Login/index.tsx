@@ -6,7 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 import { Input } from "../../components/Input";
 import { Link } from "react-router";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
-import {memo} from "react";
+import { memo } from "react";
 // Services
 
 // Components
@@ -162,12 +162,12 @@ export const Login = memo(() => {
             >
               {loading ? "Carregando..." : "Entrar"}
             </button>
-            
-              <Link to="/registration"  className="cursor-pointer rounded-xl bg-green-300 !p-3 text-white hover:bg-green-400 flex justify-center">
-                Cadastrar Usuário
-              </Link>
-             
-            
+
+            <Link to="/registration" className="cursor-pointer rounded-xl bg-green-300 !p-3 text-white hover:bg-green-400 flex justify-center">
+              Cadastrar Usuário
+            </Link>
+
+
           </div>
         </form>
       </div>
