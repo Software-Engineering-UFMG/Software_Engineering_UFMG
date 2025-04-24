@@ -42,7 +42,7 @@ export const logoutHandler = async (
       })
       .status(200)
       .send({ message: "Logged out successfully" });
-  } catch (error) {
+  } catch (error: any) {
     sendErrorResponse(reply, 500, "An unexpected error occurred");
   }
 };

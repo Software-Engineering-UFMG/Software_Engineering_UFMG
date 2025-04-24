@@ -22,6 +22,14 @@ export const getUserById = async (
 export const createUser = async (
   data: CreateUserDTO
 ): Promise<UserWithoutPassword> => {
+  const existingUser = await prisma.user.findUnique({
+    where: { username: data.username },
+  });
+
+  if (existingUser) {
+    throw new Error("Username already exists");
+  }
+
   const hashedPassword = await bcrypt.hash(data.password, SALT_ROUNDS);
   const user = await prisma.user.create({
     data: {

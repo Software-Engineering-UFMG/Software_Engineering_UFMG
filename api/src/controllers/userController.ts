@@ -16,7 +16,7 @@ export const getUsersHandler = async (
   try {
     const users = await getAllUsers();
     sendResponse(reply, 200, users);
-  } catch (error) {
+  } catch (error: any) {
     sendErrorResponse(reply, 500, "An unexpected error occurred");
   }
 };
@@ -37,7 +37,7 @@ export const getUserByIdHandler = async (
       return sendErrorResponse(reply, 404, "User not found");
     }
     sendResponse(reply, 200, user);
-  } catch (error) {
+  } catch (error: any) {
     sendErrorResponse(reply, 500, "An unexpected error occurred");
   }
 };
@@ -59,7 +59,10 @@ export const createUserHandler = async (
 
     const newUser = await createUser(req.body);
     sendResponse(reply, 201, newUser);
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message === "Username already exists") {
+      return sendErrorResponse(reply, 409, error.message);
+    }
     sendErrorResponse(reply, 500, "An unexpected error occurred");
   }
 };
@@ -122,7 +125,7 @@ export const deleteUserHandler = async (
 
     await deleteUser(Number(id));
     sendResponse(reply, 204, null);
-  } catch (error) {
+  } catch (error: any) {
     sendErrorResponse(reply, 500, "An unexpected error occurred");
   }
 };
