@@ -2,7 +2,6 @@ import { prisma } from "../config/prisma";
 import bcrypt from "bcrypt";
 import { CreateUserDTO, UpdateUserDTO } from "../types/userTypes";
 import { UserWithoutPassword } from "../types/userTypes";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 const SALT_ROUNDS = 10;
 
@@ -23,8 +22,14 @@ export const getUserById = async (
 export const createUser = async (
   data: CreateUserDTO
 ): Promise<UserWithoutPassword> => {
+  const existingUser = await prisma.user.findUnique({
+    where: { username: data.username },
+  });
 
-  try{ 
+  if (existingUser) {
+    throw new Error("Username already exists");
+  }
+
   const hashedPassword = await bcrypt.hash(data.password, SALT_ROUNDS);
   const user = await prisma.user.create({
     data: {
@@ -35,19 +40,6 @@ export const createUser = async (
   });
   const { password, ...userWithoutPassword } = user;
   return userWithoutPassword;
-}
-catch(error:any){
-  if(
-    error instanceof PrismaClientKnownRequestError && 
-    error.code ==="P2002" && 
-    Array.isArray(error.meta?.target) && 
-    error.meta?.target?.includes("username")
-  )
-  {
-    throw new Error("Username already exists");
-  }
-  throw error;
-}
 };
 
 export const updateUser = async (
