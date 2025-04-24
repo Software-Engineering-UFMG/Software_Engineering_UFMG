@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { Box, Typography, Button } from "@mui/material";
-import red2greenLogo from "../../../assets/images/red2green.png";
+import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
 import { QuestionField, QuestionProps } from "../../components/Input/QuestionField";
 
 export const QuestionnairePage = () => {
@@ -18,17 +18,20 @@ export const QuestionnairePage = () => {
     };
 
     const questions: Omit<QuestionProps, "value" | "onChange">[] = [
-        { id: "dischargeDate", type: "date", label: "Data de alta prevista" },
-        { id: "clinicalCriteria", type: "textarea", label: "Critérios clínicos para alta" },
+        { id: "dischargeDate", type: "date", label: "Qual é a data de alta prevista para o paciente?" },
+        { id: "clinicalCriteria", type: "textarea", label: "Quais são os critérios clínicos para alta do paciente?" },
         {
             id: "characteristics",
             type: "checkbox",
-            label: "O paciente possui alguma das características?",
+            label: "O paciente possui alguma das características abaixo?",
             options: [
                 { value: "ostomy", label: "Alta prevista com ostomia" },
                 { value: "oxygen", label: "Alta com uso de oxigênio" },
                 { value: "drain", label: "Alta prevista com dreno" },
-                // … demais itens …
+                { value: "drain", label: "Alta prevista com dreno" },
+                { value: "drain", label: "Alta prevista com dreno" },
+                { value: "drain", label: "Alta prevista com dreno" },
+                { value: "drain", label: "Alta prevista com dreno" },
             ]
         },
         {
@@ -44,11 +47,26 @@ export const QuestionnairePage = () => {
     ];
 
     return (
+
         <Box sx={{ p: 4 }}>
             {/* Cabeçalho com logo */}
-            <Box sx={{ textAlign: "center", mb: 4 }}>
-                <img src={red2greenLogo} alt="Red2Green" className="w-32 mx-auto" />
-            </Box>
+            <div className="flex justify-between items-center mb-6">
+                <img
+                    src={hospitalLogo}
+                    alt="Hospital Logo 1"
+                    className="w-[5%] rounded-2xl"
+                />
+                <img
+                    src={hospitalLogo}
+                    alt="Hospital Logo 2"
+                    className="w-[5%] rounded-2xl"
+                />
+                <img
+                    src={hospitalLogo}
+                    alt="Hospital Logo 3"
+                    className="w-[5%] rounded-2xl"
+                />
+            </div>
 
             {/* Render das perguntas */}
             {questions.map(q => (

@@ -36,6 +36,7 @@ export const QuestionField: React.FC<QuestionProps> = ({
                         rows={4}
                         value={value || ""}
                         onChange={e => onChange(id, e.target.value)}
+                        placeholder="Digite os critérios clínicos"
                         className="border rounded p-2 w-full"
                     />
                 </Box>
