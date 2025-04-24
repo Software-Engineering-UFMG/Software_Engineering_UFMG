@@ -16,5 +16,6 @@ export const registerCors = (app: FastifyInstance) => {
         cb(new Error(`CORS Error: Origin ${origin} is not allowed.`), false);
       }
     },
+    credentials:true,
   });
 };

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     Table,
     TableHead,
@@ -22,15 +22,25 @@ import {
     InputLabel,
     FormControl,
 } from "@mui/material";
-import { Edit, Delete, ToggleOn, ToggleOff, NoteAdd } from "@mui/icons-material";
+import { Edit, Delete, ToggleOn, ToggleOff } from "@mui/icons-material";
 import { useNavigate } from "react-router";
+import { getAllUsers } from "../../services/api";
 
 export const Dashboard = () => {
-    const [users, setUsers] = useState([
-        { id: 1, name: "Usuário Admin", login: "admin", role: "Admin", active: true },
-        { id: 2, name: "Usuário NIR", login: "nir", role: "NIR", active: true },
-        { id: 3, name: "Usuário Assistencial", login: "assistencial", role: "Assistencial", specialty: "Cardiologia", active: false },
-    ]);
+    const [users, setUsers] = useState([]);
+
+    useEffect(()=>{
+        const fetchUsers = async () =>{
+            try{
+                const response = await getAllUsers();
+                setUsers(response);
+            } catch(error){
+                console.error("Erro ao buscar usuários:",error);
+            }
+        };
+        fetchUsers();
+        console.log(users);
+    },[]);
     const [deleteUserId, setDeleteUserId] = useState<number | null>(null);
     const [editUser, setEditUser] = useState<any | null>(null); // State for the user being edited
     const [filters, setFilters] = useState({
@@ -137,7 +147,7 @@ export const Dashboard = () => {
                     />
                 </Grid>
                 <Grid item xs={14} className="flex justify-end">
-                    <Button
+                    {/* <Button
                         
                         variant="contained"
                         color="primary"
@@ -147,7 +157,7 @@ export const Dashboard = () => {
                         onClick={() => navigate("/dashboard/addUserAsAdmin")}
                     >
                         Adicionar Usuário
-                    </Button>
+                    </Button> */}
                 </Grid>
             </Grid>
 

@@ -41,14 +41,12 @@ import React, {
       const checkLoginStatus = async () => {
         try {
           setLoading(true);
-          const userData = await reAuth();
-  
+          const userData = await reAuth(); // Calls the `/auth/reAuth` endpoint
+    
           if (userData) {
             setUser(userData);
-            setLoading(false);
-  
             const currentPath = window.location.pathname;
-            navigate(currentPath);
+            navigate(currentPath); // Keep the user on the same page
           }
         } catch (error) {
           setUser(null);
@@ -57,7 +55,7 @@ import React, {
           setIsLoading(false);
         }
       };
-  
+    
       checkLoginStatus();
     }, []);
   
@@ -67,7 +65,9 @@ import React, {
     };
   
     const handleLogout = () => {
+      localStorage.removeItem("authToken"); // Remove token
       setUser(null);
+      navigate("/login"); // Redirect to login page
     };
   
     return (
