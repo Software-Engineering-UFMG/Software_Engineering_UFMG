@@ -6,13 +6,13 @@ import { useAuth } from "../../context/AuthContext";
 import { Input } from "../../components/Input";
 import { Link } from "react-router";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
-import {memo} from "react";
+import { memo } from "react";
+import { getAllUsers } from "../../services/api";
 // Services
 
 // Components
 
 export const Login = memo(() => {
-
   const navigate = useNavigate();
   const { handleLogin } = useAuth();
   const [username, setUsername] = useState("");
@@ -65,7 +65,6 @@ export const Login = memo(() => {
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
-    
     event.preventDefault();
 
     setLoading(true);
@@ -73,7 +72,6 @@ export const Login = memo(() => {
     setErrorMessage({ username: null, password: null, userAccountWrong: null });
 
     try {
-
       if (!validateForm()) {
         return;
       }
@@ -99,7 +97,7 @@ export const Login = memo(() => {
       }
     } catch (error: any) {
       console.error("Login error:", error.message); // Log the error for debugging
-      
+
       setErrorMessage((prevState) => ({
         ...prevState,
         userAccountWrong: "E-mail ou senha inválidos", // Update the correct error field
@@ -170,12 +168,13 @@ export const Login = memo(() => {
             >
               {loading ? "Carregando..." : "Entrar"}
             </button>
-            
-              <Link to="/registration"  className="cursor-pointer rounded-xl bg-green-300 !p-3 text-white hover:bg-green-400 flex justify-center">
-                Cadastrar Usuário
-              </Link>
-             
-            
+
+            <Link
+              to="/registration"
+              className="cursor-pointer rounded-xl bg-green-300 !p-3 text-white hover:bg-green-400 flex justify-center"
+            >
+              Cadastrar Usuário
+            </Link>
           </div>
         </form>
       </div>
