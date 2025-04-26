@@ -17,5 +17,6 @@ export const registerCors = (app: FastifyInstance) => {
       }
     },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
   });
 };

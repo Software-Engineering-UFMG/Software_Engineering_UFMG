@@ -88,7 +88,7 @@ export const Login = memo(() => {
   
       // Role-based redirection
       switch (userData.role) {
-        case "ADMIN":
+        case "Admin":
           navigate("/dashboard");
           break;
         case "Assistencial":
