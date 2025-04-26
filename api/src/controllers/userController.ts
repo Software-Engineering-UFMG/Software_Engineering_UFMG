@@ -22,7 +22,7 @@ export const getUsersHandler = async (
 };
 
 export const getUserByIdHandler = async (
-  req: FastifyRequest<{ Params: { id: string } }>,
+  req: FastifyRequest<{ Params: { id: number } }>,
   reply: FastifyReply
 ) => {
   try {
@@ -68,7 +68,7 @@ export const createUserHandler = async (
 };
 
 export const updateUserHandler = async (
-  req: FastifyRequest<{ Params: { id: string }; Body: UpdateUserDTO }>,
+  req: FastifyRequest<{ Params: { id: number }; Body: UpdateUserDTO }>,
   reply: FastifyReply
 ) => {
   try {
@@ -108,7 +108,7 @@ export const updateUserHandler = async (
 };
 
 export const deleteUserHandler = async (
-  req: FastifyRequest<{ Params: { id: string } }>,
+  req: FastifyRequest<{ Params: { id: number } }>,
   reply: FastifyReply
 ) => {
   try {

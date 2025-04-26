@@ -88,7 +88,7 @@ export const Registration = () => {
     setFormData(prev => ({
       ...prev,
       [name]: value,
-      ...(name === 'userType' && value !== 'assistencial' && { specialty: '' }),
+      ...(name === 'userType' && value !== 'Assistencial' && { specialty: '' }),
     }));
 
     // Clear field-level errors
@@ -130,7 +130,7 @@ export const Registration = () => {
       birthDateFuture: new Date(formData.birthDate) > today,
       userType: formData.userType.trim() === '',
       specialty:
-        formData.userType === 'assistencial' &&
+        formData.userType === 'Assistencial' &&
         formData.specialty.trim() === '',
     };
 
@@ -294,8 +294,9 @@ export const Registration = () => {
             onChange={handleChange}
           >
             <FormControlLabel value="NIR" control={<Radio />} label="NIR" />
+            
             <FormControlLabel
-              value="assistencial"
+              value="Assistencial"
               control={<Radio />}
               label="Assistencial"
             />
@@ -307,7 +308,7 @@ export const Registration = () => {
           )}
         </FormControl>
 
-        {formData.userType === "assistencial" && (
+        {formData.userType === "Assistencial" && (
           <FormControl fullWidth margin="normal" error={errors.specialty}>
             <InputLabel id="specialty-label">Especialidade</InputLabel>
             <Select
