@@ -35,8 +35,3 @@ export const updateUserSchema = z.object({
   specialty: z.string().nullable().optional(),
   status: z.enum(["Active", "Inactive"]).optional(),
 });
-
-export const idSchema = z
-  .number()
-  .int()
-  .positive("ID must be a positive integer");
