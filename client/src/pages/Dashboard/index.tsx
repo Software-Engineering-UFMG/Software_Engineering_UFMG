@@ -49,14 +49,14 @@ export const Dashboard = () => {
   });
   const navigate = useNavigate();
 
-  // Fetch users from the API
+ 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        const data = await getAllUsers(); // Call the API function
+        const data = await getAllUsers(); 
         console.log("Fetched users:", data);
-        setUsers(data); // Set the fetched users
+        setUsers(data); 
       } catch (error) {
         console.error("Erro ao obter usuários:", error);
       } finally {
@@ -68,14 +68,14 @@ export const Dashboard = () => {
   }, []);
 
   const handleEditUser = (userId: number) => {
-    navigate(`/dashboard/editUser/${userId}`); // Navigate to the EditUser page
+    navigate(`/dashboard/editUser/${userId}`); 
   };
 
   const handleSaveUser = () => {
     setUsers((prevUsers) =>
       prevUsers.map((user) => (user.id === editUser.id ? editUser : user))
     );
-    setEditUser(null); // Close the modal after saving
+    setEditUser(null); 
   };
 
   const handleToggleActive = async (userId: number) => {
@@ -83,16 +83,16 @@ export const Dashboard = () => {
       const userToUpdate = users.find((user) => user.id === userId);
       if (!userToUpdate) return;
 
-      // Toggle the status
+      
       const updatedStatus =
         userToUpdate.status === "Active" ? "Inactive" : "Active";
 
-      // Call the API to update the user
+      
       const updatedUser = await updateUser(userId.toString(), {
         status: updatedStatus,
       });
 
-      // Update the local state with the updated user
+      
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
           user.id === userId ? { ...user, status: updatedUser.status } : user
@@ -107,9 +107,9 @@ export const Dashboard = () => {
     try {
       if (deleteUserId === null) return;
 
-      setLoadingDelete(true); // Start loading
+      setLoadingDelete(true); 
 
-      // Call the API to delete the user
+      
       console.log("Deleting user with ID:", deleteUserId, "Type:", typeof deleteUserId);
       const res = await deleteUser(deleteUserId.toString());
       console.log("User ID to delete:",deleteUserId);
@@ -117,20 +117,20 @@ export const Dashboard = () => {
         console.error("Erro ao deletar usuário:", res);
         return;
       }
-      // Optionally, you can show a success message here
+      
       console.log("User deleted successfully");
 
-      // Update the local state to remove the deleted user
+      
       setUsers((prevUsers) =>
         prevUsers.filter((user) => user.id !== deleteUserId)
       );
 
-      // Close the confirmation dialog
+      
       setDeleteUserId(null);
     } catch (error) {
       console.error("Erro ao deletar usuário:", error);
     } finally {
-      setLoadingDelete(false); // Stop loading
+      setLoadingDelete(false); 
     }
   };
 
@@ -140,7 +140,7 @@ export const Dashboard = () => {
 
   const handleLogout = () => {
     console.log("Admin logged out");
-    navigate("/"); // Redirect to the login page
+    navigate("/"); 
   };
 
   const filteredUsers = users.filter((user) => {
@@ -239,7 +239,7 @@ export const Dashboard = () => {
               backgroundColor: "#86efac",
               "&:hover": { backgroundColor: "#4ade80" },
             }}
-            disabled={loadingDelete} // Disable cancel button while loading
+            disabled={loadingDelete}
           >
             Cancelar
           </Button>
@@ -251,7 +251,7 @@ export const Dashboard = () => {
               backgroundColor: "#86efac",
               "&:hover": { backgroundColor: "#4ade80" },
             }}
-            disabled={loadingDelete} // Disable delete button while loading
+            disabled={loadingDelete} 
           >
             {loadingDelete ? "Carregando" : "Excluir"}
           </Button>

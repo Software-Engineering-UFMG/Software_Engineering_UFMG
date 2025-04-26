@@ -42,7 +42,6 @@ export const getAllUsers = async () => {
   }
 };
 
-// Get user by ID
 export const getUserById = async (id: string) => {
   try {
     const response = await api.get(`/user/${id}`);
@@ -53,7 +52,7 @@ export const getUserById = async (id: string) => {
   }
 };
 
-// Update user by ID
+
 export const updateUser = async (
   id: string,
   userData: {
@@ -76,7 +75,7 @@ export const updateUser = async (
   }
 };
 
-// Delete user by ID
+
 export const deleteUser = async (id: string) => {
   try {
     const response = await api.delete(`/user/${id}`);

@@ -7,10 +7,6 @@ import { Input } from "../../components/Input";
 import { Link } from "react-router";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
 import { memo } from "react";
-import { getAllUsers } from "../../services/api";
-// Services
-
-// Components
 
 export const Login = memo(() => {
   const navigate = useNavigate();
@@ -76,21 +72,18 @@ export const Login = memo(() => {
         return;
       }
 
-      const userData = await login(username, password); //Call the function from the api.ts file
-      console.log("Login success", userData); //'Log user data response from server
+      const userData = await login(username, password);
+      console.log("Login success", userData);
 
-      handleLogin(userData);
-
-      // Mock role-based redirection
       switch (userData.role) {
-        case "ADMIN":
+        case "Admin":
           navigate("/dashboard");
           break;
-        case "ASSISTENCIAL":
+        case "Assistencial":
           navigate("/preceptor");
           break;
         case "NIR":
-          navigate("/NIRMainpage"); // Replace with the actual NIR route
+          navigate("/NIRMainpage");
           break;
         default:
           throw new Error("Invalid user role");
