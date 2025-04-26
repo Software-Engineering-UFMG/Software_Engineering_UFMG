@@ -26,7 +26,6 @@ export const getUserByIdHandler = async (
   reply: FastifyReply
 ) => {
   try {
-    console.log("Fetching user by ID:", req.params);
     const { id } = req.params;
 
     if (!id || isNaN(Number(id))) {
