@@ -7,7 +7,7 @@ const formatValidationError = (error: ZodError): string => {
   const parameterName = firstError?.path[firstError.path.length - 1];
   return parameterName
     ? `The parameter '${parameterName}' is invalid: ${firstError.message}`
-    : "Validation failed";
+    : firstError.message;
 };
 
 export const validateSchema =
