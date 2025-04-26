@@ -294,6 +294,7 @@ export const Registration = () => {
             onChange={handleChange}
           >
             <FormControlLabel value="NIR" control={<Radio />} label="NIR" />
+            
             <FormControlLabel
               value="Assistencial"
               control={<Radio />}

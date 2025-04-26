@@ -7,6 +7,9 @@ import { Input } from "../../components/Input";
 import { Link } from "react-router";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
 import { memo } from "react";
+// Services
+
+// Components
 
 export const Login = memo(() => {
   const navigate = useNavigate();
@@ -62,19 +65,28 @@ export const Login = memo(() => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
+  
     setLoading(true);
-
     setErrorMessage({ username: null, password: null, userAccountWrong: null });
-
+  
     try {
       if (!validateForm()) {
         return;
       }
-
-      const userData = await login(username, password);
+  
+      const userData = await login(username, password); 
+      if (!userData) {
+        setErrorMessage((prevState) => ({
+          ...prevState,
+          userAccountWrong: "Login ou senha inválidos",
+        }));
+        return;
+      }
       console.log("Login success", userData);
-
+  
+      handleLogin(userData);
+  
+      // Role-based redirection
       switch (userData.role) {
         case "Admin":
           navigate("/dashboard");
@@ -89,11 +101,11 @@ export const Login = memo(() => {
           throw new Error("Invalid user role");
       }
     } catch (error: any) {
-      console.error("Login error:", error.message); // Log the error for debugging
-
+      console.error("Login error:", error.message);
+  
       setErrorMessage((prevState) => ({
         ...prevState,
-        userAccountWrong: "E-mail ou senha inválidos", // Update the correct error field
+        userAccountWrong: "E-mail ou senha inválidos",
       }));
     } finally {
       setLoading(false);
