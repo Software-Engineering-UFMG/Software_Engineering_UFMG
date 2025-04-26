@@ -6,13 +6,12 @@ import { useAuth } from "../../context/AuthContext";
 import { Input } from "../../components/Input";
 import { Link } from "react-router";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
-import {memo} from "react";
+import { memo } from "react";
 // Services
 
 // Components
 
 export const Login = memo(() => {
-
   const navigate = useNavigate();
   const { handleLogin } = useAuth();
   const [username, setUsername] = useState("");
@@ -65,44 +64,48 @@ export const Login = memo(() => {
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
-    
     event.preventDefault();
-
+  
     setLoading(true);
-
     setErrorMessage({ username: null, password: null, userAccountWrong: null });
-
+  
     try {
-
       if (!validateForm()) {
         return;
       }
-
-      const userData = await login(username, password); //Call the function from the api.ts file
-      console.log("Login success", userData); //'Log user data response from server
-
+  
+      const userData = await login(username, password); 
+      if (!userData) {
+        setErrorMessage((prevState) => ({
+          ...prevState,
+          userAccountWrong: "Login ou senha inválidos",
+        }));
+        return;
+      }
+      console.log("Login success", userData);
+  
       handleLogin(userData);
-
-      // Mock role-based redirection
+  
+      // Role-based redirection
       switch (userData.role) {
         case "ADMIN":
           navigate("/dashboard");
           break;
-        case "ASSISTENCIAL":
+        case "Assistencial":
           navigate("/preceptor");
           break;
         case "NIR":
-          navigate("/NIRMainpage"); // Replace with the actual NIR route
+          navigate("/NIRMainpage");
           break;
         default:
           throw new Error("Invalid user role");
       }
     } catch (error: any) {
-      console.error("Login error:", error.message); // Log the error for debugging
-      
+      console.error("Login error:", error.message);
+  
       setErrorMessage((prevState) => ({
         ...prevState,
-        userAccountWrong: "E-mail ou senha inválidos", // Update the correct error field
+        userAccountWrong: "E-mail ou senha inválidos",
       }));
     } finally {
       setLoading(false);
@@ -170,12 +173,13 @@ export const Login = memo(() => {
             >
               {loading ? "Carregando..." : "Entrar"}
             </button>
-            
-              <Link to="/registration"  className="cursor-pointer rounded-xl bg-green-300 !p-3 text-white hover:bg-green-400 flex justify-center">
-                Cadastrar Usuário
-              </Link>
-             
-            
+
+            <Link
+              to="/registration"
+              className="cursor-pointer rounded-xl bg-green-300 !p-3 text-white hover:bg-green-400 flex justify-center"
+            >
+              Cadastrar Usuário
+            </Link>
           </div>
         </form>
       </div>
