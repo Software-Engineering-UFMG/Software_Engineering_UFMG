@@ -15,12 +15,6 @@ import {
   DialogContentText,
   DialogTitle,
   Button,
-  TextField,
-  Grid,
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl,
   CircularProgress,
 } from "@mui/material";
 import {
@@ -28,7 +22,7 @@ import {
   Delete,
   ToggleOn,
   ToggleOff,
-  NoteAdd,
+  
 } from "@mui/icons-material";
 import { useNavigate } from "react-router";
 import { getAllUsers } from "../../services/api"; // Import the API function
@@ -40,13 +34,14 @@ export const Dashboard = () => {
   const [loading, setLoading] = useState<boolean>(true); // State to handle loading
   const [deleteUserId, setDeleteUserId] = useState<number | null>(null);
   const [loadingDelete, setLoadingDelete] = useState<boolean>(false);
-  const [editUser, setEditUser] = useState<any | null>(null); // State for the user being edited
   const [filters, setFilters] = useState({
     name: "",
     login: "",
     role: "",
     specialty: "",
   });
+
+  setFilters;
   const navigate = useNavigate();
 
  
@@ -71,12 +66,7 @@ export const Dashboard = () => {
     navigate(`/dashboard/editUser/${userId}`); 
   };
 
-  const handleSaveUser = () => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) => (user.id === editUser.id ? editUser : user))
-    );
-    setEditUser(null); 
-  };
+  
 
   const handleToggleActive = async (userId: number) => {
     try {
@@ -134,9 +124,7 @@ export const Dashboard = () => {
     }
   };
 
-  const handleFilterChange = (field: string, value: string) => {
-    setFilters((prevFilters) => ({ ...prevFilters, [field]: value }));
-  };
+  
 
   const handleLogout = () => {
     console.log("Admin logged out");

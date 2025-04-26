@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const apiURL = import.meta.env.VITE_API_URL
+
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -33,16 +33,7 @@ export const createUser = async (userData: {
   }
 };
 
-export const getAllUsers = async () => {
-  console.log("get all users called");
-  try {
-    const response = await api.get("/users");
-    return response.data;
-  } catch (error: any) {
-    console.error("Erro ao buscar usuários", error);
-    throw error;
-  }
-}
+
 
 
 
