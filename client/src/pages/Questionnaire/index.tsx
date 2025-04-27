@@ -30,40 +30,57 @@ export const QuestionnairePage = () => {
                 fontFamily: "'Roboto', sans-serif",
             }}
         >
-            {/* Cabeçalho */}
-            <Box
-                sx={{
-                    display: "flex",
-                    justifyContent: "space-around",
-                    alignItems: "center",
-                    p: 2,
-                    borderBottom: "1px solid #4caf50", // Verde escuro
-                }}
-            >
-                <img src={RED} alt="RED2GREEN" style={{ width: "10%", borderRadius: "8px" }} />
-                <Typography variant="h4" color="#4caf50">
-                    Questionário SAFER
-                </Typography>
-                <Box display="flex" gap={2}>
-                    <img src={hospitalLogo} alt="Hospital Logo" style={{ width: "10%", borderRadius: "8px" }} />
-                    <img src={ebserh} alt="EBSERH Logo" style={{ width: "10%", borderRadius: "8px" }} />
-                </Box>
-            </Box>
 
-            {/* Conteúdo Principal */}
             <Box
                 sx={{
                     flex: 1,
                     overflowY: "auto",
                     p: 4,
                     border: "1px solid #4caf50", // Verde escuro
-                    borderRadius: "8px",
+                    // borderRadius: "8px",
                     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
                     backgroundColor: "#fff",
                 }}
             >
+
+                {/* Cabeçalho */}
+                <Box
+                    sx={{
+                        backgroundColor: "#86efac",
+                        borderRadius: "8px",
+                        display: "flex",
+                        justifyContent: "space-around",
+                        alignItems: "center",
+                        p: 2,
+                        border: "1px solid #4caf50", // Verde escuro
+                    }}
+                >
+                    <img src={RED} alt="RED2GREEN" style={{ width: "10%", borderRadius: "8px" }} />
+                    <img src={hospitalLogo} alt="Hospital Logo" style={{ width: "8%", borderRadius: "8px" }} />
+                    <img src={ebserh} alt="EBSERH Logo" style={{ width: "10%", borderRadius: "8px" }} />
+                </Box>
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "space-around",
+                        alignItems: "center",
+                        p: 6,
+                        backgroundColor: "white",
+                    }}>
+                    <Typography variant="h4" color="black">
+                        Questionário SAFER
+                    </Typography>
+                </Box>
+
+                <Box>
+
+                </Box>
+
+                {/* Conteúdo Principal */}
                 {/* Pergunta 1: Data de Alta Prevista */}
-                <Box sx={{ mb: 4 }}>
+                <Box sx={{
+                    mb: 4,
+                }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         Qual é a data de alta prevista para o paciente?
                     </Typography>
@@ -121,7 +138,14 @@ export const QuestionnairePage = () => {
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         O paciente possui alguma das características abaixo?
                     </Typography>
-                    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+
+                    <Box sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 2,
+                        border: "1px solid #4caf50",
+                        borderRadius: "8px"
+                    }}>
                         {[
                             { value: "ostomy", label: "Alta prevista com ostomia" },
                             { value: "oxygen", label: "Alta com uso de oxigênio" },
@@ -141,12 +165,6 @@ export const QuestionnairePage = () => {
                                             ? currentValue.filter((v) => v !== opt.value)
                                             : [...currentValue, opt.value];
                                         handleChange("characteristics", newValue);
-                                    }}
-                                    sx={{
-                                        color: "#4caf50",
-                                        "&.Mui-checked": {
-                                            color: "#4caf50",
-                                        },
                                     }}
                                 />
                                 <span>{opt.label}</span>
@@ -226,7 +244,13 @@ export const QuestionnairePage = () => {
                             <Typography variant="h6" sx={{ mb: 2 }}>
                                 O que o paciente está aguardando?
                             </Typography>
-                            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                            <Box sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: 2,
+                                border: "1px solid #4caf50",
+                                borderRadius: "8px"
+                            }}>
                                 {[
                                     { value: "exam", label: "Exame" },
                                     { value: "invasiveProcedure", label: "Procedimento Invasivo" },
@@ -250,12 +274,6 @@ export const QuestionnairePage = () => {
                                                     handleChange("examDetails", []);
                                                 }
                                             }}
-                                            sx={{
-                                                color: "#4caf50",
-                                                "&.Mui-checked": {
-                                                    color: "#4caf50",
-                                                },
-                                            }}
                                         />
                                         <span>{opt.label}</span>
                                     </label>
@@ -263,16 +281,23 @@ export const QuestionnairePage = () => {
 
                                 {/* Detalhes do Exame */}
                                 {Array.isArray(answers.waitingType) && answers.waitingType.includes("exam") && (
-                                    <Box sx={{ ml: 4, mt: 2 }}>
-                                        <Typography variant="h6" sx={{ mb: 2 }}>
+                                    <Box sx={{
+                                        display: "flex",
+                                        flexDirection: "row",
+                                        gap: 2,
+                                        // border: "1px solid #4caf50",
+                                        // borderRadius: "8px",
+                                        width: "35vw"
+                                    }}>
+                                        <Typography variant="h6" sx={{ mb: 2, ml: 5 }}>
                                             Tipos de exame:
                                         </Typography>
                                         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                                             {[
-                                                { value: "lab", label: "Radiológico" },
-                                                { value: "image", label: "Endoscópico" },
-                                                { value: "image", label: "Cardiológico" },
-                                                { value: "image", label: "Exame não padronizado" },
+                                                { value: "rad", label: "Radiológico" },
+                                                { value: "end", label: "Endoscópico" },
+                                                { value: "card", label: "Cardiológico" },
+                                                { value: "np", label: "Exame não padronizado" },
                                                 { value: "others", label: "Outros" },
                                             ].map((opt) => (
                                                 <label key={opt.value} className="inline-flex items-center cursor-pointer">
@@ -287,12 +312,6 @@ export const QuestionnairePage = () => {
                                                                 ? currentValue.filter((v) => v !== opt.value)
                                                                 : [...currentValue, opt.value];
                                                             handleChange("examDetails", newValue);
-                                                        }}
-                                                        sx={{
-                                                            color: "#4caf50",
-                                                            "&.Mui-checked": {
-                                                                color: "#4caf50",
-                                                            },
                                                         }}
                                                     />
                                                     <span>{opt.label}</span>
@@ -315,26 +334,26 @@ export const QuestionnairePage = () => {
                     }}
                 >
                     <Button
-                        variant="contained"
+                        variant="text"
                         color="success"
                         onClick={handleSubmit}
                         sx={{
-                            backgroundColor: "#4caf50",
+                            backgroundColor: "#86efac",
                             "&:hover": {
-                                backgroundColor: "#388e3c",
+                                backgroundColor: "#4ade80",
                             },
                         }}
                     >
                         Enviar
                     </Button>
                     <Button
-                        variant="outlined"
+                        variant="text"
                         color="success"
                         onClick={() => navigate(-1)}
                         sx={{
-                            borderColor: "#4caf50",
+                            backgroundColor: "#86efac",
                             "&:hover": {
-                                backgroundColor: "#e8f5e9",
+                                backgroundColor: "#4ade80",
                             },
                         }}
                     >
