@@ -22,14 +22,12 @@ export const updateUserSchema = z.object({
     .string()
     .min(6, "Password must be at least 6 characters")
     .optional(),
-  currentPassword: z.string().optional(),
   birthDate: z
     .string()
     .refine((date) => !isNaN(Date.parse(date)), {
       message: "Invalid date format",
     })
-    .transform((date) => new Date(date))
-    .optional(),
+    .optional(), // Validate as a valid ISO string
   phone: z.string().nullable().optional(),
   role: z.enum(["NIR", "Assistencial", "Admin"]).optional(),
   specialty: z.string().nullable().optional(),
