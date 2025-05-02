@@ -27,7 +27,7 @@ export const updateUserSchema = z.object({
     .refine((date) => !isNaN(Date.parse(date)), {
       message: "Invalid date format",
     })
-    .optional(), // Validate as a valid ISO string
+    .optional(), 
   phone: z.string().nullable().optional(),
   role: z.enum(["NIR", "Assistencial", "Admin"]).optional(),
   specialty: z.string().nullable().optional(),

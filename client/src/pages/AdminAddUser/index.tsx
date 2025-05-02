@@ -13,11 +13,11 @@ import {
   Box,
   SelectChangeEvent,
 } from "@mui/material";
-import { Link as RouterLink, useNavigate } from "react-router"; // Add useNavigate import
+import { Link as RouterLink, useNavigate } from "react-router";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
 
 export const RegisterUserAsAdmin = () => {
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -37,7 +37,7 @@ export const RegisterUserAsAdmin = () => {
     phone: false,
     confirmPassword: false,
     birthDateFuture: false,
-    userType: false, // Add error state for userType
+    userType: false,
   });
 
   const specialties = [
@@ -54,7 +54,6 @@ export const RegisterUserAsAdmin = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
-    // Clear the error for the field being updated
     setErrors((prevErrors) => ({
       ...prevErrors,
       [name]: false,
@@ -62,7 +61,7 @@ export const RegisterUserAsAdmin = () => {
       ...(name === "confirmPassword" && {
         confirmPassword: value !== formData.password,
       }),
-      ...(name === "userType" && { userType: false }), // Clear userType error
+      ...(name === "userType" && { userType: false }),
     }));
 
     if (name === "birthDate") {
@@ -79,7 +78,6 @@ export const RegisterUserAsAdmin = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
-    // Clear the error for the field being updated
     setErrors((prevErrors) => ({
       ...prevErrors,
       [name]: false,
@@ -95,43 +93,24 @@ export const RegisterUserAsAdmin = () => {
       phone: formData.phone.trim() === "",
       confirmPassword: formData.confirmPassword !== formData.password,
       birthDateFuture: new Date(formData.birthDate) > new Date(),
-      userType: formData.userType.trim() === "", // Validate userType
+      userType: formData.userType.trim() === "",
     };
 
     setErrors(newErrors);
 
     if (!Object.values(newErrors).some((error) => error)) {
-      // Format the birthDate to dd-mm-yyyy
-      const formattedFormData = {
-        ...formData,
-        birthDate: formData.birthDate
-          ? new Date(formData.birthDate)
-              .toLocaleDateString("pt-BR", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-              })
-              .replace(/\//g, "-") // Replace slashes with dashes
-          : "",
-      };
+      
 
-      console.log("Form submitted:", formattedFormData);
-
-      // Simulate a successful response
-      console.log("Simulating successful submission...");
       setTimeout(() => {
-        console.log("Data successfully submitted!");
-        navigate("/dashboard/addUserAsAdmin/successAdminAddUser"); // Navigate to the success page
-      }, 1000); // Simulate a delay of 1 second
-    } else {
-      console.log("Form contains errors.");
+        navigate("/dashboard/addUserAsAdmin/successAdminAddUser");
+      }, 1000);
     }
   };
 
   return (
     <Box
       sx={{
-        maxWidth: { xs: 400, sm: 600, md: 800 }, // Adjust width for different screen sizes
+        maxWidth: { xs: 400, sm: 600, md: 800 },
         margin: "0 auto",
         marginTop: 4,
         marginBottom: 4,
@@ -247,8 +226,7 @@ export const RegisterUserAsAdmin = () => {
         </FormControl>
         {formData.userType === "assistencial" && (
           <FormControl fullWidth margin="normal">
-            <InputLabel className="bg-green-50">Especialidade</InputLabel>{" "}
-            {/* Add shrink property */}
+            <InputLabel className="bg-green-50">Especialidade</InputLabel>
             <Select
               name="specialty"
               value={formData.specialty}
@@ -271,7 +249,7 @@ export const RegisterUserAsAdmin = () => {
             marginTop: 2,
             backgroundColor: "#86efac",
             "&:hover": { backgroundColor: "#4ade80" },
-          }} // Use sx for custom styles
+          }}
         >
           Registrar
         </Button>

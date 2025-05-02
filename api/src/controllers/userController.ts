@@ -92,11 +92,11 @@ export const updateUserHandler = async (
       birthDate:
         typeof birthDate === "string" && !isNaN(Date.parse(birthDate))
           ? new Date(birthDate).toISOString()
-          : birthDate, // Convert valid string to ISO string
-      ...(password ? { password } : {}), // Include password only if provided
+          : birthDate, 
+      ...(password ? { password } : {}), 
     };
 
-    console.log("Processed data for updateUser:", updatedData); // Log processed data
+    console.log("Processed data for updateUser:", updatedData); 
 
     const updatedUser = await updateUser(Number(id), updatedData);
     if (!updatedUser) {

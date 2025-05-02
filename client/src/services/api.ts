@@ -34,9 +34,6 @@ export const createUser = async (userData: {
 };
 
 
-
-
-
 export const getAllUsers = async () => {
   try {
     const response = await api.get("/users");
@@ -47,7 +44,7 @@ export const getAllUsers = async () => {
   }
 };
 
-export const getUserById = async (id: string) => {
+export const getUserById = async (id: number) => {
   try {
     const response = await api.get(`/user/${id}`);
     return response.data;
@@ -59,34 +56,54 @@ export const getUserById = async (id: string) => {
 
 
 export const updateUser = async (
-  id: string,
+  id: number,
   userData: {
-    name?: string;
-    birthDate?: string;
-    phone?: string;
-    username?: string;
+    name: string;
+    birthDate: string;
+    phone: string;
+    username: string;
     password?: string;
-    role?: "NIR" | "Assistencial" | "Admin";
+    currentPassword?: string; 
+    role: "NIR" | "Assistencial" | "Admin";
     specialty?: string;
-    status?: "Active" | "Inactive"; // Added status field
+    status?: "Active" | "Inactive";
   }
 ) => {
   try {
-    const response = await api.put(`/user/${id}`, userData);
+    const response = await api.put(`/user/${id}`, userData); // Ensure correct payload
     return response.data;
   } catch (error: any) {
-    console.error("Erro ao atualizar usuário:", error);
+    console.error("Erro ao atualizar usuário:", error.response?.data || error.message); // Log detailed error
     throw error;
   }
 };
 
 
-export const deleteUser = async (id: string) => {
+export const deleteUser = async (id: number) => {
   try {
     const response = await api.delete(`/user/${id}`);
     return response.data;
   } catch (error: any) {
     console.error("Erro ao deletar usuário:", error);
+    throw error;
+  }
+};
+
+export const logout = async () => {
+  try {
+    const response = await api.post("/logout"); // Call the logout endpoint
+    return response.data;
+  } catch (error: any) {
+    console.error("Erro ao fazer logout:", error);
+    throw error;
+  }
+};
+
+export const getMe = async () => {
+  try {
+    const response = await api.get("/me");
+    return response.data;
+  } catch (error: any) {
     throw error;
   }
 };

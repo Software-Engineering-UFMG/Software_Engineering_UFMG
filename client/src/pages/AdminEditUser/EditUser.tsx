@@ -26,10 +26,9 @@ const EditUser = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const [user, setUser] = useState<any | null>(null);
-  const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    // Fetch user data based on userId (replace with actual API call if needed)
     const fetchedUser = {
       id: parseInt(userId || "0"),
       name: "Usuário Admin",
@@ -48,8 +47,7 @@ const EditUser = () => {
   };
 
   const handleSave = () => {
-    console.log("User saved:", user);
-    navigate("/dashboard"); // Redirect back to the dashboard
+    navigate("/dashboard");
   };
 
   if (!user) return <div>Loading...</div>;
@@ -135,7 +133,7 @@ const EditUser = () => {
         <Grid item xs={12}>
           <TextField
             label="Senha"
-            type={showPassword ? "text" : "password"} // Toggle between text and password
+            type={showPassword ? "text" : "password"}
             variant="outlined"
             fullWidth
             value={user.password}

@@ -52,8 +52,8 @@ export const userRoutes = (app: FastifyInstance) => {
       ],
     },
     async (req, reply) => {
-      console.log("Incoming request body for updateUser:", req.body); // Log request body
-      return updateUserHandler(req, reply); // Call the handler
+      console.log("Incoming request body for updateUser:", req.body); 
+      return updateUserHandler(req, reply); 
     }
   );
 

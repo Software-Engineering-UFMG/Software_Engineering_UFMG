@@ -51,7 +51,6 @@ export const Registration = () => {
     specialty: false,
   });
 
-  // New loading state
   const [isLoading, setIsLoading] = useState(false);
 
   const specialties = [
@@ -67,12 +66,10 @@ export const Registration = () => {
   ) => {
     const { name, value } = e.target;
 
-    // Clear duplicate login error when editing login
     if (name === 'login' && errors.loginExists) {
       setErrors(prev => ({ ...prev, loginExists: false }));
     }
 
-    // Phone formatting
     if (name === 'phone') {
       const raw = value.replace(/\D/g, '');
       let formatted = raw;
@@ -91,7 +88,6 @@ export const Registration = () => {
       ...(name === 'userType' && value !== 'Assistencial' && { specialty: '' }),
     }));
 
-    // Clear field-level errors
     setErrors(prev => ({
       ...prev,
       [name]: false,
@@ -152,8 +148,6 @@ export const Registration = () => {
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 409) {
         setErrors(prev => ({ ...prev, loginExists: true }));
-      } else {
-        console.error('Erro ao criar usuário:', error);
       }
     } finally {
       setIsLoading(false);
