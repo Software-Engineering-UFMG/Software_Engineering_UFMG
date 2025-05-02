@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Box, Typography, Button, TextField, RadioGroup, FormControlLabel, Radio, Checkbox } from "@mui/material";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
@@ -22,12 +22,11 @@ export const QuestionnairePage = () => {
     return (
         <Box
             sx={{
-                width: "100%",
-                height: "100vh",
+                // width: "100%",
+                // height: "100vh",
                 display: "flex",
                 flexDirection: "column",
-                backgroundColor: "#f0fff0", // Verde claro
-                fontFamily: "'Roboto', sans-serif",
+                fontFamily: "'Roboto', sans-serif"
             }}
         >
 
@@ -36,27 +35,25 @@ export const QuestionnairePage = () => {
                     flex: 1,
                     overflowY: "auto",
                     p: 4,
-                    border: "1px solid #4caf50", // Verde escuro
-                    // borderRadius: "8px",
                     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                    backgroundColor: "#fff",
+                    backgroundColor: "white",
                 }}
             >
 
                 {/* Cabeçalho */}
                 <Box
                     sx={{
-                        backgroundColor: "#86efac",
                         borderRadius: "8px",
                         display: "flex",
                         justifyContent: "space-around",
                         alignItems: "center",
                         p: 2,
-                        border: "1px solid #4caf50", // Verde escuro
+                        // border: "1px solid #4caf50", // Verde escuro
+                        // backgroundColor: "#86efac"
                     }}
                 >
                     <img src={RED} alt="RED2GREEN" style={{ width: "10%", borderRadius: "8px" }} />
-                    <img src={hospitalLogo} alt="Hospital Logo" style={{ width: "8%", borderRadius: "8px" }} />
+                    <img src={hospitalLogo} alt="Hospital Logo" style={{ width: "10%", borderRadius: "8px" }} />
                     <img src={ebserh} alt="EBSERH Logo" style={{ width: "10%", borderRadius: "8px" }} />
                 </Box>
                 <Box
@@ -64,7 +61,7 @@ export const QuestionnairePage = () => {
                         display: "flex",
                         justifyContent: "space-around",
                         alignItems: "center",
-                        p: 6,
+                        p: 8,
                         backgroundColor: "white",
                     }}>
                     <Typography variant="h4" color="black">
@@ -72,14 +69,107 @@ export const QuestionnairePage = () => {
                     </Typography>
                 </Box>
 
-                <Box>
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "column", // Organiza os campos verticalmente
+                        gap: 2, // Espaçamento entre os campos
+                        mt: 4,
+                        mb: 4,
+                        borderRadius: "8px",
+                        border: "1px solid #4caf50", // Borda verde
+                        p: 2, // Padding interno
+                    }}
+                >
+                    {/* Campo 1: Nome do Paciente */}
+                    <Box
+                        sx={{
+                            display: "flex",
+                            alignItems: "center", // Alinha os elementos verticalmente ao centro
+                            gap: 2, // Espaçamento entre o rótulo e o campo de texto
+                        }}
+                    >
+                        <Typography variant="h6" color="black" sx={{ minWidth: "200px" }}>
+                            Nome do Paciente
+                        </Typography>
+                        <TextField
+                            fullWidth
+                            // value={patientData.name || ""}
+                            variant="outlined"
+                            InputProps={{
+                                readOnly: true,
+                            }}
+                            sx={{
+                                "& .MuiOutlinedInput-root": {
+                                    borderRadius: "8px",
+                                    backgroundColor: "#f9f9f9",
+                                },
+                            }}
+                        />
+                    </Box>
 
+                    {/* Campo 2: Data de Nascimento do Paciente */}
+                    <Box
+                        sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 2,
+                        }}
+                    >
+                        <Typography variant="h6" color="black" sx={{ minWidth: "200px" }}>
+                            Data de Nascimento
+                        </Typography>
+                        <TextField
+                            fullWidth
+                            // value={patientData.birthDate ? patientData.birthDate : ""}
+                            variant="outlined"
+                            InputProps={{
+                                readOnly: true,
+                            }}
+                            sx={{
+                                "& .MuiOutlinedInput-root": {
+                                    borderRadius: "8px",
+                                    backgroundColor: "#f9f9f9",
+                                },
+                            }}
+                        />
+                    </Box>
+
+                    {/* Campo 3: Prontuário do Paciente */}
+                    <Box
+                        sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 2,
+                        }}
+                    >
+                        <Typography variant="h6" color="black" sx={{ minWidth: "200px" }}>
+                            Prontuário
+                        </Typography>
+                        <TextField
+                            fullWidth
+                            // value={patientData.record || ""}
+                            variant="outlined"
+                            InputProps={{
+                                readOnly: true,
+                            }}
+                            sx={{
+                                "& .MuiOutlinedInput-root": {
+                                    borderRadius: "8px",
+                                    backgroundColor: "#f9f9f9",
+                                },
+                            }}
+                        />
+                    </Box>
                 </Box>
 
                 {/* Conteúdo Principal */}
+
                 {/* Pergunta 1: Data de Alta Prevista */}
                 <Box sx={{
                     mb: 4,
+                    p: 2,
+                    // backgroundColor: "green",
                 }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         Qual é a data de alta prevista para o paciente?
@@ -106,7 +196,11 @@ export const QuestionnairePage = () => {
                 </Box>
 
                 {/* Pergunta 2: Critérios Clínicos */}
-                <Box sx={{ mb: 4 }}>
+                <Box sx={{
+                    mb: 4,
+                    p: 2,
+                    // backgroundColor: "green",
+                }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         Quais são os critérios clínicos para alta do paciente?
                     </Typography>
@@ -134,7 +228,11 @@ export const QuestionnairePage = () => {
                 </Box>
 
                 {/* Pergunta 3: Características do Paciente */}
-                <Box sx={{ mb: 4 }}>
+                <Box sx={{
+                    mb: 4,
+                    p: 2,
+                    // backgroundColor: "green"
+                }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         O paciente possui alguma das características abaixo?
                     </Typography>
@@ -142,9 +240,11 @@ export const QuestionnairePage = () => {
                     <Box sx={{
                         display: "flex",
                         flexDirection: "column",
-                        gap: 2,
-                        border: "1px solid #4caf50",
-                        borderRadius: "8px"
+                        p: 3,
+                        gap: 1,
+                        backgroundColor: "white"
+                        // border: "1px solid #4caf50",
+                        // borderRadius: "8px"
                     }}>
                         {[
                             { value: "ostomy", label: "Alta prevista com ostomia" },
@@ -174,7 +274,11 @@ export const QuestionnairePage = () => {
                 </Box>
 
                 {/* Pergunta 4: Internação */}
-                <Box sx={{ mb: 4 }}>
+                <Box sx={{
+                    mb: 4,
+                    p: 2,
+                    // backgroundColor: "green"
+                }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         Se o paciente estivesse sendo admitido hoje no Pronto Socorro, a sua condição clínica determinaria internação?
                     </Typography>
@@ -189,7 +293,11 @@ export const QuestionnairePage = () => {
                 </Box>
 
                 {/* Pergunta 5: Intervenções Ambulatoriais */}
-                <Box sx={{ mb: 4 }}>
+                <Box sx={{
+                    mb: 4,
+                    p: 2,
+                    // backgroundColor: "green"
+                }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         As intervenções diagnósticas ou terapêuticas que o paciente receberá hoje poderiam ser realizadas ambulatorialmente?
                     </Typography>
@@ -204,7 +312,11 @@ export const QuestionnairePage = () => {
                 </Box>
 
                 {/* Pergunta 6: Intervenção Efetiva */}
-                <Box sx={{ mb: 4 }}>
+                <Box sx={{
+                    mb: 4,
+                    p: 2,
+                    // backgroundColor: "green"
+                }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         O paciente recebeu uma intervenção efetiva hoje para deixá-lo mais próximo à alta hospitalar?
                     </Typography>
@@ -219,7 +331,11 @@ export const QuestionnairePage = () => {
                 </Box>
 
                 {/* Pergunta 7: Aguardando Algo */}
-                <Box sx={{ mb: 4 }}>
+                <Box sx={{
+                    mb: 4,
+                    p: 2,
+                    // backgroundColor: "green"
+                }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         O paciente está aguardando por algo?
                     </Typography>
@@ -240,86 +356,88 @@ export const QuestionnairePage = () => {
 
                     {/* Campos Aninhados */}
                     {answers.waiting === "yes" && (
-                        <Box sx={{ ml: 4, mt: 2 }}>
+                        <Box sx={{ mb: 4, p: 2 }}>
                             <Typography variant="h6" sx={{ mb: 2 }}>
                                 O que o paciente está aguardando?
                             </Typography>
                             <Box sx={{
                                 display: "flex",
                                 flexDirection: "column",
-                                gap: 2,
-                                border: "1px solid #4caf50",
-                                borderRadius: "8px"
+                                gap: 1,
+                                // border: "1px solid #4caf50",
+                                borderRadius: "8px",
+                                p: 2,
                             }}>
                                 {[
-                                    { value: "exam", label: "Exame" },
+                                    {
+                                        value: "exam",
+                                        label: "Exame",
+                                        subItems: answers.waitingType?.includes("exam") ? [
+                                            { value: "radiological", label: "Radiológico" },
+                                            { value: "endoscopic", label: "Endoscópico" },
+                                            { value: "cardiological", label: "Cardiológico" },
+                                            { value: "nonStandardizedExam", label: "Exame não padronizado" },
+                                            { value: "others", label: "Outros" },
+                                        ] : []
+                                    },
                                     { value: "invasiveProcedure", label: "Procedimento Invasivo" },
                                     { value: "familyOrganization", label: "Organização Familiar" },
-                                    { value: "transfer", label: "Transferência e recursos externos" },
-                                    { value: "service", label: "Atendimento ou decisão interconsulta" },
+                                    { value: "externalTransferResources", label: "Transferência e recursos externos" },
+                                    {
+                                        value: "interconsultDecisionOrCare", label: "Atendimento ou decisão interconsulta"
+                                    },
                                 ].map((opt) => (
-                                    <label key={opt.value} className="inline-flex items-center cursor-pointer">
-                                        <Checkbox
-                                            checked={Array.isArray(answers.waitingType) && answers.waitingType.includes(opt.value)}
-                                            onChange={() => {
-                                                const currentValue = Array.isArray(answers.waitingType) ? answers.waitingType : [];
-                                                const isChecked = currentValue.includes(opt.value);
-                                                const newValue = isChecked
-                                                    ? currentValue.filter((v) => v !== opt.value)
-                                                    : [...currentValue, opt.value];
-                                                handleChange("waitingType", newValue);
+                                    <Box key={opt.value}>
+                                        <label className="inline-flex items-center cursor-pointer">
+                                            <Checkbox
+                                                checked={Array.isArray(answers.waitingType) && answers.waitingType.includes(opt.value)}
+                                                onChange={() => {
+                                                    const currentValue = Array.isArray(answers.waitingType) ? answers.waitingType : [];
+                                                    const isChecked = currentValue.includes(opt.value);
+                                                    const newValue = isChecked
+                                                        ? currentValue.filter((v) => v !== opt.value)
+                                                        : [...currentValue, opt.value];
+                                                    handleChange("waitingType", newValue);
+                                                    if (opt.value === "exam" && isChecked) {
+                                                        handleChange("examDetails", []);
+                                                    }
+                                                }}
+                                            />
+                                            <span>{opt.label}</span>
+                                        </label>
+                                        {opt.subItems && opt.subItems.length > 0 && (
+                                            <Box sx={{
+                                                pl: 4,
+                                                mt: 1,
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: 1
+                                            }}>
 
-                                                // Limpar campos aninhados se "Exame" for desmarcado
-                                                if (opt.value === "exam" && isChecked) {
-                                                    handleChange("examDetails", []);
-                                                }
-                                            }}
-                                        />
-                                        <span>{opt.label}</span>
-                                    </label>
-                                ))}
-
-                                {/* Detalhes do Exame */}
-                                {Array.isArray(answers.waitingType) && answers.waitingType.includes("exam") && (
-                                    <Box sx={{
-                                        display: "flex",
-                                        flexDirection: "row",
-                                        gap: 2,
-                                        // border: "1px solid #4caf50",
-                                        // borderRadius: "8px",
-                                        width: "35vw"
-                                    }}>
-                                        <Typography variant="h6" sx={{ mb: 2, ml: 5 }}>
-                                            Tipos de exame:
-                                        </Typography>
-                                        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                                            {[
-                                                { value: "rad", label: "Radiológico" },
-                                                { value: "end", label: "Endoscópico" },
-                                                { value: "card", label: "Cardiológico" },
-                                                { value: "np", label: "Exame não padronizado" },
-                                                { value: "others", label: "Outros" },
-                                            ].map((opt) => (
-                                                <label key={opt.value} className="inline-flex items-center cursor-pointer">
-                                                    <Checkbox
-                                                        checked={
-                                                            Array.isArray(answers.examDetails) && answers.examDetails.includes(opt.value)
-                                                        }
-                                                        onChange={() => {
-                                                            const currentValue = Array.isArray(answers.examDetails) ? answers.examDetails : [];
-                                                            const isChecked = currentValue.includes(opt.value);
-                                                            const newValue = isChecked
-                                                                ? currentValue.filter((v) => v !== opt.value)
-                                                                : [...currentValue, opt.value];
-                                                            handleChange("examDetails", newValue);
-                                                        }}
-                                                    />
-                                                    <span>{opt.label}</span>
-                                                </label>
-                                            ))}
-                                        </Box>
+                                                {opt.subItems.map((subOpt) => (
+                                                    <label
+                                                        key={subOpt.value}
+                                                        className="inline-flex items-center cursor-pointer"
+                                                        style={{ marginLeft: '16px' }}
+                                                    >
+                                                        <Checkbox
+                                                            checked={Array.isArray(answers.examDetails) && answers.examDetails.includes(subOpt.value)}
+                                                            onChange={() => {
+                                                                const currentValue = Array.isArray(answers.examDetails) ? answers.examDetails : [];
+                                                                const isChecked = currentValue.includes(subOpt.value);
+                                                                const newValue = isChecked
+                                                                    ? currentValue.filter((v) => v !== subOpt.value)
+                                                                    : [...currentValue, subOpt.value];
+                                                                handleChange("examDetails", newValue);
+                                                            }}
+                                                        />
+                                                        <span>{subOpt.label}</span>
+                                                    </label>
+                                                ))}
+                                            </Box>
+                                        )}
                                     </Box>
-                                )}
+                                ))}
                             </Box>
                         </Box>
                     )}
@@ -361,7 +479,7 @@ export const QuestionnairePage = () => {
                     </Button>
                 </Box>
             </Box>
-        </Box>
+        </Box >
     );
 };
 
