@@ -385,9 +385,8 @@ function AssistencialDashboard() {
     handleCloseAddModal();
   };
 
-  const handleCancelDischarge = (index: number) => {
-    index = 1;
-    return 1;
+  const handleCancelDischarge = () => {
+    
   };
   
   const { user, isLoading } = useAuth();
@@ -622,7 +621,7 @@ function AssistencialDashboard() {
                       </IconButton>
                       <IconButton
                         title="Cancelar alta"
-                        onClick={() => handleCancelDischarge(index)}
+                        onClick={() => handleCancelDischarge()}
                       >
                         <CalendarToday style={{ color: "teal" }} />
                       </IconButton>
