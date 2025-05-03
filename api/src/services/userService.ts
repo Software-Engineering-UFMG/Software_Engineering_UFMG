@@ -1,6 +1,10 @@
 import { prisma } from "../config/prisma";
 import bcrypt from "bcrypt";
-import { CreateUserDTO, UpdateUserDTO } from "../types/userTypes";
+import {
+  CreateUserDTO,
+  UpdateUserByIdDTO,
+  UpdateUserDTO,
+} from "../types/userTypes";
 import { UserWithoutPassword } from "../types/userTypes";
 
 const SALT_ROUNDS = 10;
@@ -42,7 +46,7 @@ export const createUser = async (
   return userWithoutPassword;
 };
 
-export const updateUser = async (
+export const updateOwnUser = async (
   id: number,
   data: UpdateUserDTO
 ): Promise<UserWithoutPassword> => {
@@ -55,9 +59,29 @@ export const updateUser = async (
     if (!user || !(await bcrypt.compare(data.currentPassword, user.password))) {
       throw new Error("Current password is incorrect.");
     }
-    // Directly hash the new password without requiring currentPassword
+
     data.password = await bcrypt.hash(data.password, SALT_ROUNDS);
     delete data.currentPassword;
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id },
+    data: {
+      ...data,
+      birthDate: data.birthDate ? new Date(data.birthDate) : undefined,
+    },
+  });
+
+  const { password, ...userWithoutPassword } = updatedUser;
+  return userWithoutPassword;
+};
+
+export const updateUserById = async (
+  id: number,
+  data: UpdateUserByIdDTO
+): Promise<UserWithoutPassword> => {
+  if (data.password) {
+    data.password = await bcrypt.hash(data.password, SALT_ROUNDS);
   }
 
   const updatedUser = await prisma.user.update({
