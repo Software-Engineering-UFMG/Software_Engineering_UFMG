@@ -22,146 +22,141 @@ export const QuestionnairePage = () => {
     return (
         <Box
             sx={{
-                // width: "100%",
-                // height: "100vh",
                 display: "flex",
                 flexDirection: "column",
-                fontFamily: "'Roboto', sans-serif"
             }}
         >
+            {/* Cabeçalho */}
+            <Box
+                sx={{
+                    borderRadius: "8px",
+                    display: "flex",
+                    justifyContent: "space-around",
+                    alignItems: "center",
+                    p: 2,
+                }}
+            >
+                <img src={RED} alt="RED2GREEN" style={{ width: "8%", borderRadius: "8px" }} />
+                <img src={hospitalLogo} alt="Hospital Logo" style={{ width: "8%", borderRadius: "8px" }} />
+                <img src={ebserh} alt="EBSERH Logo" style={{ width: "8%", borderRadius: "8px" }} />
+            </Box>
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "space-around",
+                    alignItems: "center",
+                    p: 4,
+                }}>
+                <Typography variant="h4" color="black">
+                    Questionário SAFER
+                </Typography>
+            </Box>
 
             <Box
                 sx={{
-                    flex: 1,
-                    overflowY: "auto",
-                    p: 4,
-                    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                    backgroundColor: "white",
+                    display: "flex",
+                    flexDirection: "row", // Organiza os campos verticalmente
+                    justifyContent: "center",
+                    gap: 6, // Espaçamento entre os campos
+                    mt: 4,
+                    mb: 4,
+                    p: 2, // Padding interno
                 }}
             >
-
-                {/* Cabeçalho */}
+                {/* Campo 1: Nome do Paciente */}
                 <Box
                     sx={{
-                        borderRadius: "8px",
                         display: "flex",
-                        justifyContent: "space-around",
-                        alignItems: "center",
-                        p: 2,
-                        // border: "1px solid #4caf50", // Verde escuro
-                        // backgroundColor: "#86efac"
+                        alignItems: "center", // Alinha os elementos verticalmente ao centro
+                        gap: 2, // Espaçamento entre o rótulo e o campo de texto
                     }}
                 >
-                    <img src={RED} alt="RED2GREEN" style={{ width: "10%", borderRadius: "8px" }} />
-                    <img src={hospitalLogo} alt="Hospital Logo" style={{ width: "10%", borderRadius: "8px" }} />
-                    <img src={ebserh} alt="EBSERH Logo" style={{ width: "10%", borderRadius: "8px" }} />
-                </Box>
-                <Box
-                    sx={{
-                        display: "flex",
-                        justifyContent: "space-around",
-                        alignItems: "center",
-                        p: 8,
-                        backgroundColor: "white",
-                    }}>
-                    <Typography variant="h4" color="black">
-                        Questionário SAFER
+                    <Typography variant="h6" color="black" sx={{ minWidth: "220px" }}>
+                        Nome do Paciente:
                     </Typography>
+                    <TextField
+                        fullWidth
+                        // value={patientData.name || ""}
+                        variant="outlined"
+                        InputProps={{
+                            readOnly: true,
+                        }}
+                        sx={{
+                            "& .MuiOutlinedInput-root": {
+                                borderRadius: "8px",
+                                backgroundColor: "#f9f9f9",
+                            },
+                        }}
+                    />
                 </Box>
 
+                {/* Campo 2: Data de Nascimento do Paciente */}
                 <Box
                     sx={{
                         display: "flex",
-                        flexDirection: "column", // Organiza os campos verticalmente
-                        gap: 2, // Espaçamento entre os campos
-                        mt: 4,
-                        mb: 4,
-                        borderRadius: "8px",
-                        border: "1px solid #4caf50", // Borda verde
-                        p: 2, // Padding interno
+                        alignItems: "center",
+                        gap: 2,
                     }}
                 >
-                    {/* Campo 1: Nome do Paciente */}
-                    <Box
-                        sx={{
-                            display: "flex",
-                            alignItems: "center", // Alinha os elementos verticalmente ao centro
-                            gap: 2, // Espaçamento entre o rótulo e o campo de texto
+                    <Typography variant="h6" color="black" sx={{ minWidth: "220px" }}>
+                        Data de Nascimento:
+                    </Typography>
+                    <TextField
+                        fullWidth
+                        // value={patientData.birthDate ? patientData.birthDate : ""}
+                        variant="outlined"
+                        InputProps={{
+                            readOnly: true,
                         }}
-                    >
-                        <Typography variant="h6" color="black" sx={{ minWidth: "200px" }}>
-                            Nome do Paciente
-                        </Typography>
-                        <TextField
-                            fullWidth
-                            // value={patientData.name || ""}
-                            variant="outlined"
-                            InputProps={{
-                                readOnly: true,
-                            }}
-                            sx={{
-                                "& .MuiOutlinedInput-root": {
-                                    borderRadius: "8px",
-                                    backgroundColor: "#f9f9f9",
-                                },
-                            }}
-                        />
-                    </Box>
-
-                    {/* Campo 2: Data de Nascimento do Paciente */}
-                    <Box
                         sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 2,
+                            "& .MuiOutlinedInput-root": {
+                                borderRadius: "8px",
+                                backgroundColor: "#f9f9f9",
+                            },
                         }}
-                    >
-                        <Typography variant="h6" color="black" sx={{ minWidth: "200px" }}>
-                            Data de Nascimento
-                        </Typography>
-                        <TextField
-                            fullWidth
-                            // value={patientData.birthDate ? patientData.birthDate : ""}
-                            variant="outlined"
-                            InputProps={{
-                                readOnly: true,
-                            }}
-                            sx={{
-                                "& .MuiOutlinedInput-root": {
-                                    borderRadius: "8px",
-                                    backgroundColor: "#f9f9f9",
-                                },
-                            }}
-                        />
-                    </Box>
-
-                    {/* Campo 3: Prontuário do Paciente */}
-                    <Box
-                        sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 2,
-                        }}
-                    >
-                        <Typography variant="h6" color="black" sx={{ minWidth: "200px" }}>
-                            Prontuário
-                        </Typography>
-                        <TextField
-                            fullWidth
-                            // value={patientData.record || ""}
-                            variant="outlined"
-                            InputProps={{
-                                readOnly: true,
-                            }}
-                            sx={{
-                                "& .MuiOutlinedInput-root": {
-                                    borderRadius: "8px",
-                                    backgroundColor: "#f9f9f9",
-                                },
-                            }}
-                        />
-                    </Box>
+                    />
                 </Box>
+
+                {/* Campo 3: Prontuário do Paciente */}
+                <Box
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                    }}
+                >
+                    <Typography variant="h6" color="black" sx={{ minWidth: "220px" }}>
+                        Prontuário do Paciente:
+                    </Typography>
+                    <TextField
+                        fullWidth
+                        // value={patientData.record || ""}
+                        variant="outlined"
+                        InputProps={{
+                            readOnly: true,
+                        }}
+                        sx={{
+                            "& .MuiOutlinedInput-root": {
+                                borderRadius: "8px",
+                                backgroundColor: "#f9f9f9",
+                            },
+                        }}
+                    />
+                </Box>
+            </Box>
+
+            <Box
+                sx={{
+                    maxWidth: { xs: 400, sm: 600, md: 800 }, // Adjust width for different screen sizes
+                    margin: "0 auto",
+                    marginTop: 4,
+                    marginBottom: 4,
+                    padding: 2,
+                    paddingBottom: 4,
+                    border: "1px solid #ccc",
+                    borderRadius: "8px",
+                }}
+            >
 
                 {/* Conteúdo Principal */}
 
@@ -169,7 +164,6 @@ export const QuestionnairePage = () => {
                 <Box sx={{
                     mb: 4,
                     p: 2,
-                    // backgroundColor: "green",
                 }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         Qual é a data de alta prevista para o paciente?
@@ -199,7 +193,6 @@ export const QuestionnairePage = () => {
                 <Box sx={{
                     mb: 4,
                     p: 2,
-                    // backgroundColor: "green",
                 }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         Quais são os critérios clínicos para alta do paciente?
@@ -231,7 +224,6 @@ export const QuestionnairePage = () => {
                 <Box sx={{
                     mb: 4,
                     p: 2,
-                    // backgroundColor: "green"
                 }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         O paciente possui alguma das características abaixo?
@@ -242,9 +234,8 @@ export const QuestionnairePage = () => {
                         flexDirection: "column",
                         p: 3,
                         gap: 1,
-                        backgroundColor: "white"
-                        // border: "1px solid #4caf50",
-                        // borderRadius: "8px"
+                        border: "1px solid #4caf50",
+                        borderRadius: "8px"
                     }}>
                         {[
                             { value: "ostomy", label: "Alta prevista com ostomia" },
@@ -277,7 +268,6 @@ export const QuestionnairePage = () => {
                 <Box sx={{
                     mb: 4,
                     p: 2,
-                    // backgroundColor: "green"
                 }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         Se o paciente estivesse sendo admitido hoje no Pronto Socorro, a sua condição clínica determinaria internação?
@@ -286,6 +276,13 @@ export const QuestionnairePage = () => {
                         row
                         value={answers.needsAdmission || ""}
                         onChange={(e) => handleChange("needsAdmission", e.target.value)}
+                        sx={{
+                            border: "1px solid #4caf50",
+                            borderRadius: "8px",
+                            pl: 2,
+                            width: "25%",
+                            justifyContent: "center"
+                        }}
                     >
                         <FormControlLabel value="yes" control={<Radio />} label="Sim" />
                         <FormControlLabel value="no" control={<Radio />} label="Não" />
@@ -296,7 +293,6 @@ export const QuestionnairePage = () => {
                 <Box sx={{
                     mb: 4,
                     p: 2,
-                    // backgroundColor: "green"
                 }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         As intervenções diagnósticas ou terapêuticas que o paciente receberá hoje poderiam ser realizadas ambulatorialmente?
@@ -305,6 +301,13 @@ export const QuestionnairePage = () => {
                         row
                         value={answers.outpatient || ""}
                         onChange={(e) => handleChange("outpatient", e.target.value)}
+                        sx={{
+                            border: "1px solid #4caf50",
+                            borderRadius: "8px",
+                            pl: 2,
+                            width: "25%",
+                            justifyContent: "center"
+                        }}
                     >
                         <FormControlLabel value="yes" control={<Radio />} label="Sim" />
                         <FormControlLabel value="no" control={<Radio />} label="Não" />
@@ -315,7 +318,6 @@ export const QuestionnairePage = () => {
                 <Box sx={{
                     mb: 4,
                     p: 2,
-                    // backgroundColor: "green"
                 }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         O paciente recebeu uma intervenção efetiva hoje para deixá-lo mais próximo à alta hospitalar?
@@ -324,6 +326,13 @@ export const QuestionnairePage = () => {
                         row
                         value={answers.hospitalDischarge || ""}
                         onChange={(e) => handleChange("hospitalDischarge", e.target.value)}
+                        sx={{
+                            border: "1px solid #4caf50",
+                            borderRadius: "8px",
+                            pl: 2,
+                            width: "25%",
+                            justifyContent: "center"
+                        }}
                     >
                         <FormControlLabel value="yes" control={<Radio />} label="Sim" />
                         <FormControlLabel value="no" control={<Radio />} label="Não" />
@@ -334,7 +343,6 @@ export const QuestionnairePage = () => {
                 <Box sx={{
                     mb: 4,
                     p: 2,
-                    // backgroundColor: "green"
                 }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         O paciente está aguardando por algo?
@@ -348,6 +356,13 @@ export const QuestionnairePage = () => {
                                 handleChange("waitingType", []);
                                 handleChange("examDetails", []);
                             }
+                        }}
+                        sx={{
+                            border: "1px solid #4caf50",
+                            borderRadius: "8px",
+                            pl: 2,
+                            width: "25%",
+                            justifyContent: "center"
                         }}
                     >
                         <FormControlLabel value="yes" control={<Radio />} label="Sim" />
@@ -364,7 +379,7 @@ export const QuestionnairePage = () => {
                                 display: "flex",
                                 flexDirection: "column",
                                 gap: 1,
-                                // border: "1px solid #4caf50",
+                                border: "1px solid #4caf50",
                                 borderRadius: "8px",
                                 p: 2,
                             }}>
