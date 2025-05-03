@@ -73,37 +73,49 @@ export const updateUserHandler = async (
 ) => {
   try {
     const { id } = req.params;
-    const { birthDate, password, ...rest } = req.body;
+    const { name, username } = req.body;
+    //const { birthDate, password, ...rest } = req.body;
 
     if (!id || isNaN(Number(id))) {
       return sendErrorResponse(reply, 400, "Invalid or missing 'id' parameter");
     }
 
-    if (!rest.name && !rest.username) {
+    if (!name && !username) {
+      //if (!rest.name && !rest.username) {
       return sendErrorResponse(
         reply,
         400,
         "At least one field ('name' or 'username') must be provided"
       );
     }
+    const updatedUser = await updateUser(Number(id), req.body);
+    // const updatedData = {
+    //   ...rest,
+    //   birthDate:
+    //     typeof birthDate === "string" && !isNaN(Date.parse(birthDate))
+    //       ? new Date(birthDate).toISOString()
+    //       : birthDate,
+    //   ...(password ? { password } : {}),
+    // };
 
-    const updatedData = {
-      ...rest,
-      birthDate:
-        typeof birthDate === "string" && !isNaN(Date.parse(birthDate))
-          ? new Date(birthDate).toISOString()
-          : birthDate, 
-      ...(password ? { password } : {}), 
-    };
+    // console.log("Processed data for updateUser:", updatedData);
 
-    console.log("Processed data for updateUser:", updatedData); 
-
-    const updatedUser = await updateUser(Number(id), updatedData);
+    // const updatedUser = await updateUser(Number(id), updatedData);
     if (!updatedUser) {
       return sendErrorResponse(reply, 404, "User not found");
     }
     sendResponse(reply, 200, updatedUser);
   } catch (error: any) {
+    if (
+      error.message === "Current password is required to update the password."
+    ) {
+      return sendErrorResponse(reply, 400, error.message);
+    }
+
+    if (error.message === "Current password is incorrect.") {
+      return sendErrorResponse(reply, 401, error.message);
+    }
+
     sendErrorResponse(reply, 500, "An unexpected error occurred");
   }
 };

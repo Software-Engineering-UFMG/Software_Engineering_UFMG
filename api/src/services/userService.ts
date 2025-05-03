@@ -47,8 +47,17 @@ export const updateUser = async (
   data: UpdateUserDTO
 ): Promise<UserWithoutPassword> => {
   if (data.password) {
+    if (!data.currentPassword) {
+      throw new Error("Current password is required to update the password.");
+    }
+
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user || !(await bcrypt.compare(data.currentPassword, user.password))) {
+      throw new Error("Current password is incorrect.");
+    }
     // Directly hash the new password without requiring currentPassword
     data.password = await bcrypt.hash(data.password, SALT_ROUNDS);
+    delete data.currentPassword;
   }
 
   const updatedUser = await prisma.user.update({

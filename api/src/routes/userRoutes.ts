@@ -35,26 +35,29 @@ export const userRoutes = (app: FastifyInstance) => {
   }>(
     "/user/:id",
     {
-      preHandler: [
-        authMiddleware,
-        async (req, reply) => {
-          try {
-            await validateSchema(updateUserSchema)(req, reply);
-          } catch (error) {
-            if (error instanceof Error) {
-              console.error("Validation error:", error.message); // Log error message
-            } else {
-              console.error("Validation error:", error); // Log unknown error
-            }
-            throw error;
-          }
-        },
-      ],
+      preHandler: [authMiddleware, 
+      validateSchema(updateUserSchema)],
+      // preHandler: [
+      //   authMiddleware,
+      //   async (req, reply) => {
+      //     try {
+      //       await validateSchema(updateUserSchema)(req, reply);
+      //     } catch (error) {
+      //       if (error instanceof Error) {
+      //         console.error("Validation error:", error.message); // Log error message
+      //       } else {
+      //         console.error("Validation error:", error); // Log unknown error
+      //       }
+      //       throw error;
+      //     }
+      //   },
+      // ],
     },
-    async (req, reply) => {
-      console.log("Incoming request body for updateUser:", req.body); 
-      return updateUserHandler(req, reply); 
-    }
+    updateUserHandler
+    // async (req, reply) => {
+    //   console.log("Incoming request body for updateUser:", req.body); 
+    //   return updateUserHandler(req, reply); 
+    // }
   );
 
   app.delete<{ Params: { id: number } }>(
