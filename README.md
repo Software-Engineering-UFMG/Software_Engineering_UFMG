@@ -39,7 +39,7 @@ O sistema inclui um backend para gerenciamento de dados, um frontend para intera
 ## Membros da Equipe
 
 - André Luiz Alves Costa
-- Riquelme Batista
+- Riquelme Batista Gomes da Silva
 - Thalys Vinícius Barbosa Gonzaga
 - Jonas Lopes
 
