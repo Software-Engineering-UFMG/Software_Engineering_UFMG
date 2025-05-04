@@ -25,7 +25,7 @@ import dayjs from "dayjs";
 import { Edit, Delete, ToggleOn, ToggleOff, Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router";
 import { getAllUsers } from "../../services/api";
-import { updateUser } from "../../services/api";
+import { updateUserById } from "../../services/api";
 import { deleteUser } from "../../services/api";
 import { getUserById } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
@@ -142,7 +142,7 @@ export const Dashboard = () => {
       setPasswordError(null);
       const updatedUserData: any = {
         name: editUserData.name,
-        birthDate: new Date(editUserData.birthdate).toISOString(),
+        birthDate: dayjs(editUserData.birthdate).format("DD/MM/YYYY"), 
         phone: editUserData.phone,
         username: editUserData.username,
         role: editUserData.role,
@@ -150,7 +150,7 @@ export const Dashboard = () => {
       if (changePassword) {
         updatedUserData.password = editUserData.password;
       }
-      await updateUser(editUserId, updatedUserData);
+      await updateUserById(editUserId, updatedUserData);
       const updatedUsers = await getAllUsers();
       setUsers(updatedUsers);
       handleCloseEditModal();
@@ -184,8 +184,12 @@ export const Dashboard = () => {
       if (!userToUpdate) return;
       const updatedStatus =
         userToUpdate.status === "Active" ? "Inactive" : "Active";
-      const updatedUserData = { ...userToUpdate, status: updatedStatus };
-      const updatedUser = await updateUser(userId, updatedUserData);
+      const updatedUserData = {
+        ...userToUpdate,
+        status: updatedStatus,
+        birthDate: dayjs(userToUpdate.birthDate).format("DD/MM/YYYY"),
+      };
+      const updatedUser = await updateUserById(userId, updatedUserData);
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
           user.id === userId ? { ...user, status: updatedUser.status } : user

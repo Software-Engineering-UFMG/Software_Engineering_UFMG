@@ -13,13 +13,13 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router";
-import { getMe, updateUser } from "../../services/api"; 
+import { getMe, updateUser } from "../../services/api";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
 import { useAuth } from "../../context/AuthContext";
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
 
 export const EditNir = () => {
@@ -44,7 +44,13 @@ export const EditNir = () => {
   const [changePassword, setChangePassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [confirmPasswordError, setConfirmPasswordError] = useState<string | null>(null);
+  const [confirmPasswordError, setConfirmPasswordError] = useState<
+    string | null
+  >(null);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [currentPasswordError, setCurrentPasswordError] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     if (!user && !isLoading) {
@@ -67,7 +73,6 @@ export const EditNir = () => {
           role: me.role || "NIR",
         });
       } catch (error) {
-        // handle error if needed
       } finally {
         setLoading(false);
       }
@@ -97,8 +102,13 @@ export const EditNir = () => {
 
     setPasswordError(null);
     setConfirmPasswordError(null);
+    setCurrentPasswordError(null);
 
     if (changePassword) {
+      if (!currentPassword) {
+        setCurrentPasswordError("A senha atual é obrigatória.");
+        return;
+      }
       if (!formData.password || formData.password.length < 6) {
         setPasswordError("A senha deve ter pelo menos 6 caracteres.");
         return;
@@ -112,20 +122,67 @@ export const EditNir = () => {
     try {
       setLoading(true);
       if (userId === null) return;
+      let formattedBirthDate = formData.birthDate;
+      if (formattedBirthDate) {
+        const d = dayjs(formattedBirthDate);
+        if (d.isValid()) {
+          formattedBirthDate = d.format("DD/MM/YYYY");
+        }
+      }
       const updatedData: any = {
         name: formData.name,
-        birthDate: formData.birthDate,
+        birthDate: formattedBirthDate,
         phone: formData.phone,
         username: formData.username,
         role: formData.role,
       };
       if (changePassword) {
         updatedData.password = formData.password;
+        updatedData.currentPassword = currentPassword;
       }
-      await updateUser(userId, updatedData);
+      await updateUser(updatedData);
       navigate("/NIRMainpage");
-    } catch (error) {
-      
+    } catch (error: any) {
+      const backendMsg =
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        error?.message;
+
+      if (
+        error?.response?.status === 401 ||
+        (typeof backendMsg === "string" &&
+          backendMsg.toLowerCase().includes("current password is incorrect"))
+      ) {
+        setCurrentPasswordError("Senha atual incorreta.");
+        setLoading(false);
+        return;
+      }
+      if (
+        typeof backendMsg === "string" &&
+        backendMsg.toLowerCase().includes("date format")
+      ) {
+        setFieldErrors((prev) => ({ ...prev, birthDate: true }));
+      }
+      if (Array.isArray(error?.response?.data)) {
+        error.response.data.forEach((err: any) => {
+          if (err.path?.includes("currentPassword")) {
+            setCurrentPasswordError("Senha atual incorreta.");
+          }
+          if (err.path?.includes("birthDate")) {
+            setFieldErrors((prev) => ({ ...prev, birthDate: true }));
+          }
+        });
+      }
+      if (Array.isArray(error?.response?.data?.errors)) {
+        error.response.data.errors.forEach((err: any) => {
+          if (err.path?.includes("currentPassword")) {
+            setCurrentPasswordError("Senha atual incorreta.");
+          }
+          if (err.path?.includes("birthDate")) {
+            setFieldErrors((prev) => ({ ...prev, birthDate: true }));
+          }
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -164,25 +221,29 @@ export const EditNir = () => {
             value={formData.name}
             onChange={handleChange}
             error={fieldErrors.name}
-            helperText={fieldErrors.name ? "O nome não pode estar em branco." : ""}
+            helperText={
+              fieldErrors.name ? "O nome não pode estar em branco." : ""
+            }
           />
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DemoContainer components={['DatePicker']}>
+            <DemoContainer components={["DatePicker"]}>
               <DatePicker
                 label="Data de nascimento"
                 format="DD-MM-YYYY"
                 value={formData.birthDate ? dayjs(formData.birthDate) : null}
-                onChange={newVal => {
-                  const iso = newVal?.toISOString() || '';
-                  setFormData(prev => ({ ...prev, birthDate: iso }));
-                  setFieldErrors(prev => ({ ...prev, birthDate: !iso }));
+                onChange={(newVal) => {
+                  const iso = newVal?.toISOString() || "";
+                  setFormData((prev) => ({ ...prev, birthDate: iso }));
+                  setFieldErrors((prev) => ({ ...prev, birthDate: !iso }));
                 }}
                 slotProps={{
                   textField: {
                     fullWidth: true,
-                    margin: 'normal',
+                    margin: "normal",
                     error: fieldErrors.birthDate,
-                    helperText: fieldErrors.birthDate ? "A data de nascimento é obrigatória." : "",
+                    helperText: fieldErrors.birthDate
+                      ? "A data de nascimento é obrigatória ou está em formato inválido (dd/MM/yyyy)."
+                      : "",
                   },
                 }}
               />
@@ -220,6 +281,29 @@ export const EditNir = () => {
           {changePassword && (
             <>
               <TextField
+                label="Senha Atual"
+                name="currentPassword"
+                type={showPassword ? "text" : "password"}
+                fullWidth
+                margin="normal"
+                value={currentPassword}
+                onChange={(e) => {
+                  setCurrentPassword(e.target.value);
+                  setCurrentPasswordError(null);
+                }}
+                error={!!currentPasswordError}
+                helperText={currentPasswordError}
+                InputProps={{
+                  endAdornment: (
+                    <IconButton
+                      onClick={() => setShowPassword((prev) => !prev)}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  ),
+                }}
+              />
+              <TextField
                 label="Nova Senha"
                 name="password"
                 type={showPassword ? "text" : "password"}
@@ -231,7 +315,9 @@ export const EditNir = () => {
                 helperText={passwordError}
                 InputProps={{
                   endAdornment: (
-                    <IconButton onClick={() => setShowPassword((prev) => !prev)}>
+                    <IconButton
+                      onClick={() => setShowPassword((prev) => !prev)}
+                    >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   ),
@@ -251,7 +337,9 @@ export const EditNir = () => {
                 helperText={confirmPasswordError}
                 InputProps={{
                   endAdornment: (
-                    <IconButton onClick={() => setShowPassword((prev) => !prev)}>
+                    <IconButton
+                      onClick={() => setShowPassword((prev) => !prev)}
+                    >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   ),

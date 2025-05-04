@@ -1,17 +1,13 @@
 import axios from "axios";
 
-
-
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
-  withCredentials:true,
-})
-
-
+  withCredentials: true,
+});
 
 export const login = async (username: string, password: string) => {
   const res = await api.post("/login", { username, password });
-  console.log("Response login: ",res);
+  console.log("Response login: ", res);
   return res.data;
 };
 
@@ -33,7 +29,6 @@ export const createUser = async (userData: {
   }
 };
 
-
 export const getAllUsers = async () => {
   try {
     const response = await api.get("/users");
@@ -54,30 +49,53 @@ export const getUserById = async (id: number) => {
   }
 };
 
+export const updateUser = async (userData: {
+  name?: string;
+  birthDate?: string;
+  phone?: string;
+  username?: string;
+  password?: string;
+  currentPassword?: string;
+  role?: "NIR" | "Assistencial" | "Admin";
+  specialty?: string;
+  status?: "Active" | "Inactive";
+}) => {
+  try {
+    const response = await api.put("/user", userData);
+    return response.data;
+  } catch (error: any) {
+    console.error(
+      "Erro ao atualizar próprio usuário:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
 
-export const updateUser = async (
+export const updateUserById = async (
   id: number,
   userData: {
-    name: string;
-    birthDate: string;
-    phone: string;
-    username: string;
+    name?: string;
+    birthDate?: string;
+    phone?: string;
+    username?: string;
     password?: string;
-    currentPassword?: string; 
-    role: "NIR" | "Assistencial" | "Admin";
+    role?: "NIR" | "Assistencial" | "Admin";
     specialty?: string;
     status?: "Active" | "Inactive";
   }
 ) => {
   try {
-    const response = await api.put(`/user/${id}`, userData); // Ensure correct payload
+    const response = await api.put(`/user/${id}`, userData);
     return response.data;
   } catch (error: any) {
-    console.error("Erro ao atualizar usuário:", error.response?.data || error.message); // Log detailed error
+    console.error(
+      "Erro ao atualizar usuário por ID:",
+      error.response?.data || error.message
+    );
     throw error;
   }
 };
-
 
 export const deleteUser = async (id: number) => {
   try {
