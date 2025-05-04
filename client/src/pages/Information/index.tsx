@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { useEffect } from "react";
+
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
 
 export const Information = () => {
