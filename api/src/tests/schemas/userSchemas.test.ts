@@ -1,7 +1,7 @@
 import {
   createUserSchema,
+  updateUserByIdSchema,
   updateUserSchema,
-  idSchema,
 } from "../../schemas/userSchemas";
 
 describe("userSchemas", () => {
@@ -11,7 +11,7 @@ describe("userSchemas", () => {
         name: "John Doe",
         username: "john_doe",
         password: "password123",
-        birthDate: "1990-01-01",
+        birthDate: "01/01/1990",
         phone: "123456789",
         role: "Admin",
         specialty: "IT",
@@ -21,7 +21,7 @@ describe("userSchemas", () => {
 
       expect(result).toEqual({
         ...validPayload,
-        birthDate: new Date("1990-01-01"),
+        birthDate: new Date(1990, 0, 1),
       });
     });
 
@@ -30,7 +30,7 @@ describe("userSchemas", () => {
         name: "",
         username: "john_doe",
         password: "password123",
-        birthDate: "1990-01-01",
+        birthDate: "01/01/1990",
         role: "Admin",
       };
 
@@ -44,12 +44,12 @@ describe("userSchemas", () => {
         name: "John Doe",
         username: "john_doe",
         password: "password123",
-        birthDate: "invalid-date",
+        birthDate: "1990-01-01",
         role: "Admin",
       };
 
       expect(() => createUserSchema.parse(invalidPayload)).toThrow(
-        "Invalid date format"
+        "Invalid date format. Use dd/MM/yyyy"
       );
     });
 
@@ -58,7 +58,7 @@ describe("userSchemas", () => {
         name: "John Doe",
         username: "john_doe",
         password: "password123",
-        birthDate: "1990-01-01",
+        birthDate: "01/01/1990",
         role: "invalid-role",
       };
 
@@ -72,7 +72,7 @@ describe("userSchemas", () => {
         name: "John Doe",
         username: "john_doe",
         password: "password123",
-        birthDate: "1990-01-01",
+        birthDate: "01/01/1990",
         role: "Admin",
         phone: null,
         specialty: null,
@@ -82,7 +82,7 @@ describe("userSchemas", () => {
 
       expect(result).toEqual({
         ...validPayload,
-        birthDate: new Date("1990-01-01"),
+        birthDate: new Date(1990, 0, 1),
       });
     });
   });
@@ -94,7 +94,7 @@ describe("userSchemas", () => {
         username: "john_updated",
         password: "newpassword123",
         currentPassword: "oldpassword123",
-        birthDate: "1990-01-01",
+        birthDate: "15/05/1990",
         role: "Assistencial",
         phone: "987654321",
         specialty: "HR",
@@ -105,7 +105,7 @@ describe("userSchemas", () => {
 
       expect(result).toEqual({
         ...validPayload,
-        birthDate: new Date("1990-01-01"),
+        birthDate: new Date(1990, 4, 15),
       });
     });
 
@@ -141,37 +141,46 @@ describe("userSchemas", () => {
     });
   });
 
-  describe("idSchema", () => {
-    it("should validate a valid ID", () => {
-      const validId = 1;
+  describe("updateUserByIdSchema", () => {
+    it("should validate a valid user update by ID payload", () => {
+      const validPayload = {
+        name: "John Updated",
+        username: "john_updated",
+        password: "newpassword123",
+        birthDate: "15/05/1990",
+        role: "Admin",
+        phone: "987654321",
+        specialty: "HR",
+        status: "Inactive",
+      };
 
-      const result = idSchema.parse(validId);
+      const result = updateUserByIdSchema.parse(validPayload);
 
-      expect(result).toBe(validId);
+      expect(result).toEqual({
+        ...validPayload,
+        birthDate: new Date(1990, 4, 15),
+      });
     });
 
-    it("should throw an error for negative IDs", () => {
-      const invalidId = -1;
+    it("should throw an error for invalid role", () => {
+      const invalidPayload = {
+        role: "invalid-role",
+      };
 
-      expect(() => idSchema.parse(invalidId)).toThrow(
-        "ID must be a positive integer"
+      expect(() => updateUserByIdSchema.parse(invalidPayload)).toThrow(
+        "Invalid enum value. Expected 'NIR' | 'Assistencial' | 'Admin', received 'invalid-role'"
       );
     });
 
-    it("should throw an error for non-integer IDs", () => {
-      const invalidId = 1.5;
+    it("should allow partial updates", () => {
+      const partialPayload = {
+        name: "John Updated",
+        phone: null,
+      };
 
-      expect(() => idSchema.parse(invalidId)).toThrow(
-        "Expected integer, received float"
-      );
-    });
+      const result = updateUserByIdSchema.parse(partialPayload);
 
-    it("should throw an error for non-numeric IDs", () => {
-      const invalidId = "abc";
-
-      expect(() => idSchema.parse(invalidId)).toThrow(
-        "Expected number, received string"
-      );
+      expect(result).toEqual(partialPayload);
     });
   });
 });

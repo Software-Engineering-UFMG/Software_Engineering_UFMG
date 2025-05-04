@@ -1,6 +1,5 @@
 import {
   loginHandler,
-  logoutHandler,
   meHandler,
 } from "../../controllers/authController";
 import { loginUser, renewUserToken } from "../../services/authService";
