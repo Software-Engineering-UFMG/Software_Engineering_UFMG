@@ -3,24 +3,25 @@ import {
   getUsersHandler,
   getUserByIdHandler,
   createUserHandler,
-  updateUserHandler,
   deleteUserHandler,
+  updateUserByIdHandler,
+  updateOwnUserHandler,
 } from "../controllers/userController";
 import { validateSchema } from "../middleware/validationMiddleware";
 import {
   createUserSchema,
+  updateUserByIdSchema,
   updateUserSchema,
-  idSchema,
 } from "../schemas/userSchemas";
 import { authMiddleware } from "../middleware/authMiddleware";
 
 export const userRoutes = (app: FastifyInstance) => {
   app.get("/users", { preHandler: authMiddleware }, getUsersHandler);
 
-  app.get<{ Params: { id: string } }>(
+  app.get<{ Params: { id: number } }>(
     "/user/:id",
     {
-      preHandler: [authMiddleware, validateSchema(idSchema, "params")],
+      preHandler: [authMiddleware],
     },
     getUserByIdHandler
   );
@@ -33,25 +34,25 @@ export const userRoutes = (app: FastifyInstance) => {
     createUserHandler
   );
 
-  app.put<{
-    Params: { id: string };
-    Body: (typeof updateUserSchema)["_output"];
-  }>(
-    "/user/:id",
-    {
-      preHandler: [
-        authMiddleware,
-        validateSchema(idSchema, "params"),
-        validateSchema(updateUserSchema),
-      ],
-    },
-    updateUserHandler
+  app.put<{ Body: (typeof updateUserSchema)["_output"] }>(
+    "/user",
+    { preHandler: [authMiddleware, validateSchema(updateUserSchema)] },
+    updateOwnUserHandler
   );
 
-  app.delete<{ Params: { id: string } }>(
+  app.put<{
+    Params: { id: number };
+    Body: (typeof updateUserByIdSchema)["_output"];
+  }>(
+    "/user/:id",
+    { preHandler: [authMiddleware, validateSchema(updateUserByIdSchema)] },
+    updateUserByIdHandler
+  );
+  
+  app.delete<{ Params: { id: number } }>(
     "/user/:id",
     {
-      preHandler: [authMiddleware, validateSchema(idSchema, "params")],
+      preHandler: [authMiddleware],
     },
     deleteUserHandler
   );

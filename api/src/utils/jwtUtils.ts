@@ -13,3 +13,7 @@ export const generateToken = (payload: object): string => {
 export const verifyToken = (token: string): any => {
   return jwt.verify(token, SECRET_KEY);
 };
+
+export const decodeToken = (token: string): { id: number } => {
+  return jwt.verify(token, SECRET_KEY) as { id: number };
+};

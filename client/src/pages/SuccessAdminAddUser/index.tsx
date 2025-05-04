@@ -1,4 +1,3 @@
-
 import { Box, Typography, Button } from "@mui/material";
 import { Link as RouterLink } from "react-router";
 
@@ -7,22 +6,20 @@ const SuccessAdminAddUser = () => {
     <Box
       sx={{
         width: 400,
-        height: "100vh", // Full viewport height
+        height: "100vh",
         margin: "auto",
         padding: 2,
-
         textAlign: "center",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "center", // Center vertically
-        alignItems: "center", // Center horizontally
+        justifyContent: "center",
+        alignItems: "center",
       }}
     >
       <div className="flex flex-col  !p-10 bg-green-100 rounded-4xl">
         <Typography
           variant="h5"
           gutterBottom
-          
         >
           Usuário cadastrado com sucesso!
         </Typography>

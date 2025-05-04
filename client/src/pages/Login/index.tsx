@@ -1,15 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { login } from "../../services/User/Auth/login";
+import { login } from "../../services/api";
 import { useGlobalContext } from "../../context/GlobalContext";
 import { useAuth } from "../../context/AuthContext";
 import { Input } from "../../components/Input";
 import { Link } from "react-router";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
 import { memo } from "react";
-// Services
-
-// Components
 
 export const Login = memo(() => {
   const navigate = useNavigate();
@@ -59,12 +56,17 @@ export const Login = memo(() => {
   const handlePasswordChange = (value: string) => {
     setPassword(value);
     if (value !== "") {
-      setErrorMessage((prevState) => ({ ...prevState, password: null }));
+      setErrorMessage((prevState) => ({
+        ...prevState,
+        password: null,
+        userAccountWrong: null,
+      }));
     }
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+
     setLoading(true);
     setErrorMessage({ username: null, password: null, userAccountWrong: null });
 
@@ -72,30 +74,58 @@ export const Login = memo(() => {
       if (!validateForm()) {
         return;
       }
+      const userData = await login(username, password);
+      if (!userData) {
+        setErrorMessage((prevState) => ({
+          ...prevState,
+          userAccountWrong: "Login ou senha incorretos",
+        }));
+        return;
+      }
 
-      const userData = await login({ username, password });
+      if (userData.error === "InvalidPassword") {
+        setErrorMessage((prevState) => ({
+          ...prevState,
+          password: "Senha incorreta",
+        }));
+        return;
+      }
+
+      if (userData.status === "Inactive") {
+        setErrorMessage((prevState) => ({
+          ...prevState,
+          userAccountWrong: "O usuário está inativo",
+        }));
+        return;
+      }
+
       handleLogin(userData);
 
-      // Mock role-based redirection
       switch (userData.role) {
-        case "ADMIN":
+        case "Admin":
           navigate("/dashboard");
           break;
-        case "ASSISTENCIAL":
+        case "Assistencial":
           navigate("/preceptor");
           break;
         case "NIR":
-          navigate("/NIRMainpage"); // Replace with the actual NIR route
+          navigate("/NIRMainpage");
           break;
         default:
           throw new Error("Invalid user role");
       }
     } catch (error: any) {
-      console.error("Login error:", error.message); // Log the error for debugging
-      setErrorMessage((prevState) => ({
-        ...prevState,
-        userAccountWrong: "E-mail ou senha inválidos", // Update the correct error field
-      }));
+      if (error.response?.status === 401) {
+        setErrorMessage((prevState) => ({
+          ...prevState,
+          userAccountWrong: "Login ou senha incorretos",
+        }));
+      } else {
+        setErrorMessage((prevState) => ({
+          ...prevState,
+          userAccountWrong: "Erro ao tentar fazer login",
+        }));
+      }
     } finally {
       setLoading(false);
     }
@@ -112,7 +142,7 @@ export const Login = memo(() => {
         <img
           src={hospitalLogo}
           alt="Hospital Logo"
-          className="w-[60%] rounded-3xl"
+          className="w-[80%] rounded-3xl"
         />
       </div>
 
@@ -151,6 +181,11 @@ export const Login = memo(() => {
                   {errorMessage.password}
                 </div>
               )}
+              {errorMessage.userAccountWrong && (
+                <div className="mt-1 h-[10px] text-sm text-red-600">
+                  {errorMessage.userAccountWrong}
+                </div>
+              )}
             </div>
           </div>
 
@@ -163,11 +198,12 @@ export const Login = memo(() => {
               {loading ? "Carregando..." : "Entrar"}
             </button>
 
-            <Link to="/registration" className="cursor-pointer rounded-xl bg-green-300 !p-3 text-white hover:bg-green-400 flex justify-center">
+            <Link
+              to="/registration"
+              className="cursor-pointer rounded-xl bg-green-300 !p-3 text-white hover:bg-green-400 flex justify-center"
+            >
               Cadastrar Usuário
             </Link>
-
-
           </div>
         </form>
       </div>

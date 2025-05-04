@@ -46,9 +46,9 @@ O sistema inclui um backend para gerenciamento de dados, um frontend para intera
 ## Cargos
 
 - **PO:** Riquelme
-- **SM:** André
-- **Backend:** Riquelme,André,Thalys e Jonas
-- **Frontend:** Riquelme,André,Thalys e Jonas
+- **SM:** Riquelme
+- **Backend:** André,Jonas
+- **Frontend:** Riquelme,Thalys
 - **DevOps:** André
 - **UI/UX:** Riquelme
 
@@ -68,8 +68,8 @@ Este projeto utiliza as seguintes tecnologias para o desenvolvimento e operaçã
 
 - **Linguagem:** [Node.js](https://nodejs.org/) (versão 22.14), TypeScript
 - **Biblioteca:** [React.js](https://reactjs.org/)
-- **Estilo:** [Material UI](https://mui.com/), [Styled Components](https://styled-components.com/)
-- **Testes:** [React Testing Library](https://testing-library.com/), [Jest](https://jestjs.io/)
+- **Estilo:** [Material UI](https://mui.com/), [Tailwind CSS](https://tailwindcss.com/)
+- 
 
 ### DevOps
 
