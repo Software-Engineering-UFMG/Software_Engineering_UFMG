@@ -7,9 +7,8 @@ import React, {
   } from "react";
   import { useNavigate } from "react-router";
   import { User } from "../types/userTypes";
-  
   import { useGlobalContext } from "./GlobalContext";
-  import { reAuth } from "../services/User/Auth/reAuth";
+  import { logout, getMe } from "../services/api"; 
   
   interface AuthContextType {
     user: User | null;
@@ -41,15 +40,11 @@ import React, {
       const checkLoginStatus = async () => {
         try {
           setLoading(true);
-          const userData = await reAuth(); // Calls the `/auth/reAuth` endpoint
-    
-          if (userData) {
-            setUser(userData);
-            const currentPath = window.location.pathname;
-            navigate(currentPath); // Keep the user on the same page
-          }
+          const userData = await getMe(); 
+          setUser(userData);
         } catch (error) {
           setUser(null);
+          navigate("/"); 
         } finally {
           setLoading(false);
           setIsLoading(false);
@@ -64,10 +59,13 @@ import React, {
       navigate("/dashboard");
     };
   
-    const handleLogout = () => {
-      localStorage.removeItem("authToken"); // Remove token
-      setUser(null);
-      navigate("/login"); // Redirect to login page
+    const handleLogout = async () => {
+      try {
+        await logout();
+        setUser(null);
+        localStorage.removeItem("user");
+      } catch (error) {
+      }
     };
   
     return (
@@ -92,4 +90,3 @@ import React, {
     }
     return context;
   };
-  

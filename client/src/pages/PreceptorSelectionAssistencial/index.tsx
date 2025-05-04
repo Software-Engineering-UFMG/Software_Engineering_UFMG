@@ -1,42 +1,68 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
-import { MenuItem, Select, Typography, Box } from "@mui/material";
+import { Typography, Box, TextField, InputAdornment, List, ListItem, ListItemButton } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import { useAuth } from "../../context/AuthContext";
 
 export const Preceptor = () => {
-  const [user, setUser] = useState({ name: "", role: "" });
+  const { user, isLoading } = useAuth(); // <-- get isLoading
   const [preceptors, setPreceptors] = useState<string[]>([]);
-  const [selectedPreceptor, setSelectedPreceptor] = useState<string | null>(
-    null
-  );
-  const handleLogout = () => {
-    console.log("Admin logged out");
-    navigate("/"); // Redirect to the login page
-  };
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [filteredPreceptors, setFilteredPreceptors] = useState<string[]>([]);
+  const [selectedPreceptor, setSelectedPreceptor] = useState<string | null>(null);
+  const { handleLogout: authLogout } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Fetch user data
-    setUser({ name: "Nome do Usuário", role: "Assistencial" });
+  const handleLogoutClick = async () => {
+    await authLogout(); 
+    navigate("/"); 
+  };
 
-    // Fetch preceptors from database
-    setPreceptors([
-      "Gustavo Cancela Penna",
-      "Isabela Nascimento Borges",
-      "Mariana Benevides Santos Paiva",
-      "Taciana Fernandes Araújo",
-    ]);
-  }, []);
+  useEffect(() => {
+    if (!user && !isLoading) {
+      navigate("/");
+    }
+    if (user) {
+      const fetchedPreceptors = [
+        "Gustavo Cancela Penna",
+        "Isabela Nascimento Borges",
+        "Mariana Benevides Santos Paiva",
+        "Taciana Fernandes Araújo",
+      ];
+      setPreceptors(fetchedPreceptors);
+    }
+  }, [user, isLoading, navigate]);
+
+  useEffect(() => {
+    if (searchTerm) {
+      setFilteredPreceptors(
+        preceptors.filter((preceptor) =>
+          preceptor.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    } else {
+      setFilteredPreceptors([]);
+      setSelectedPreceptor(null);
+    }
+  }, [searchTerm, preceptors]);
+
+  const handlePreceptorSelect = (preceptor: string) => {
+    setSelectedPreceptor(preceptor);
+    setSearchTerm(preceptor);
+    setFilteredPreceptors([]);
+  };
 
   const handleContinue = () => {
     if (selectedPreceptor) {
-      navigate("/assistencial/dashboard");
+      navigate("/preceptor/AssistencialDashboard", {
+        state: { preceptorName: selectedPreceptor },
+      });
     }
   };
 
   return (
     <Box sx={{ p: 4, fontFamily: "Arial, sans-serif" }}>
-      {/* Centralized Image */}
       <Box sx={{ display: "flex", justifyContent: "center", mb: 4 }}>
         <img
           src={hospitalLogo}
@@ -44,8 +70,6 @@ export const Preceptor = () => {
           className="w-[10%] min-w-[100px] rounded-3xl"
         />
       </Box>
-
-      {/* User Info and Edit Button */}
       <Box
         sx={{
           display: "flex",
@@ -55,9 +79,9 @@ export const Preceptor = () => {
         }}
       >
         <Box>
-          <Typography variant="h6">{user.name}</Typography>
-          <Typography variant="body2" color="textSecondary">
-            {user.role}
+          <Typography variant="h5">{user?.name}</Typography>
+          <Typography variant="h6" color="textSecondary">
+            {user?.specialty ? `${user.specialty} - ${user.role}` : user?.role}
           </Typography>
         </Box>
         <button
@@ -67,50 +91,63 @@ export const Preceptor = () => {
           Editar seu cadastro
         </button>
       </Box>
-
-      {/* Dropdown for Preceptor Selection */}
-      <Box sx={{ display: "flex", justifyContent: "center", mb: 4 }}>
-        <Select
-          value={selectedPreceptor || ""}
-          onChange={(e) => setSelectedPreceptor(e.target.value)}
-          displayEmpty
-          sx={{ width: "50%" }}
-        >
-          <MenuItem value="" disabled>
-            Escolha seu preceptor
-          </MenuItem>
-          {preceptors.map((preceptor, index) => (
-            <MenuItem key={index} value={preceptor}>
-              {preceptor}
-            </MenuItem>
-          ))}
-        </Select>
-      </Box>
-
-      {/* Bottom Buttons */}
-      <Box sx={{ display: "flex", justifyContent: "end"  }}>
-        <button
-          onClick={handleLogout}
-          style={{
-            position: "fixed",
-            bottom: "20px",
-            right: "20px",
-            backgroundColor: "#86efac",
-            color: "#fff",
-            border: "none",
-            borderRadius: "5px",
-            padding: "10px 20px",
-            cursor: "pointer",
+      <Box sx={{ display: "flex", justifyContent: "center", mb: 4, position: "relative" }}>
+        <TextField
+          placeholder="Digite o nome do preceptor"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
           }}
-          onMouseOver={(e) =>
-            (e.currentTarget.style.backgroundColor = "#4ade80")
-          }
-          onMouseOut={(e) =>
-            (e.currentTarget.style.backgroundColor = "#86efac")
-          }
-        >
-          Logout
-        </button>
+          sx={{ width: "50%" }}
+        />
+        {filteredPreceptors.length > 0 && (
+          <List
+            sx={{
+              position: "absolute",
+              top: "100%",
+              width: "50%",
+              backgroundColor: "white",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+              zIndex: 10,
+              maxHeight: "150px",
+              overflowY: "auto",
+            }}
+          >
+            {filteredPreceptors.map((preceptor, index) => (
+              <ListItem key={index} disablePadding>
+                <ListItemButton onClick={() => handlePreceptorSelect(preceptor)}>
+                  {preceptor}
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        )}
+      </Box>
+      <Box sx={{ display: "flex", justifyContent: "end" }}>
+      <button
+        onClick={handleLogoutClick}
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          right: "20px",
+          backgroundColor: "#86efac",
+          color: "#fff",
+          border: "none",
+          borderRadius: "5px",
+          padding: "10px 20px",
+          cursor: "pointer",
+        }}
+        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#4ade80")}
+        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#86efac")}
+      >
+        Sair
+      </button>
         <button
           onClick={handleContinue}
           disabled={!selectedPreceptor}

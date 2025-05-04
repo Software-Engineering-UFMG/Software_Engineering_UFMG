@@ -3,11 +3,17 @@ import {
   createUser,
   getAllUsers,
   getUserById,
-  updateUser,
   deleteUser,
+  updateOwnUser,
+  updateUserById,
 } from "../services/userService";
-import { CreateUserDTO, UpdateUserDTO } from "../types/userTypes";
+import {
+  CreateUserDTO,
+  UpdateUserByIdDTO,
+  UpdateUserDTO,
+} from "../types/userTypes";
 import { sendResponse, sendErrorResponse } from "../utils/responseUtils";
+import { decodeToken } from "../utils/jwtUtils";
 
 export const getUsersHandler = async (
   req: FastifyRequest,
@@ -67,42 +73,96 @@ export const createUserHandler = async (
   }
 };
 
-export const updateUserHandler = async (
-  req: FastifyRequest<{ Params: { id: number }; Body: UpdateUserDTO }>,
+export const updateOwnUserHandler = async (
+  req: FastifyRequest<{ Body: UpdateUserDTO }>,
   reply: FastifyReply
 ) => {
   try {
+    const token = req.cookies.authToken;
+
+    if (!token) {
+      return sendErrorResponse(reply, 401, "Unauthorized");
+    }
+
+    const { id: userId } = decodeToken(token);
+
+    if (!userId) {
+      return sendErrorResponse(reply, 401, "Unauthorized");
+    }
+
+    const { currentPassword, password } = req.body;
+
+    if (password && !currentPassword) {
+      return sendErrorResponse(
+        reply,
+        400,
+        "Current password is required to update the password."
+      );
+    }
+
+    const user = await getUserById(userId);
+
+    if (!user) {
+      return sendErrorResponse(reply, 404, "User not found");
+    }
+
+    const updatedUser = await updateOwnUser(userId, req.body);
+
+    if (!updatedUser) {
+      return sendErrorResponse(reply, 404, "User not found");
+    }
+
+    sendResponse(reply, 200, updatedUser);
+  } catch (error: any) {
+    if (error.message === "Current password is incorrect.") {
+      return sendErrorResponse(reply, 401, error.message);
+    }
+
+    sendErrorResponse(reply, 500, "An unexpected error occurred");
+  }
+};
+
+export const updateUserByIdHandler = async (
+  req: FastifyRequest<{ Params: { id: number }; Body: UpdateUserByIdDTO }>,
+  reply: FastifyReply
+) => {
+  try {
+    const token = req.cookies.authToken;
+
+    if (!token) {
+      return sendErrorResponse(reply, 401, "Unauthorized");
+    }
+
+    const { id: userId } = decodeToken(token);
+
+    if (!userId) {
+      return sendErrorResponse(reply, 401, "Unauthorized");
+    }
+
+    const loggedUser = await getUserById(userId);
+
+    if (!loggedUser) {
+      return sendErrorResponse(reply, 404, "Logged-in user not found");
+    }
+
+    if (loggedUser.role !== "Admin") {
+      return sendErrorResponse(reply, 403, "Forbidden: Admin role required");
+    }
+
     const { id } = req.params;
-    const { name, username } = req.body;
 
     if (!id || isNaN(Number(id))) {
       return sendErrorResponse(reply, 400, "Invalid or missing 'id' parameter");
     }
 
-    if (!name && !username) {
-      return sendErrorResponse(
-        reply,
-        400,
-        "At least one field ('name' or 'username') must be provided"
-      );
-    }
+    const updatedUser = await updateUserById(Number(id), req.body);
 
-    const updatedUser = await updateUser(Number(id), req.body);
     if (!updatedUser) {
       return sendErrorResponse(reply, 404, "User not found");
     }
+
     sendResponse(reply, 200, updatedUser);
   } catch (error: any) {
-    if (
-      error.message === "Current password is required to update the password."
-    ) {
-      return sendErrorResponse(reply, 400, error.message);
-    }
-
-    if (error.message === "Current password is incorrect.") {
-      return sendErrorResponse(reply, 401, error.message);
-    }
-
     sendErrorResponse(reply, 500, "An unexpected error occurred");
   }
 };

@@ -7,9 +7,6 @@ import { Input } from "../../components/Input";
 import { Link } from "react-router";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
 import { memo } from "react";
-// Services
-
-// Components
 
 export const Login = memo(() => {
   const navigate = useNavigate();
@@ -59,7 +56,11 @@ export const Login = memo(() => {
   const handlePasswordChange = (value: string) => {
     setPassword(value);
     if (value !== "") {
-      setErrorMessage((prevState) => ({ ...prevState, password: null }));
+      setErrorMessage((prevState) => ({
+        ...prevState,
+        password: null,
+        userAccountWrong: null,
+      }));
     }
   };
 
@@ -72,21 +73,34 @@ export const Login = memo(() => {
     try {
       if (!validateForm()) {
         return;
-      }
-  
+      }  
       const userData = await login(username, password); 
       if (!userData) {
         setErrorMessage((prevState) => ({
           ...prevState,
-          userAccountWrong: "Login ou senha inválidos",
+          userAccountWrong: "Login ou senha incorretos",
         }));
         return;
       }
-      console.log("Login success", userData);
+
+      if (userData.error === "InvalidPassword") {
+        setErrorMessage((prevState) => ({
+          ...prevState,
+          password: "Senha incorreta",
+        }));
+        return;
+      }
+
+      if (userData.status === "Inactive") {
+        setErrorMessage((prevState) => ({
+          ...prevState,
+          userAccountWrong: "O usuário está inativo",
+        }));
+        return;
+      }
   
       handleLogin(userData);
   
-      // Role-based redirection
       switch (userData.role) {
         case "Admin":
           navigate("/dashboard");
@@ -101,12 +115,17 @@ export const Login = memo(() => {
           throw new Error("Invalid user role");
       }
     } catch (error: any) {
-      console.error("Login error:", error.message);
-  
-      setErrorMessage((prevState) => ({
-        ...prevState,
-        userAccountWrong: "E-mail ou senha inválidos",
-      }));
+      if (error.response?.status === 401) {
+        setErrorMessage((prevState) => ({
+          ...prevState,
+          userAccountWrong: "Login ou senha incorretos",
+        }));
+      } else {
+        setErrorMessage((prevState) => ({
+          ...prevState,
+          userAccountWrong: "Erro ao tentar fazer login",
+        }));
+      }
     } finally {
       setLoading(false);
     }
@@ -123,7 +142,7 @@ export const Login = memo(() => {
         <img
           src={hospitalLogo}
           alt="Hospital Logo"
-          className="w-[60%] rounded-3xl"
+          className="w-[80%] rounded-3xl"
         />
       </div>
 
@@ -160,6 +179,11 @@ export const Login = memo(() => {
               {errorMessage.password && (
                 <div className="mt-1 h-[10px] text-sm text-red-600">
                   {errorMessage.password}
+                </div>
+              )}
+              {errorMessage.userAccountWrong && (
+                <div className="mt-1 h-[10px] text-sm text-red-600">
+                  {errorMessage.userAccountWrong}
                 </div>
               )}
             </div>

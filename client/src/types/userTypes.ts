@@ -2,30 +2,13 @@ export interface User {
     id: number;
     name: string;
     username: string;
-    password:string;
-    active: 1 | 0;
-    dateOfBirth:Date;
-    cellphone:number;
+    password?: string; // Optional since it's not included in the console.log
+    status: "Active" | "Inactive";
+    birthDate: string; // Changed from `dateOfBirth: Date` to match the string format
+    phone: string; // Changed from `cellphone: number` to match the string format
+    role: UserRole;
+    specialty?: string; // Optional for non-Assistencial users
+    createdAt: string; // Added to match the console.log structure
 }
 
-export interface AdminUser extends User {
-    role: "ADMIN";
-}
-
-export interface NirUser extends User {
-    role: "NIR";
-}
-
-export interface AssistencialUser extends User {
-    role: "ASSISTENCIAL";
-    specialty: string; 
-}
-
-
-export type UserRole = "ADMIN" | "ASSISTENCIAL" | "NIR";
-
-export const RoleConstants = {
-    ADMIN: "ADMIN" as UserRole,
-    ASSISTENCIAL: "ASSISTENCIAL" as UserRole,
-    NIR: "NIR" as UserRole
-};
+export type UserRole = "Admin" | "Assistencial" | "NIR";

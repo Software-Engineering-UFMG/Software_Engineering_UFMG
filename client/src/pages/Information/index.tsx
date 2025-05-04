@@ -1,16 +1,17 @@
-
 import { useNavigate } from "react-router";
+
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
 
 export const Information = () => {
   const navigate = useNavigate();
 
+  
   return (
     <div
       style={{
         display: "flex",
         flexDirection: "column",
-        alignItems: "center", // Center the image and button
+        alignItems: "center",
         justifyContent: "start",
         minHeight: "100vh",
         textAlign: "justify",
@@ -27,9 +28,9 @@ export const Information = () => {
         style={{
           width: "100%",
           maxWidth: "800px",
-          fontSize: "18px", // Increase font size
-          letterSpacing: "0.5px", // Add letter spacing
-          lineHeight: "1.6", // Improve line spacing
+          fontSize: "18px",
+          letterSpacing: "0.5px",
+          lineHeight: "1.6",
         }}
       >
         <h1 style={{ fontSize: "24px", letterSpacing: "1px", textAlign: "center", marginBottom: "20px" }}>
@@ -92,8 +93,6 @@ export const Information = () => {
           Para uma compreensão mais detalhada sobre a aplicação do <strong>Red2Green Days</strong>, confira o vídeo abaixo que ilustra sua implementação prática:
         </p>
       </div>
-
-      {/* Vídeo do YouTube incorporado */}
       <div
         style={{
           display: "flex",
@@ -116,7 +115,6 @@ export const Information = () => {
         >
         </iframe>
       </div>
-
       <button
         onClick={() => navigate("/")}
         style={{

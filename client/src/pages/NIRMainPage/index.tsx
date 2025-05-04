@@ -1,29 +1,31 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
 import { Typography, Box } from "@mui/material";
+import { useAuth } from "../../context/AuthContext";
 
 export const NIRMainpage = () => {
-  const [user, setUser] = useState({ name: "", role: "" });
+  const { user, isLoading } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    console.log("Admin logged out");
-    navigate("/"); // Redirect to the login page
-  };
+  const { handleLogout: authLogout } = useAuth();
 
+  const handleLogoutClick = async () => {
+    await authLogout();
+    navigate("/");
+  };
   const handleDashboardNavigation = () => {
-    navigate("/nir/patientDashboard"); // Redirect to the patient dashboard
+    navigate("/NIRMainpage/NIRDashboard");
   };
 
   useEffect(() => {
-    // Fetch user data
-    setUser({ name: "Nome do Usuário", role: "NIR" });
-  }, []);
+    if (!user && !isLoading) {
+      navigate("/");
+    }
+  }, [user, isLoading, navigate]);
 
   return (
     <Box sx={{ p: 4, fontFamily: "Arial, sans-serif" }}>
-      {/* Centralized Image */}
       <Box sx={{ display: "flex", justifyContent: "center", mb: 4 }}>
         <img
           src={hospitalLogo}
@@ -31,8 +33,6 @@ export const NIRMainpage = () => {
           className="w-[10%] min-w-[100px] rounded-3xl"
         />
       </Box>
-
-      {/* User Info and Edit Button */}
       <Box
         sx={{
           display: "flex",
@@ -42,10 +42,15 @@ export const NIRMainpage = () => {
         }}
       >
         <Box>
-          <Typography variant="h6">{user.name}</Typography>
+          <Typography variant="h6">{user?.name}</Typography>
           <Typography variant="body2" color="textSecondary">
-            {user.role}
+            {user?.role}
           </Typography>
+          {user?.role?.toUpperCase() === "ASSISTENCIAL" && (
+            <Typography variant="body2" color="textSecondary">
+              {user?.specialty}
+            </Typography>
+          )}
         </Box>
         <button
           onClick={() => navigate("/NIRMainpage/editNir")}
@@ -54,8 +59,6 @@ export const NIRMainpage = () => {
           Editar seu cadastro
         </button>
       </Box>
-
-      {/* Dashboard Button */}
       <Box sx={{ display: "flex", justifyContent: "center", mb: 4 }}>
         <button
           onClick={handleDashboardNavigation}
@@ -64,31 +67,25 @@ export const NIRMainpage = () => {
           Dashboard de pacientes
         </button>
       </Box>
-
-      {/* Bottom Buttons */}
       <Box sx={{ display: "flex", justifyContent: "end" }}>
-        <button
-          onClick={handleLogout}
-          style={{
-            position: "fixed",
-            bottom: "20px",
-            right: "20px",
-            backgroundColor: "#86efac",
-            color: "#fff",
-            border: "none",
-            borderRadius: "5px",
-            padding: "10px 20px",
-            cursor: "pointer",
-          }}
-          onMouseOver={(e) =>
-            (e.currentTarget.style.backgroundColor = "#4ade80")
-          }
-          onMouseOut={(e) =>
-            (e.currentTarget.style.backgroundColor = "#86efac")
-          }
-        >
-          Logout
-        </button>
+      <button
+        onClick={handleLogoutClick}
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          right: "20px",
+          backgroundColor: "#86efac",
+          color: "#fff",
+          border: "none",
+          borderRadius: "5px",
+          padding: "10px 20px",
+          cursor: "pointer",
+        }}
+        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#4ade80")}
+        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#86efac")}
+      >
+        Sair
+      </button>
       </Box>
     </Box>
   );
