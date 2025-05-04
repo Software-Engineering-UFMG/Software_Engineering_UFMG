@@ -1,23 +1,18 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate } from "react-router";
 import { Box, Typography, Button, TextField, RadioGroup, FormControlLabel, Radio, Checkbox } from "@mui/material";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
 import ebserh from "../../assets/images/ebserh.jpg";
 import RED from "../../assets/images/RED.png";
-import api from "../../services/api"; // Importa o cliente Axios configurado
 
 export const QuestionnairePage = () => {
     const navigate = useNavigate();
-    const { patientId } = useParams<{ patientId: string }>(); // Obtém o ID do paciente da URL
-    const [patientData, setPatientData] = useState<{ name: string; birthDate: string; record: string } | null>(null);
     const [answers, setAnswers] = useState<Record<string, any>>({});
     const [isDisabled, setIsDisabled] = useState(false);
     const [circleColor, setCircleColor] = useState("green");
 
     useEffect(() => {
         checkLastSubmission();
-        loadPatientData(); // Carrega informações do paciente
-        loadQuestionnaire(); // Carrega respostas do backend
     }, []);
 
     useEffect(() => {
@@ -36,25 +31,9 @@ export const QuestionnairePage = () => {
 
             if (lastDate.getTime() === today.getTime()) {
                 setIsDisabled(true);
+            } else {
+                setIsDisabled(false);
             }
-        }
-    };
-
-    const loadPatientData = async () => {
-        try {
-            const response = await api.get(`/patients/${patientId}`); // Faz requisição para buscar dados do paciente
-            setPatientData(response.data);
-        } catch (error) {
-            console.error("Erro ao carregar informações do paciente:", error);
-        }
-    };
-
-    const loadQuestionnaire = async () => {
-        try {
-            const response = await api.get(`/questionnaire/${patientId}`); // Faz requisição para carregar respostas
-            setAnswers(response.data);
-        } catch (error) {
-            console.error("Erro ao carregar questionário:", error);
         }
     };
 
@@ -62,16 +41,11 @@ export const QuestionnairePage = () => {
         setAnswers((prev) => ({ ...prev, [id]: value }));
     };
 
-    const handleSubmit = async () => {
-        try {
-            await api.post(`/questionnaire/${patientId}`, answers); // Envia respostas para o backend
-            localStorage.setItem("lastQuestionnaireSubmission", new Date().toISOString());
-            console.log("Respostas enviadas:", answers);
-            setIsDisabled(true);
-        } catch (error) {
-            console.error("Erro ao enviar questionário:", error);
-        }
-    };
+    const handleSubmit = () => {
+        console.log("Respostas enviadas:", answers);
+        localStorage.setItem("lastQuestionnaireSubmission", new Date().toISOString());
+        setIsDisabled(true);
+    }
 
     const updateRedToGreenSign = () => {
         if (
@@ -95,7 +69,6 @@ export const QuestionnairePage = () => {
                     alignItems: "center",
                     justifyContent: "center",
                     minHeight: "100vh",
-                    backgroundColor: "#f0fff0",
                     padding: 4,
                 }}
             >
@@ -237,7 +210,7 @@ export const QuestionnairePage = () => {
                     </Typography>
                     <TextField
                         fullWidth
-                        value={patientData?.name || ""}
+                        // value={patientData?.name || ""}
                         variant="outlined"
                         InputProps={{
                             readOnly: true,
@@ -264,7 +237,7 @@ export const QuestionnairePage = () => {
                     </Typography>
                     <TextField
                         fullWidth
-                        value={patientData?.birthDate || ""}
+                        // value={patientData?.birthDate || ""}
                         variant="outlined"
                         InputProps={{
                             readOnly: true,
@@ -291,7 +264,7 @@ export const QuestionnairePage = () => {
                     </Typography>
                     <TextField
                         fullWidth
-                        value={patientData?.record || ""}
+                        // value={patientData?.record || ""}
                         variant="outlined"
                         InputProps={{
                             readOnly: true,
