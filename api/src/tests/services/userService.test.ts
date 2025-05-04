@@ -4,7 +4,8 @@ import {
   getAllUsers,
   getUserById,
   createUser,
-  updateUser,
+  updateOwnUser,
+  updateUserById,
   deleteUser,
 } from "../../services/userService";
 
@@ -119,7 +120,7 @@ describe("User Service", () => {
         name: "John",
         username: "john_doe",
         password: "password123",
-        birthDate: new Date("1990-01-01"),
+        birthDate: "1990-01-01",
         role: "Admin",
       });
 
@@ -135,10 +136,24 @@ describe("User Service", () => {
       expect(bcrypt.hash).toHaveBeenCalledWith("password123", 10);
       expect(prisma.user.create).toHaveBeenCalled();
     });
+
+    it("should throw an error if username already exists", async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 1 });
+
+      await expect(
+        createUser({
+          name: "John",
+          username: "john_doe",
+          password: "password123",
+          birthDate: "1990-01-01",
+          role: "Admin",
+        })
+      ).rejects.toThrow("Username already exists");
+    });
   });
 
-  describe("updateUser", () => {
-    it("should update a user and return it without password", async () => {
+  describe("updateOwnUser", () => {
+    it("should update the user's own data and return it without password", async () => {
       const mockUser = {
         id: 1,
         name: "John",
@@ -159,7 +174,7 @@ describe("User Service", () => {
         password: "newHashed",
       });
 
-      const result = await updateUser(1, {
+      const result = await updateOwnUser(1, {
         name: "John Updated",
         currentPassword: "password123",
         password: "newPassword123",
@@ -190,7 +205,7 @@ describe("User Service", () => {
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       await expect(
-        updateUser(1, {
+        updateOwnUser(1, {
           currentPassword: "wrongPassword",
           password: "newPassword123",
         })
@@ -199,10 +214,48 @@ describe("User Service", () => {
 
     it("should throw an error if current password is missing when updating password", async () => {
       await expect(
-        updateUser(1, {
+        updateOwnUser(1, {
           password: "newPassword123",
         })
       ).rejects.toThrow("Current password is required to update the password.");
+    });
+  });
+
+  describe("updateUserById", () => {
+    it("should update a user by ID and return it without password", async () => {
+      const mockUser = {
+        id: 1,
+        name: "John",
+        username: "john_doe",
+        birthDate: new Date("1990-01-01"),
+        role: "Admin",
+        status: "Active",
+        createdAt: new Date(),
+        password: "hashed",
+      };
+      (bcrypt.hash as jest.Mock).mockResolvedValue("newHashed");
+      (prisma.user.update as jest.Mock).mockResolvedValue({
+        ...mockUser,
+        name: "John Updated",
+        password: "newHashed",
+      });
+
+      const result = await updateUserById(1, {
+        name: "John Updated",
+        password: "newPassword123",
+      });
+
+      expect(result).toEqual({
+        id: 1,
+        name: "John Updated",
+        username: "john_doe",
+        birthDate: new Date("1990-01-01"),
+        role: "Admin",
+        status: "Active",
+        createdAt: mockUser.createdAt,
+      });
+      expect(bcrypt.hash).toHaveBeenCalledWith("newPassword123", 10);
+      expect(prisma.user.update).toHaveBeenCalled();
     });
   });
 

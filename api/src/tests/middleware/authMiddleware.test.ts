@@ -3,6 +3,12 @@ import { verifyToken } from "../../utils/jwtUtils";
 import { sendErrorResponse } from "../../utils/responseUtils";
 import { FastifyReply, FastifyRequest } from "fastify";
 
+declare module "fastify" {
+  interface FastifyRequest {
+    user?: { id: number; username: string; role: string };
+  }
+}
+
 jest.mock("../../utils/jwtUtils", () => ({
   verifyToken: jest.fn(),
 }));
