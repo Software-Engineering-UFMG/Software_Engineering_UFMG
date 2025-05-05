@@ -41,6 +41,29 @@ export const QuestionnairePage = () => {
         setAnswers((prev) => ({ ...prev, [id]: value }));
     };
 
+    const submitMockData = async () => {
+        // Simula o envio dos dados para o servidor
+        console.log("Enviando respostas para o servidor:", answers);
+
+        // Simula um atraso na resposta do servidor
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Simula uma resposta de sucesso do servidor
+        const mockResponse = {
+            status: 200,
+            message: "Questionário enviado com sucesso!",
+        };
+
+        if (mockResponse.status === 200) {
+            console.log(mockResponse.message);
+            localStorage.setItem("lastQuestionnaireSubmission", new Date().toISOString());
+            setIsDisabled(true);
+            navigate(-1); // Redireciona para a página anterior
+        } else {
+            console.error("Erro ao enviar o questionário.");
+        }
+    };
+
     const handleSubmit = () => {
         console.log("Respostas enviadas:", answers);
         localStorage.setItem("lastQuestionnaireSubmission", new Date().toISOString());
