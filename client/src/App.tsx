@@ -39,7 +39,7 @@ function App() {
       <Route path="/dashboard/addUserAsAdmin" element={<RegisterUserAsAdmin />} />
       <Route path="/dashboard/addUserAsAdmin/successAdminAddUser" element={<SuccessAdminAddUser />} />
       <Route path="/dashboard/editUser/:userId" element={<EditUser />} />
-      <Route path="/questionnaire" element={<Questionnaire />} />
+      <Route path="/Questionnaire" element={<Questionnaire />} />
     </Routes>
 
 

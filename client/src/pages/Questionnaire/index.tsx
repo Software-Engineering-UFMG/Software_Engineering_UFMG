@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { Box, Typography, Button, TextField, RadioGroup, FormControlLabel, Radio, Checkbox } from "@mui/material";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
 import ebserh from "../../assets/images/ebserh.jpg";
@@ -7,13 +7,20 @@ import RED from "../../assets/images/RED.png";
 
 export const QuestionnairePage = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const patientData = location.state?.patient;
     const [answers, setAnswers] = useState<Record<string, any>>({});
     const [isDisabled, setIsDisabled] = useState(false);
     const [circleColor, setCircleColor] = useState("green");
 
     useEffect(() => {
+        console.log("Patient Data:", patientData); // Debug log
+        if (!patientData) {
+            navigate(-1);
+            return;
+        }
         checkLastSubmission();
-    }, []);
+    }, [patientData, navigate]);
 
     useEffect(() => {
         updateRedToGreenSign();
@@ -209,29 +216,24 @@ export const QuestionnairePage = () => {
 
             <Box
                 sx={{
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "center",
-                    gap: 6,
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
+                    justifyContent: 'center',
+                    alignItems: { xs: 'stretch', md: 'center' },
+                    gap: 3,
                     mt: 4,
                     mb: 4,
                     p: 2,
                 }}
             >
                 {/* Campo 1: Nome do Paciente */}
-                <Box
-                    sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 2,
-                    }}
-                >
-                    <Typography variant="h6" color="black" sx={{ minWidth: "220px" }}>
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Typography variant="h6" color="black">
                         Nome do Paciente:
                     </Typography>
                     <TextField
                         fullWidth
-                        // value={patientData?.name || ""}
+                        value={patientData?.name || ""}
                         variant="outlined"
                         InputProps={{
                             readOnly: true,
@@ -245,20 +247,14 @@ export const QuestionnairePage = () => {
                     />
                 </Box>
 
-                {/* Campo 2: Data de Nascimento do Paciente */}
-                <Box
-                    sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 2,
-                    }}
-                >
-                    <Typography variant="h6" color="black" sx={{ minWidth: "220px" }}>
+                {/* Campo 2: Data de Nascimento */}
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Typography variant="h6" color="black">
                         Data de Nascimento:
                     </Typography>
                     <TextField
                         fullWidth
-                        // value={patientData?.birthDate || ""}
+                        value={patientData?.birthDate || ""}
                         variant="outlined"
                         InputProps={{
                             readOnly: true,
@@ -272,20 +268,14 @@ export const QuestionnairePage = () => {
                     />
                 </Box>
 
-                {/* Campo 3: Prontuário do Paciente */}
-                <Box
-                    sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 2,
-                    }}
-                >
-                    <Typography variant="h6" color="black" sx={{ minWidth: "220px" }}>
-                        Prontuário do Paciente:
+                {/* Campo 3: Prontuário */}
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Typography variant="h6" color="black">
+                        Prontuário:
                     </Typography>
                     <TextField
                         fullWidth
-                        // value={patientData?.record || ""}
+                        value={patientData?.handBook || ""}
                         variant="outlined"
                         InputProps={{
                             readOnly: true,
