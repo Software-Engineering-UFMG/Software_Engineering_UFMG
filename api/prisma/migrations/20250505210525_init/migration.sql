@@ -20,5 +20,26 @@ CREATE TABLE "User" (
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "Preceptor" (
+    "id" SERIAL NOT NULL,
+    "name" VARCHAR(100) NOT NULL,
+
+    CONSTRAINT "Preceptor_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Patient" (
+    "id" SERIAL NOT NULL,
+    "name" VARCHAR(100) NOT NULL,
+    "medicalRecord" VARCHAR(50) NOT NULL,
+    "hospitalbed" VARCHAR(20),
+
+    CONSTRAINT "Patient_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Patient_medicalRecord_key" ON "Patient"("medicalRecord");
