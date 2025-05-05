@@ -317,10 +317,10 @@ function NIRDashboard() {
 
   const filteredSuggestions = preceptorInput
     ? preceptorSuggestions
-        .filter((preceptor) =>
-          preceptor.toLowerCase().includes(preceptorInput.toLowerCase())
-        )
-        .filter((preceptor) => preceptor !== preceptorInput)
+      .filter((preceptor) =>
+        preceptor.toLowerCase().includes(preceptorInput.toLowerCase())
+      )
+      .filter((preceptor) => preceptor !== preceptorInput)
     : [];
 
   const handleOpenModal = () => setIsModalOpen(true);
@@ -339,15 +339,15 @@ function NIRDashboard() {
       prev.map((patient, i) =>
         i === index
           ? {
-              ...patient,
-              status: patient.status === "Ativado" ? "Desativado" : "Ativado",
-            }
+            ...patient,
+            status: patient.status === "Ativado" ? "Desativado" : "Ativado",
+          }
           : patient
       )
     );
   };
 
-  
+
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addPreceptorInput, setAddPreceptorInput] = useState("");
@@ -370,18 +370,18 @@ function NIRDashboard() {
 
   const filteredAddPreceptorSuggestions = addPreceptorInput
     ? preceptorSuggestions
-        .filter((preceptor) =>
-          preceptor.toLowerCase().includes(addPreceptorInput.toLowerCase())
-        )
-        .filter((preceptor) => preceptor !== addPreceptorInput)
+      .filter((preceptor) =>
+        preceptor.toLowerCase().includes(addPreceptorInput.toLowerCase())
+      )
+      .filter((preceptor) => preceptor !== addPreceptorInput)
     : [];
 
   const filteredAddProntuarioSuggestions = addProntuarioInput
     ? prontuarioSuggestions
-        .filter((item) =>
-          item.prontuario.toLowerCase().includes(addProntuarioInput.toLowerCase())
-        )
-        .filter((item) => item.prontuario !== addProntuarioInput)
+      .filter((item) =>
+        item.prontuario.toLowerCase().includes(addProntuarioInput.toLowerCase())
+      )
+      .filter((item) => item.prontuario !== addProntuarioInput)
     : [];
 
   const handleOpenAddModal = () => setIsAddModalOpen(true);
@@ -604,13 +604,31 @@ function NIRDashboard() {
                     <>
                       <IconButton
                         title="Questionário"
-                        onClick={() => navigate("/preceptor/AssistencialDashboard/Questionnaire")}
+                        onClick={() => {
+                          const prontuario = prontuarioSuggestions.find(
+                            (item) => item.paciente === row.paciente
+                          )?.prontuario || "N/A";
+                          console.log("Sending patient data:", {
+                            name: row.paciente,
+                            birthDate: row.dataNascimento,
+                            handBook: prontuario
+                          });
+                          navigate("/preceptor/AssistencialDashboard/Questionnaire", {
+                            state: {
+                              patient: {
+                                name: row.paciente,
+                                birthDate: row.dataNascimento,
+                                handBook: prontuario
+                              }
+                            }
+                          });
+                        }}
                       >
                         <NoteAdd style={{ color: "blue" }} />
                       </IconButton>
                       <IconButton
                         title="Deletar paciente"
-                        onClick={() => {}}
+                        onClick={() => { }}
                       >
                         <Delete style={{ color: "orange" }} />
                       </IconButton>
@@ -622,7 +640,7 @@ function NIRDashboard() {
                       </IconButton>
                       <IconButton
                         title="Cancelar alta"
-                        
+
                       >
                         <CalendarToday style={{ color: "teal" }} />
                       </IconButton>

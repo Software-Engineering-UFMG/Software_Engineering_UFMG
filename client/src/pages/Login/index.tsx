@@ -66,15 +66,15 @@ export const Login = memo(() => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-  
+
     setLoading(true);
     setErrorMessage({ username: null, password: null, userAccountWrong: null });
-  
+
     try {
       if (!validateForm()) {
         return;
-      }  
-      const userData = await login(username, password); 
+      }
+      const userData = await login(username, password);
       if (!userData) {
         setErrorMessage((prevState) => ({
           ...prevState,
@@ -98,9 +98,9 @@ export const Login = memo(() => {
         }));
         return;
       }
-  
+
       handleLogin(userData);
-  
+
       switch (userData.role) {
         case "Admin":
           navigate("/dashboard");
