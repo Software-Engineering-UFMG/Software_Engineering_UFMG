@@ -65,10 +65,8 @@ export const QuestionnairePage = () => {
     };
 
     const handleSubmit = () => {
-        console.log("Respostas enviadas:", answers);
-        localStorage.setItem("lastQuestionnaireSubmission", new Date().toISOString());
-        setIsDisabled(true);
-    }
+        submitMockData(); // Chama a função para simular o envio
+    };
 
     const updateRedToGreenSign = () => {
         if (
