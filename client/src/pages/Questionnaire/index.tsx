@@ -27,12 +27,11 @@ export const QuestionnairePage = () => {
     }, [answers]);
 
     const checkLastSubmission = () => {
-        const lastSubmission = localStorage.getItem("lastQuestionnaireSubmission");
+        const lastSubmission = localStorage.getItem(`questionnaireSubmission_${patientData?.name}`);
         if (lastSubmission) {
             const lastDate = new Date(lastSubmission);
             const today = new Date();
 
-            // Resetar o horário para comparar apenas as datas
             lastDate.setHours(0, 0, 0, 0);
             today.setHours(0, 0, 0, 0);
 
@@ -49,13 +48,9 @@ export const QuestionnairePage = () => {
     };
 
     const submitMockData = async () => {
-        // Simula o envio dos dados para o servidor
         console.log("Enviando respostas para o servidor:", answers);
-
-        // Simula um atraso na resposta do servidor
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        // Simula uma resposta de sucesso do servidor
         const mockResponse = {
             status: 200,
             message: "Questionário enviado com sucesso!",
@@ -63,9 +58,9 @@ export const QuestionnairePage = () => {
 
         if (mockResponse.status === 200) {
             console.log(mockResponse.message);
-            localStorage.setItem("lastQuestionnaireSubmission", new Date().toISOString());
+            localStorage.setItem(`questionnaireSubmission_${patientData?.name}`, new Date().toISOString());
             setIsDisabled(true);
-            navigate(-1); // Redireciona para a página anterior
+            navigate(-1);
         } else {
             console.error("Erro ao enviar o questionário.");
         }
