@@ -35,3 +35,10 @@ model Preceptor {
 	id          Int     @id @default(autoincrement())
 	name        String  @db.VarChar(100)
 }
+
+model Patient {
+  id            Int      @id @default(autoincrement())
+  name          String   @db.VarChar(100)
+  medicalRecord String   @unique @db.VarChar(50)
+  hospitalbed   String?  @db.VarChar(20)
+}
