@@ -135,9 +135,17 @@ export const Registration = () => {
 
     setIsLoading(true);
     try {
+      // Format birthDate to DD/MM/YYYY before sending
+      let formattedBirthDate = formData.birthDate;
+      if (formattedBirthDate) {
+        const d = dayjs(formattedBirthDate);
+        if (d.isValid()) {
+          formattedBirthDate = d.format("DD/MM/YYYY");
+        }
+      }
       await createUser({
         name: formData.fullName,
-        birthDate: formData.birthDate,
+        birthDate: formattedBirthDate,
         username: formData.login,
         phone: formData.phone,
         password: formData.confirmPassword,
@@ -288,12 +296,8 @@ export const Registration = () => {
             onChange={handleChange}
           >
             <FormControlLabel value="NIR" control={<Radio />} label="NIR" />
-            
-            <FormControlLabel
-              value="Assistencial"
-              control={<Radio />}
-              label="Assistencial"
-            />
+            <FormControlLabel value="Assistencial" control={<Radio />} label="Assistencial" />
+            <FormControlLabel value="Admin" control={<Radio />} label="Admin" />
           </RadioGroup>
           {errors.userType && (
             <Typography variant="caption" color="error">
