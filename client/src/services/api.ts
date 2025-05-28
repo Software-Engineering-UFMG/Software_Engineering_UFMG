@@ -29,6 +29,10 @@ export const createUser = async (userData: {
   }
 };
 
+
+
+
+
 export const getAllUsers = async () => {
   try {
     const response = await api.get("/users");
@@ -125,5 +129,7 @@ export const getMe = async () => {
     throw error;
   }
 };
+
+
 
 export default api;

@@ -1,9 +1,6 @@
 import { z } from "zod";
 
-export const createPreceptorSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-});
-
-export const updatePreceptorSchema = z.object({
-  name: z.string().optional(),
+export const preceptorSchema = z.object({
+  id: z.number(),
+  name: z.string().max(100),
 });

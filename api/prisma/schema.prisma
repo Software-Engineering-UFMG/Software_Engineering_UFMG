@@ -31,14 +31,12 @@ model User {
   createdAt DateTime @default(now())
 }
 
-model Preceptor {
-	id          Int     @id @default(autoincrement())
-	name        String  @db.VarChar(100)
-}
-
-model Patient {
-  id            Int      @id @default(autoincrement())
-  name          String   @db.VarChar(100)
-  medicalRecord String   @unique @db.VarChar(50)
-  hospitalbed   String?  @db.VarChar(20)
+model PreceptorPaciente {
+  id             Int      @id @default(autoincrement()) //id da relação preceptor paciente
+  preceptorId    Int      // id do preceptor (do hospital)
+  medicalRecord  String   // prontuário do paciente (do hospital)
+  status         String   @db.VarChar(20) // ativada/desativada relação entre os dois
+  red2green      String   @db.VarChar(20) // verde/vermelho/à preencher
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }

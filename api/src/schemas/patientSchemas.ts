@@ -1,13 +1,12 @@
 import { z } from "zod";
 
-export const createPatientSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  medicalRecord: z.string().min(1, "Medical record is required"),
-  hospitalBed: z.string().nullable().optional(),
-});
-
-export const updatePatientSchema = z.object({
-  name: z.string().optional(),
-  medicalRecord: z.string().optional(),
-  hospitalBed: z.string().nullable().optional(),
+export const patientSchema = z.object({
+  id: z.number(),
+  name: z.string().max(100),
+  medicalRecord: z.string().max(50),
+  hospitalbed: z.string().max(20).nullable(),
+  birthDate: z.string(),
+  entranceDate: z.string(),
+  dischargingDate: z.string().nullable(),
+  status: z.string().max(20),
 });

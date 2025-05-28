@@ -27,6 +27,7 @@ export const loginHandler = async (
     if (error.message === "Invalid username or password") {
       return sendErrorResponse(reply, 401, error.message);
     }
+    req.log.error(error);
     sendErrorResponse(reply, 500, "An unexpected error occurred");
   }
 };

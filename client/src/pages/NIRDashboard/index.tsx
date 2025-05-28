@@ -33,218 +33,25 @@ import {
 import { useNavigate } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 
-function NIRDashboard() {
-  const dummyData = [
-    {
-      preceptor: "Mariana Gonçalves Fonseca Pena",
-      paciente: "Riquelme Batista Gomes da Silva",
-      dataNascimento: "24/06/2002",
-      leito: "L5",
-      previsaoAlta: "05/11/2025",
-      tempoInternacao: 15,
-      red2Green: "Vermelho",
-      status: "Ativado",
-    },
-    {
-      preceptor: "Clara Gonçalves Fonseca Pena",
-      paciente: "Oswaldo Martins",
-      dataNascimento: "15/08/1990",
-      leito: "L3",
-      previsaoAlta: "10/11/2025",
-      tempoInternacao: 5,
-      red2Green: "Verde",
-      status: "Ativado",
-    },
-    {
-      preceptor: "João Silva",
-      paciente: "Ana Maria",
-      dataNascimento: "10/01/1985",
-      leito: "L2",
-      previsaoAlta: "15/11/2025",
-      tempoInternacao: 8,
-      red2Green: "Á preencher",
-      status: "Desativado",
-    },
-    {
-      preceptor: "Fernanda Costa",
-      paciente: "Carlos Eduardo",
-      dataNascimento: "20/03/1978",
-      leito: "L1",
-      previsaoAlta: "20/11/2025",
-      tempoInternacao: 22,
-      red2Green: "Vermelho",
-      status: "Ativado",
-    },
-    {
-      preceptor: "Carlos Alberto",
-      paciente: "Maria Clara",
-      dataNascimento: "12/12/1980",
-      leito: "L6",
-      previsaoAlta: "25/11/2025",
-      tempoInternacao: 3,
-      red2Green: "Verde",
-      status: "Ativado",
-    },
-    {
-      preceptor: "Ana Paula Souza",
-      paciente: "João Pedro",
-      dataNascimento: "05/05/1995",
-      leito: "L7",
-      previsaoAlta: "30/11/2025",
-      tempoInternacao: 9,
-      red2Green: "Vermelho",
-      status: "Desativado",
-    },
-    {
-      preceptor: "Ricardo Mendes",
-      paciente: "Fernanda Lima",
-      dataNascimento: "22/07/1988",
-      leito: "L8",
-      previsaoAlta: "02/12/2025",
-      tempoInternacao: 12,
-      red2Green: "Á preencher",
-      status: "Ativado",
-    },
-    {
-      preceptor: "Patrícia Oliveira",
-      paciente: "Lucas Rocha",
-      dataNascimento: "18/09/1975",
-      leito: "L9",
-      previsaoAlta: "12/12/2025",
-      tempoInternacao: 20,
-      red2Green: "Verde",
-      status: "Ativado",
-    },
-    {
-      preceptor: "Luiz Fernando",
-      paciente: "Patrícia Souza",
-      dataNascimento: "30/11/1992",
-      leito: "L10",
-      previsaoAlta: "18/12/2025",
-      tempoInternacao: 7,
-      red2Green: "Vermelho",
-      status: "Desativado",
-    },
-    {
-      preceptor: "Gabriela Santos",
-      paciente: "Gabriela Santos",
-      dataNascimento: "14/04/1983",
-      leito: "L11",
-      previsaoAlta: "22/12/2025",
-      tempoInternacao: 18,
-      red2Green: "Verde",
-      status: "Ativado",
-    },
-    {
-      preceptor: "Roberto Lima",
-      paciente: "Roberto Lima",
-      dataNascimento: "01/01/1970",
-      leito: "L12",
-      previsaoAlta: "28/12/2025",
-      tempoInternacao: 21,
-      red2Green: "Á preencher",
-      status: "Ativado",
-    },
-    {
-      preceptor: "Juliana Pereira",
-      paciente: "Juliana Pereira",
-      dataNascimento: "17/03/1999",
-      leito: "L13",
-      previsaoAlta: "03/01/2026",
-      tempoInternacao: 6,
-      red2Green: "Verde",
-      status: "Desativado",
-    },
-    {
-      preceptor: "Marcelo Andrade",
-      paciente: "Marcelo Andrade",
-      dataNascimento: "25/06/1986",
-      leito: "L14",
-      previsaoAlta: "10/01/2026",
-      tempoInternacao: 10,
-      red2Green: "Vermelho",
-      status: "Ativado",
-    },
-    {
-      preceptor: "Beatriz Carvalho",
-      paciente: "Beatriz Carvalho",
-      dataNascimento: "09/09/1977",
-      leito: "L15",
-      previsaoAlta: "15/01/2026",
-      tempoInternacao: 13,
-      red2Green: "Verde",
-      status: "Ativado",
-    },
-    {
-      preceptor: "Renato Figueiredo",
-      paciente: "Renato Figueiredo",
-      dataNascimento: "02/02/1982",
-      leito: "L16",
-      previsaoAlta: "20/01/2026",
-      tempoInternacao: 19,
-      red2Green: "Vermelho",
-      status: "Desativado",
-    },
-    {
-      preceptor: "Camila Rocha",
-      paciente: "Camila Rocha",
-      dataNascimento: "11/11/1991",
-      leito: "L17",
-      previsaoAlta: "25/01/2026",
-      tempoInternacao: 8,
-      red2Green: "Á preencher",
-      status: "Ativado",
-    },
-    {
-      preceptor: "Eduardo Nascimento",
-      paciente: "Eduardo Nascimento",
-      dataNascimento: "07/07/1984",
-      leito: "L18",
-      previsaoAlta: "30/01/2026",
-      tempoInternacao: 4,
-      red2Green: "Verde",
-      status: "Ativado",
-    },
-    {
-      preceptor: "Tatiana Ribeiro",
-      paciente: "Tatiana Ribeiro",
-      dataNascimento: "19/08/1979",
-      leito: "L19",
-      previsaoAlta: "04/02/2026",
-      tempoInternacao: 16,
-      red2Green: "Vermelho",
-      status: "Desativado",
-    },
-    {
-      preceptor: "Fábio Almeida",
-      paciente: "Fábio Almeida",
-      dataNascimento: "23/10/1987",
-      leito: "L20",
-      previsaoAlta: "09/02/2026",
-      tempoInternacao: 11,
-      red2Green: "Verde",
-      status: "Ativado",
-    },
-    {
-      preceptor: "Vanessa Martins",
-      paciente: "Vanessa Martins",
-      dataNascimento: "28/12/1993",
-      leito: "L21",
-      previsaoAlta: "14/02/2026",
-      tempoInternacao: 2,
-      red2Green: "Á preencher",
-      status: "Ativado",
-    },
-  ];
+import dayjs from "dayjs"; // For date calculations
 
+function NIRDashboard() {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Fetch patients from backend
+  const [patients, setPatients] = useState<any[]>([]);
 
   useEffect(() => {
     if (!user && !isLoading) {
       navigate("/");
     }
   }, [user, isLoading, navigate]);
+
+  useEffect(() => {
+    
+   
+  }, []);
 
   const [searchPreceptor, setSearchPreceptor] = useState("");
   const [searchPaciente, setSearchPaciente] = useState("");
@@ -253,9 +60,58 @@ function NIRDashboard() {
   const [statusFilter, setStatusFilter] = useState("");
   const [tempoInternacaoFilter, setTempoInternacaoFilter] = useState("");
 
-  const [patients, setPatients] = useState(dummyData);
+  // Map backend patients to table rows
+  console.log(patients); // <-- Add this line to inspect the data
 
-  const filteredData = patients.filter(
+  const mappedPatients = patients.map((patient) => {
+    // Try to parse as ISO first, fallback to custom format if needed
+    const parseDate = (dateStr: string | null | undefined) => {
+      if (!dateStr) return "";
+      const isoParsed = dayjs(dateStr);
+      if (isoParsed.isValid()) return isoParsed.format("DD/MM/YYYY");
+      // fallback for "YYYY-MM-DD HH:mm:ss"
+      return dayjs(dateStr, "YYYY-MM-DD HH:mm:ss").format("DD/MM/YYYY");
+    };
+
+    const entranceDate = patient.entranceDate
+      ? dayjs(patient.entranceDate)
+      : null;
+    const today = dayjs();
+    const tempoInternacao = entranceDate && entranceDate.isValid()
+      ? today.diff(entranceDate, "day")
+      : 0;
+
+    // Translate status from DB to Portuguese
+    let statusPt = "";
+    if (patient.status === "Active") statusPt = "Ativo";
+    else if (patient.status === "Inactive") statusPt = "Inativo";
+    else statusPt = patient.status || "";
+
+    // Try all possible property names for birth date
+    const rawBirthDate =
+      patient.birthDate ||
+      patient.birthdate ||
+      patient.birth_date ||
+      "";
+
+    // Parse "YYYY-MM-DD HH:mm:ss" format and display as "DD/MM/YYYY"
+    const dataNascimento = rawBirthDate
+      ? dayjs(rawBirthDate, "YYYY-MM-DD HH:mm:ss").format("DD/MM/YYYY")
+      : "";
+
+    return {
+      preceptor: patient.preceptor || "",
+      paciente: patient.name,
+      dataNascimento,
+      leito: patient.hospitalbed || patient.hospitalBed || "",
+      previsaoAlta: parseDate(patient.dischargingDate),
+      tempoInternacao,
+      red2Green: "Á preencher",
+      status: statusPt,
+    };
+  });
+
+  const filteredData = mappedPatients.filter(
     (row) =>
       row.preceptor.toLowerCase().includes(searchPreceptor.toLowerCase()) &&
       row.paciente.toLowerCase().includes(searchPaciente.toLowerCase()) &&
@@ -586,22 +442,14 @@ function NIRDashboard() {
                 </TableCell>
                 <TableCell>{row.status}</TableCell>
                 <TableCell>
-                  <IconButton
-                    title={
-                      row.status === "Ativado"
-                        ? "Desativar paciente"
-                        : "Ativar paciente"
-                    }
-                    onClick={() => togglePatientStatus(index)}
-                  >
-                    {row.status === "Ativado" ? (
-                      <ToggleOff style={{ color: "red" }} />
-                    ) : (
-                      <ToggleOn style={{ color: "green" }} />
-                    )}
-                  </IconButton>
-                  {row.status === "Ativado" && (
+                  {row.status === "Ativo" ? (
                     <>
+                      <IconButton
+                        title="Desativar paciente"
+                        onClick={() => togglePatientStatus(index)}
+                      >
+                        <ToggleOff style={{ color: "red" }} />
+                      </IconButton>
                       <IconButton
                         title="Questionário"
                         onClick={() => {
@@ -640,11 +488,17 @@ function NIRDashboard() {
                       </IconButton>
                       <IconButton
                         title="Cancelar alta"
-
                       >
                         <CalendarToday style={{ color: "teal" }} />
                       </IconButton>
                     </>
+                  ) : (
+                    <IconButton
+                      title="Ativar paciente"
+                      onClick={() => togglePatientStatus(index)}
+                    >
+                      <ToggleOn style={{ color: "green" }} />
+                    </IconButton>
                   )}
                 </TableCell>
               </TableRow>

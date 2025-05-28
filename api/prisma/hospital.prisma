@@ -1,0 +1,25 @@
+generator hospitalClient {
+  provider = "prisma-client-js"
+  output   = "../generated/hospital-client"
+}
+
+datasource hospitalDb {
+  provider = "postgresql"
+  url      = env("HOSPITAL_DATABASE_URL")
+}
+
+model Patient {
+  id            Int      @id @default(autoincrement())
+  name          String   @hospitalDb.VarChar(100)
+  medicalRecord String   @unique @hospitalDb.VarChar(50)
+  hospitalbed   String?  @hospitalDb.VarChar(20)
+  birthDate     DateTime
+  entranceDate  DateTime
+  dischargingDate DateTime?
+  status        String   @hospitalDb.VarChar(20)
+}
+
+model Preceptor {
+  id   Int    @id @default(autoincrement())
+  name String @hospitalDb.VarChar(100)
+}

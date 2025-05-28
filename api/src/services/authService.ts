@@ -1,4 +1,4 @@
-import { prisma } from "../config/prisma";
+import { prisma } from "../config/prisma"
 import bcrypt from "bcrypt";
 import { generateToken, verifyToken } from "../utils/jwtUtils";
 import { UserWithoutPassword } from "../types/userTypes";

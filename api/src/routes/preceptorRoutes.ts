@@ -1,32 +1,39 @@
-import { FastifyInstance } from "fastify";
-import { authMiddleware } from "../middleware/authMiddleware";
-import { validateSchema } from "../middleware/validationMiddleware";
-import { createPreceptorSchema, updatePreceptorSchema } from "../schemas/preceptorSchemas";
+import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import {
-  getPreceptorsHandler,
+  getAllPreceptorsHandler,
   getPreceptorByIdHandler,
-  createPreceptorHandler,
-  updatePreceptorHandler,
-  deletePreceptorHandler,
+  getPreceptorByNameHandler,
 } from "../controllers/preceptorController";
+// Services are now called by the controller, so direct import might not be needed here
+// import {
+//   getAllPreceptors,
+//   getPreceptorById,
+//   getPreceptorByName,
+// } from "../services/preceptorService";
+// import { preceptorSchema } from "../schemas/preceptorSchemas"; // Not used for validation in these GET routes yet
+
+// Define types for route parameters
+interface GetPreceptorByIdParams {
+  id: string;
+}
+
+interface GetPreceptorByNameParams {
+  name: string;
+}
 
 export const preceptorRoutes = (app: FastifyInstance) => {
-  app.get("/preceptors", { preHandler: [authMiddleware] }, getPreceptorsHandler);
+  // GET all preceptors
+  app.get("/preceptors", getAllPreceptorsHandler);
 
-  app.post<{
-    Body: (typeof createPreceptorSchema)["_output"];
-  }>("/preceptor", { preHandler: [authMiddleware, validateSchema(createPreceptorSchema)] }, createPreceptorHandler);
+  // GET preceptor by ID
+  app.get<{ Params: GetPreceptorByIdParams }>(
+    "/preceptor/:id",
+    getPreceptorByIdHandler
+  );
 
-  app.get<{
-    Params: { id: number };
-  }>("/preceptor/:id", { preHandler: [authMiddleware] }, getPreceptorByIdHandler);
-
-  app.put<{
-    Params: { id: number };
-    Body: (typeof updatePreceptorSchema)["_output"];
-  }>("/preceptor/:id", { preHandler: [authMiddleware, validateSchema(updatePreceptorSchema)] }, updatePreceptorHandler);
-
-  app.delete<{
-    Params: { id: number };
-  }>("/preceptor/:id", { preHandler: [authMiddleware] }, deletePreceptorHandler);
+  // GET preceptor by name
+  app.get<{ Params: GetPreceptorByNameParams }>(
+    "/preceptor/name/:name",
+    getPreceptorByNameHandler
+  );
 };

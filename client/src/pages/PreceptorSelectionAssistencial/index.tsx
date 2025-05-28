@@ -5,11 +5,12 @@ import { Typography, Box, TextField, InputAdornment, List, ListItem, ListItemBut
 import SearchIcon from "@mui/icons-material/Search";
 import { useAuth } from "../../context/AuthContext";
 
+
 export const Preceptor = () => {
-  const { user, isLoading } = useAuth(); // <-- get isLoading
-  const [preceptors, setPreceptors] = useState<string[]>([]);
+  const { user, isLoading } = useAuth();
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filteredPreceptors, setFilteredPreceptors] = useState<string[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
   const [selectedPreceptor, setSelectedPreceptor] = useState<string | null>(null);
   const { handleLogout: authLogout } = useAuth();
   const navigate = useNavigate();
@@ -23,29 +24,12 @@ export const Preceptor = () => {
     if (!user && !isLoading) {
       navigate("/");
     }
-    if (user) {
-      const fetchedPreceptors = [
-        "Gustavo Cancela Penna",
-        "Isabela Nascimento Borges",
-        "Mariana Benevides Santos Paiva",
-        "Taciana Fernandes Araújo",
-      ];
-      setPreceptors(fetchedPreceptors);
-    }
   }, [user, isLoading, navigate]);
 
+  // Debounced search effect
   useEffect(() => {
-    if (searchTerm) {
-      setFilteredPreceptors(
-        preceptors.filter((preceptor) =>
-          preceptor.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
-    } else {
-      setFilteredPreceptors([]);
-      setSelectedPreceptor(null);
-    }
-  }, [searchTerm, preceptors]);
+   
+  },);
 
   const handlePreceptorSelect = (preceptor: string) => {
     setSelectedPreceptor(preceptor);
@@ -104,6 +88,7 @@ export const Preceptor = () => {
             ),
           }}
           sx={{ width: "50%" }}
+          disabled={searchLoading}
         />
         {filteredPreceptors.length > 0 && (
           <List
