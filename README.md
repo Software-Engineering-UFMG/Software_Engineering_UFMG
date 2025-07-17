@@ -161,3 +161,12 @@ Siga os passos abaixo para executar o projeto utilizando Docker:
      - http://135.234.180.253:81
    - O backend estará disponível em: http://135.234.180.253:5050
    - O banco de dados estará disponível em: http://135.234.180.253:5432
+
+-- To delete all rows from PreceptorPaciente when there are foreign key constraints from Questionnaire,
+-- you must first delete all rows from Questionnaire:
+
+DELETE FROM "Questionnaire";
+DELETE FROM "PreceptorPaciente";
+
+-- Yes, before deleting a PreceptorPaciente relation, you must delete all Questionnaire records where "preceptorPacienteId" matches that relation's id.  
+-- This avoids foreign key constraint errors.

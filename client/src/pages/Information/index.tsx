@@ -83,9 +83,7 @@ export const Information = () => {
             <strong>Revisão de Pacientes com Longa Permanência:</strong> Avaliação regular de pacientes internados por períodos prolongados para identificar e remover barreiras à alta.
           </li>
         </ul>
-        <p style={{ marginBottom: "20px" }}>
-          A combinação dessas estratégias tem mostrado resultados promissores. O estudo realizado na Unidade de Clínica Médica do HC-UFMG revelou que, após a adoção do <strong>SAFER</strong> e do <strong>Red2Green Days</strong>, a mediana do tempo de internação reduziu de 19 para 14,2 dias, sem aumento nas taxas de mortalidade ou readmissão.
-        </p>
+        
         <p style={{ marginBottom: "20px" }}>
           A redução do tempo de internação não apenas otimiza a utilização dos recursos hospitalares, mas também melhora a experiência do paciente, permitindo uma transição mais rápida para o cuidado ambulatorial, que é menos dispendioso e pode ser mais confortável para o paciente.
         </p>

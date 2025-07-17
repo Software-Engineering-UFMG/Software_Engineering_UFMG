@@ -73,12 +73,16 @@ export const Input = React.memo(
               <button
                 type="button"
                 onClick={() => setIsPasswordHidden(!isPasswordHidden)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-xl pl-0.5 pr-0.5 text-gray-500 hover:text-gray-700 focus:border-blue-500"
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-xl pl-0.5 pr-0.5 cursor-pointer"
                 aria-label={
                   isPasswordHidden ? "Show password" : "Hide password"
                 }
               >
-                {isPasswordHidden ? <Visibility /> : <VisibilityOff />}
+                {isPasswordHidden ? (
+                  <Visibility sx={{ fontSize: 28, color: "black" }} />
+                ) : (
+                  <VisibilityOff sx={{ fontSize: 28, color: "black" }} />
+                )}
               </button>
             )
           : null}

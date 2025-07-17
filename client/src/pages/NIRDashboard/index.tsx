@@ -29,9 +29,20 @@ import {
   ToggleOn,
   ToggleOff,
   CalendarToday,
+  HighlightOff, // <-- add this import
 } from "@mui/icons-material";
 import { useNavigate } from "react-router";
 import { useAuth } from "../../context/AuthContext";
+import {
+  getPreceptorsByName,
+  getPatientsByMedicalRecord,
+  createPreceptorPaciente,
+  getAllPreceptorPacienteWithDetails,
+  updatePreceptorPacienteStatus, // <-- add this import
+  deletePreceptorPaciente, // <-- add this import
+  updatePreceptorPacientePreceptor,
+  deleteAllQuestionnairesForRelation, // <-- add this import
+} from "../../services/api";
 
 import dayjs from "dayjs"; // For date calculations
 
@@ -42,6 +53,16 @@ function NIRDashboard() {
   // Fetch patients from backend
   const [patients, setPatients] = useState<any[]>([]);
 
+  // Extract fetch logic so it can be reused
+  const fetchRelations = async () => {
+    try {
+      const data = await getAllPreceptorPacienteWithDetails();
+      setPatients(data);
+    } catch (error) {
+      setPatients([]);
+    }
+  };
+
   useEffect(() => {
     if (!user && !isLoading) {
       navigate("/");
@@ -49,8 +70,7 @@ function NIRDashboard() {
   }, [user, isLoading, navigate]);
 
   useEffect(() => {
-    
-   
+    fetchRelations();
   }, []);
 
   const [searchPreceptor, setSearchPreceptor] = useState("");
@@ -64,6 +84,9 @@ function NIRDashboard() {
   console.log(patients); // <-- Add this line to inspect the data
 
   const mappedPatients = patients.map((patient) => {
+    // Debug: log patient object to inspect available fields
+    console.log("Patient object:", patient);
+
     // Try to parse as ISO first, fallback to custom format if needed
     const parseDate = (dateStr: string | null | undefined) => {
       if (!dateStr) return "";
@@ -73,18 +96,21 @@ function NIRDashboard() {
       return dayjs(dateStr, "YYYY-MM-DD HH:mm:ss").format("DD/MM/YYYY");
     };
 
-    const entranceDate = patient.entranceDate
-      ? dayjs(patient.entranceDate)
-      : null;
-    const today = dayjs();
-    const tempoInternacao = entranceDate && entranceDate.isValid()
-      ? today.diff(entranceDate, "day")
-      : 0;
+    // Always use entranceDate from API for tempoInternacao calculation
+    let tempoInternacao = 0;
+    if (patient.entranceDate) {
+      const entrance = dayjs(patient.entranceDate);
+      if (entrance.isValid()) {
+        tempoInternacao = dayjs().diff(entrance, "day");
+      }
+    }
 
     // Translate status from DB to Portuguese
     let statusPt = "";
-    if (patient.status === "Active") statusPt = "Ativo";
-    else if (patient.status === "Inactive") statusPt = "Inativo";
+    if (patient.status === "Active" || patient.status === "Ativado")
+      statusPt = "Ativado";
+    else if (patient.status === "Inactive" || patient.status === "Desativado")
+      statusPt = "Desativado";
     else statusPt = patient.status || "";
 
     // Try all possible property names for birth date
@@ -100,14 +126,17 @@ function NIRDashboard() {
       : "";
 
     return {
-      preceptor: patient.preceptor || "",
-      paciente: patient.name,
+      id: patient.id,
+      preceptor: patient.preceptorName || "",
+      paciente: patient.patientName || "",
       dataNascimento,
       leito: patient.hospitalbed || patient.hospitalBed || "",
       previsaoAlta: parseDate(patient.dischargingDate),
       tempoInternacao,
-      red2Green: "Á preencher",
+      red2Green: patient.red2green || "À preencher",
       status: statusPt,
+      // Try all possible property names for medical record
+      medicalRecord: patient.medicalRecord || patient.medicalrecord || patient.medical_record || "", // <--- add all possible variants
     };
   });
 
@@ -144,73 +173,147 @@ function NIRDashboard() {
     return "lightgray";
   };
 
+  // State for "Mudar Preceptor" modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [preceptorInput, setPreceptorInput] = useState("");
-  const [selectedPreceptor, setSelectedPreceptor] = useState<string | null>(null);
+  const [preceptorOptions, setPreceptorOptions] = useState<any[]>([]);
+  const [selectedPreceptor, setSelectedPreceptor] = useState<any | null>(null);
+  const [relationToEdit, setRelationToEdit] = useState<any | null>(null); // <-- store relation
 
-  const preceptorSuggestions = [
-    "Mariana Gonçalves Fonseca Pena",
-    "Clara Gonçalves Fonseca Pena",
-    "João Silva",
-    "Fernanda Costa",
-    "Carlos Alberto",
-    "Ana Paula Souza",
-    "Ricardo Mendes",
-    "Patrícia Oliveira",
-    "Luiz Fernando",
-    "Gabriela Santos",
-    "Roberto Lima",
-    "Juliana Pereira",
-    "Marcelo Andrade",
-    "Beatriz Carvalho",
-    "Renato Figueiredo",
-    "Camila Rocha",
-    "Eduardo Nascimento",
-    "Tatiana Ribeiro",
-    "Fábio Almeida",
-    "Vanessa Martins",
-  ];
-
-  const filteredSuggestions = preceptorInput
-    ? preceptorSuggestions
-      .filter((preceptor) =>
-        preceptor.toLowerCase().includes(preceptorInput.toLowerCase())
-      )
-      .filter((preceptor) => preceptor !== preceptorInput)
-    : [];
-
-  const handleOpenModal = () => setIsModalOpen(true);
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+  // Open modal and set relation to edit
+  const handleOpenModal = (relation: any) => {
+    setRelationToEdit(relation);
+    setIsModalOpen(true);
     setPreceptorInput("");
+    setPreceptorOptions([]);
     setSelectedPreceptor(null);
   };
 
-  const handleChangePreceptor = () => {
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setPreceptorInput("");
+    setPreceptorOptions([]);
+    setSelectedPreceptor(null);
+    setRelationToEdit(null);
+  };
+
+  // Fetch preceptor suggestions as user types
+  const handlePreceptorInput = async (value: string) => {
+    setPreceptorInput(value);
+    setSelectedPreceptor(null);
+    if (value.trim() === "") {
+      setPreceptorOptions([]);
+      return;
+    }
+    try {
+      const data = await getPreceptorsByName(value);
+      setPreceptorOptions(Array.isArray(data) ? data : []);
+    } catch {
+      setPreceptorOptions([]);
+    }
+  };
+
+  // Confirm changing preceptor
+  const handleChangePreceptor = async () => {
+    if (!relationToEdit || !selectedPreceptor) return;
+    try {
+      await updatePreceptorPacientePreceptor(relationToEdit.id, selectedPreceptor.id);
+      fetchRelations();
+    } catch (error) {
+      console.error("Erro ao mudar preceptor:", error);
+    }
     handleCloseModal();
   };
 
-  const togglePatientStatus = (index: number) => {
-    setPatients((prev) =>
-      prev.map((patient, i) =>
-        i === index
-          ? {
-            ...patient,
-            status: patient.status === "Ativado" ? "Desativado" : "Ativado",
-          }
-          : patient
-      )
-    );
+  const handleToggleStatus = async (patient: any) => {
+    try {
+      const newStatus = patient.status === "Ativado" ? "Desativado" : "Ativado";
+      console.log("Toggling status for relation id:", patient.id, "to", newStatus);
+      await updatePreceptorPacienteStatus(patient.id, newStatus);
+      fetchRelations();
+    } catch (error) {
+      console.error("Erro ao alternar status:", error);
+    }
   };
 
+  // State for API-driven modal
+  const [addPreceptorInput, setAddPreceptorInput] = useState("");
+  const [addPreceptorOptions, setAddPreceptorOptions] = useState<any[]>([]);
+  const [addSelectedPreceptor, setAddSelectedPreceptor] = useState<any | null>(null);
 
+  const [addProntuarioInput, setAddProntuarioInput] = useState("");
+  const [addPatientOptions, setAddPatientOptions] = useState<any[]>([]);
+  const [addSelectedPatient, setAddSelectedPatient] = useState<any | null>(null);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [addPreceptorInput, setAddPreceptorInput] = useState("");
-  const [addSelectedPreceptor, setAddSelectedPreceptor] = useState<string | null>(null);
-  const [addProntuarioInput, setAddProntuarioInput] = useState("");
-  const [addSelectedProntuario, setAddSelectedProntuario] = useState<string | null>(null);
 
+  const handleOpenAddModal = () => {
+    setIsAddModalOpen(true);
+  };
+
+  // Fetch preceptor suggestions as user types (use plural function)
+  const handleAddPreceptorInput = async (value: string) => {
+    setAddPreceptorInput(value);
+    setAddSelectedPreceptor(null);
+    if (value.trim() === "") {
+      setAddPreceptorOptions([]);
+      return;
+    }
+    try {
+      const data = await getPreceptorsByName(value); // <-- use plural
+      setAddPreceptorOptions(Array.isArray(data) ? data : []);
+    } catch {
+      setAddPreceptorOptions([]);
+    }
+  };
+
+  // Fetch patient suggestions as user types (use plural function)
+  const handleAddProntuarioInput = async (value: string) => {
+    setAddProntuarioInput(value);
+    setAddSelectedPatient(null);
+    if (value.trim() === "") {
+      setAddPatientOptions([]);
+      return;
+    }
+    try {
+      const data = await getPatientsByMedicalRecord(value); // <-- use plural
+      setAddPatientOptions(Array.isArray(data) ? data : []);
+    } catch {
+      setAddPatientOptions([]);
+    }
+  };
+
+  // Handle create relation
+  const handleAddPatient = async () => {
+    if (!addSelectedPreceptor || !addSelectedPatient) return;
+    await createPreceptorPaciente({
+      preceptorId: addSelectedPreceptor.id,
+      medicalRecord: addSelectedPatient.medicalRecord,
+      status: "Ativado",
+      red2green: "À preencher",
+    });
+    setIsAddModalOpen(false);
+    setAddPreceptorInput("");
+    setAddPreceptorOptions([]);
+    setAddSelectedPreceptor(null);
+    setAddProntuarioInput("");
+    setAddPatientOptions([]);
+    setAddSelectedPatient(null);
+    // Refresh patient list here
+    fetchRelations();
+  };
+
+  const handleCloseAddModal = () => {
+    setIsAddModalOpen(false);
+    setAddPreceptorInput("");
+    setAddPreceptorOptions([]);
+    setAddSelectedPreceptor(null);
+    setAddProntuarioInput("");
+    setAddPatientOptions([]);
+    setAddSelectedPatient(null);
+  };
+
+  // Dummy prontuarioSuggestions for questionnaire icon
   const prontuarioSuggestions = [
     { prontuario: "123456", paciente: "Riquelme Batista Gomes da Silva" },
     { prontuario: "654321", paciente: "Oswaldo Martins" },
@@ -224,39 +327,39 @@ function NIRDashboard() {
     { prontuario: "343434", paciente: "Gabriela Santos" },
   ];
 
-  const filteredAddPreceptorSuggestions = addPreceptorInput
-    ? preceptorSuggestions
-      .filter((preceptor) =>
-        preceptor.toLowerCase().includes(addPreceptorInput.toLowerCase())
-      )
-      .filter((preceptor) => preceptor !== addPreceptorInput)
-    : [];
+  // State for delete confirmation modal
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [relationToDelete, setRelationToDelete] = useState<any>(null);
 
-  const filteredAddProntuarioSuggestions = addProntuarioInput
-    ? prontuarioSuggestions
-      .filter((item) =>
-        item.prontuario.toLowerCase().includes(addProntuarioInput.toLowerCase())
-      )
-      .filter((item) => item.prontuario !== addProntuarioInput)
-    : [];
-
-  const handleOpenAddModal = () => setIsAddModalOpen(true);
-  const handleCloseAddModal = () => {
-    setIsAddModalOpen(false);
-    setAddPreceptorInput("");
-    setAddSelectedPreceptor(null);
-    setAddProntuarioInput("");
-    setAddSelectedProntuario(null);
+  // Open modal and set relation to delete
+  const handleOpenDeleteModal = (relation: any) => {
+    setRelationToDelete(relation);
+    setDeleteModalOpen(true);
   };
 
-  const handleAddPatient = () => {
-    handleCloseAddModal();
+  // Close modal and clear relation
+  const handleCloseDeleteModal = () => {
+    setDeleteModalOpen(false);
+    setRelationToDelete(null);
+  };
+
+  // Confirm deletion
+  const handleConfirmDelete = async () => {
+    if (!relationToDelete) return;
+    try {
+      await deleteAllQuestionnairesForRelation(relationToDelete.id);
+      await deletePreceptorPaciente(relationToDelete.id);
+      fetchRelations();
+    } catch (error) {
+      // handle error if needed
+    }
+    handleCloseDeleteModal();
   };
 
   return (
     <div style={{ padding: "16px" }}>
       <Typography variant="h4" gutterBottom>
-        NIR Dashboard
+        Painel NIR
       </Typography>
       <Grid
         container
@@ -334,7 +437,7 @@ function NIRDashboard() {
       <TableContainer
         component={Paper}
         sx={{
-          maxHeight: "80vh",
+          maxHeight: 'calc(100vh - 250px)', // ensures table fits within viewport
           overflowY: "auto",
           width: "100%",
           minWidth: 900,
@@ -387,7 +490,7 @@ function NIRDashboard() {
                       <MenuItem value="">Todos</MenuItem>
                       <MenuItem value="Vermelho">Vermelho</MenuItem>
                       <MenuItem value="Verde">Verde</MenuItem>
-                      <MenuItem value="Á preencher">À preencher</MenuItem>
+                      <MenuItem value="À preencher">À preencher</MenuItem> {/* <-- fix accent here */}
                     </Select>
                   </FormControl>
                 </div>
@@ -442,31 +545,25 @@ function NIRDashboard() {
                 </TableCell>
                 <TableCell>{row.status}</TableCell>
                 <TableCell>
-                  {row.status === "Ativo" ? (
+                  {row.status === "Ativado" ? (
                     <>
                       <IconButton
                         title="Desativar paciente"
-                        onClick={() => togglePatientStatus(index)}
+                        onClick={() => handleToggleStatus(row)}
                       >
-                        <ToggleOff style={{ color: "red" }} />
+                        <ToggleOn style={{ color: "green" }} />
                       </IconButton>
                       <IconButton
                         title="Questionário"
                         onClick={() => {
-                          const prontuario = prontuarioSuggestions.find(
-                            (item) => item.paciente === row.paciente
-                          )?.prontuario || "N/A";
-                          console.log("Sending patient data:", {
-                            name: row.paciente,
-                            birthDate: row.dataNascimento,
-                            handBook: prontuario
-                          });
-                          navigate("/preceptor/AssistencialDashboard/Questionnaire", {
+                          // Pass only the mapped medicalRecord, do not fallback to N/A
+                          navigate("/NIRMainpage/NIRDashboard/Questionnaire", {
                             state: {
                               patient: {
                                 name: row.paciente,
                                 birthDate: row.dataNascimento,
-                                handBook: prontuario
+                                handBook: row.medicalRecord, // <-- always use this
+                                preceptorPacienteId: row.id
                               }
                             }
                           });
@@ -475,29 +572,24 @@ function NIRDashboard() {
                         <NoteAdd style={{ color: "blue" }} />
                       </IconButton>
                       <IconButton
-                        title="Deletar paciente"
-                        onClick={() => { }}
+                        title="Paciente falecido"
+                        onClick={() => handleOpenDeleteModal(row)}
                       >
-                        <Delete style={{ color: "orange" }} />
+                        <HighlightOff style={{ color: "orange" }} />
                       </IconButton>
                       <IconButton
                         title="Mudar preceptor"
-                        onClick={handleOpenModal}
+                        onClick={() => handleOpenModal(row)}
                       >
                         <Edit style={{ color: "purple" }} />
-                      </IconButton>
-                      <IconButton
-                        title="Cancelar alta"
-                      >
-                        <CalendarToday style={{ color: "teal" }} />
                       </IconButton>
                     </>
                   ) : (
                     <IconButton
                       title="Ativar paciente"
-                      onClick={() => togglePatientStatus(index)}
+                      onClick={() => handleToggleStatus(row)}
                     >
-                      <ToggleOn style={{ color: "green" }} />
+                      <ToggleOff style={{ color: "red" }} />
                     </IconButton>
                   )}
                 </TableCell>
@@ -537,18 +629,11 @@ function NIRDashboard() {
               variant="outlined"
               fullWidth
               value={preceptorInput}
-              onChange={(e) => {
-                const value = e.target.value;
-                setPreceptorInput(value);
-                if (preceptorSuggestions.includes(value)) {
-                  setSelectedPreceptor(value);
-                } else {
-                  setSelectedPreceptor(null);
-                }
-              }}
+              onChange={(e) => handlePreceptorInput(e.target.value)}
               style={{ marginBottom: "16px" }}
+              autoComplete="off"
             />
-            {filteredSuggestions.length > 0 && (
+            {preceptorOptions.length > 0 && !selectedPreceptor && (
               <List
                 sx={{
                   backgroundColor: "#f5f5f5",
@@ -560,15 +645,15 @@ function NIRDashboard() {
                   boxSizing: "border-box",
                 }}
               >
-                {filteredSuggestions.map((preceptor, index) => (
-                  <ListItem key={index} disablePadding>
+                {preceptorOptions.map((preceptor: any) => (
+                  <ListItem key={preceptor.id} disablePadding>
                     <ListItemButton
                       onClick={() => {
                         setSelectedPreceptor(preceptor);
-                        setPreceptorInput(preceptor);
+                        setPreceptorInput(preceptor.name);
                       }}
                     >
-                      <ListItemText primary={preceptor} />
+                      <ListItemText primary={preceptor.name} />
                     </ListItemButton>
                   </ListItem>
                 ))}
@@ -629,11 +714,7 @@ function NIRDashboard() {
           }}
         >
           <div>
-            <Typography
-              variant="h6"
-              gutterBottom
-              style={{ marginBottom: "16px" }}
-            >
+            <Typography variant="h6" gutterBottom style={{ marginBottom: "16px" }}>
               Incluir Paciente
             </Typography>
             <TextField
@@ -641,39 +722,23 @@ function NIRDashboard() {
               variant="outlined"
               fullWidth
               value={addPreceptorInput}
-              onChange={(e) => {
-                const value = e.target.value;
-                setAddPreceptorInput(value);
-                if (preceptorSuggestions.includes(value)) {
-                  setAddSelectedPreceptor(value);
-                } else {
-                  setAddSelectedPreceptor(null);
-                }
-              }}
+              onChange={e => handleAddPreceptorInput(e.target.value)}
               style={{ marginBottom: "16px" }}
+              autoComplete="off"
             />
-            {filteredAddPreceptorSuggestions.length > 0 && (
-              <List
-                sx={{
-                  backgroundColor: "#f5f5f5",
-                  borderRadius: 1,
-                  maxHeight: 100,
-                  overflowY: "scroll",
-                  border: "1px solid #ccc",
-                  padding: "8px",
-                  boxSizing: "border-box",
-                  marginBottom: "16px",
-                }}
-              >
-                {filteredAddPreceptorSuggestions.map((preceptor, index) => (
-                  <ListItem key={index} disablePadding>
+            {/* Show suggestions only if there are options and no preceptor is selected */}
+            {addPreceptorOptions.length > 0 && !addSelectedPreceptor && (
+              <List sx={{ backgroundColor: "#f5f5f5", borderRadius: 1, maxHeight: 100, overflowY: "scroll", border: "1px solid #ccc", padding: "8px", boxSizing: "border-box", marginBottom: "16px" }}>
+                {addPreceptorOptions.map((preceptor: any) => (
+                  <ListItem key={preceptor.id} disablePadding>
                     <ListItemButton
                       onClick={() => {
                         setAddSelectedPreceptor(preceptor);
-                        setAddPreceptorInput(preceptor);
+                        setAddPreceptorInput(preceptor.name);
+                        // Do NOT clear addPreceptorOptions here, so user can re-edit and see suggestions again
                       }}
                     >
-                      <ListItemText primary={preceptor} />
+                      <ListItemText primary={preceptor.name} />
                     </ListItemButton>
                   </ListItem>
                 ))}
@@ -683,52 +748,23 @@ function NIRDashboard() {
               label="Digite o prontuário do paciente"
               variant="outlined"
               fullWidth
-              value={
-                (() => {
-                  const found = prontuarioSuggestions.find(
-                    (item) => item.prontuario === addProntuarioInput
-                  );
-                  return found ? found.paciente : addProntuarioInput;
-                })()
-              }
-              onChange={(e) => {
-                const value = e.target.value;
-                setAddProntuarioInput(value);
-                const found = prontuarioSuggestions.find(
-                  (item) => item.prontuario === value
-                );
-                if (found) {
-                  setAddSelectedProntuario(found.prontuario);
-                } else {
-                  setAddSelectedProntuario(null);
-                }
-              }}
+              value={addProntuarioInput}
+              onChange={e => handleAddProntuarioInput(e.target.value)}
               style={{ marginBottom: "16px" }}
             />
-            {filteredAddProntuarioSuggestions.length > 0 && (
-              <List
-                sx={{
-                  backgroundColor: "#f5f5f5",
-                  borderRadius: 1,
-                  maxHeight: 100,
-                  overflowY: "scroll",
-                  border: "1px solid #ccc",
-                  padding: "8px",
-                  boxSizing: "border-box",
-                  marginBottom: "16px",
-                }}
-              >
-                {filteredAddProntuarioSuggestions.map((item, index) => (
-                  <ListItem key={index} disablePadding>
+            {/* Show suggestions only if there are options and no patient is selected */}
+            {addPatientOptions.length > 0 && !addSelectedPatient && (
+              <List sx={{ backgroundColor: "#f5f5f5", borderRadius: 1, maxHeight: 100, overflowY: "scroll", border: "1px solid #ccc", padding: "8px", boxSizing: "border-box", marginBottom: "16px" }}>
+                {addPatientOptions.map((patient: any) => (
+                  <ListItem key={patient.medicalRecord} disablePadding>
                     <ListItemButton
                       onClick={() => {
-                        setAddSelectedProntuario(item.prontuario);
-                        setAddProntuarioInput(item.prontuario);
+                        setAddSelectedPatient(patient);
+                        setAddProntuarioInput(patient.medicalRecord);
+                        // Do NOT clear addPatientOptions here, so user can re-edit and see suggestions again
                       }}
                     >
-                      <ListItemText
-                        primary={item.paciente}
-                      />
+                      <ListItemText primary={patient.name} secondary={patient.medicalRecord} />
                     </ListItemButton>
                   </ListItem>
                 ))}
@@ -741,7 +777,7 @@ function NIRDashboard() {
                 variant="contained"
                 fullWidth
                 onClick={handleAddPatient}
-                disabled={!addSelectedPreceptor || !addSelectedProntuario}
+                disabled={!addSelectedPreceptor || !addSelectedPatient}
                 sx={{
                   backgroundColor: "#90ee90",
                   color: "white",
@@ -762,6 +798,66 @@ function NIRDashboard() {
                   color: "white",
                   "&:hover": { backgroundColor: "#76c776" },
                   height: "50px",
+                }}
+              >
+                Cancelar
+              </Button>
+            </Grid>
+          </Grid>
+        </Box>
+      </Modal>
+
+      {/* Delete confirmation modal */}
+      <Modal open={deleteModalOpen} onClose={handleCloseDeleteModal}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 350,
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 2,
+          }}
+        >
+          <Typography variant="h6" gutterBottom>
+            Confirmar exclusão
+          </Typography>
+          <Typography sx={{ mb: 2 }}>
+            Tem certeza que deseja remover este paciente devido a óbito?
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={6}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={handleConfirmDelete}
+                sx={{
+                  backgroundColor: "#90ee90",
+                  color: "white",
+                  "&:hover": { backgroundColor: "#76c776" },
+                  height: "45px",
+                }}
+              >
+                Confirmar
+              </Button>
+            </Grid>
+            <Grid item xs={6}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={handleCloseDeleteModal}
+                sx={{
+                  backgroundColor: "#90ee90",
+                  color: "white",
+                  "&:hover": { backgroundColor: "#76c776" },
+                  height: "45px",
                 }}
               >
                 Cancelar

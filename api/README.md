@@ -12,6 +12,12 @@ ENVIRONMENT=
 DATABASE_URL=
 SECRET_KEY=
 JWT_EXPIRATION=
+# LDAP config
+LDAP_URL=ldap://10.36.2.21
+LDAP_BIND_DN=CN=TAGS,OU=Servicos,OU=Usuarios,OU=HCMG,OU=EBSERH,DC=ebserhnet,DC=ebserh,DC=gov,DC=br
+LDAP_BIND_PASSWORD=T4g5@2022!
+LDAP_BASE_DN=OU=Usuarios,OU=HCMG,OU=EBSERH,DC=ebserhnet,DC=ebserh,DC=gov,DC=br
+LDAP_IDENTIFYING_ATTRIBUTE=mailNickname
 ```
 
 2. Instale as dependências:

@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import {
   getAllPreceptors,
   getPreceptorById,
-  getPreceptorByName,
+  getPreceptorsByName, // <-- use plural
 } from "../services/preceptorService";
 import { sendResponse, sendErrorResponse } from "../utils/responseUtils"; // Assuming this path from userController.ts
 
@@ -51,7 +51,7 @@ export const getPreceptorByIdHandler = async (
 };
 
 export const getPreceptorByNameHandler = async (
-  request: FastifyRequest<{ Params: GetPreceptorByNameParams }>,
+  request: FastifyRequest<{ Params: { name: string } }>,
   reply: FastifyReply
 ) => {
   try {
@@ -61,12 +61,9 @@ export const getPreceptorByNameHandler = async (
       return sendErrorResponse(reply, 400, "Invalid name format. Name must be a non-empty string.");
     }
 
-    const preceptor = await getPreceptorByName(name);
-    if (!preceptor) {
-      return sendErrorResponse(reply, 404, `Preceptor with name containing "${name}" not found`);
-    }
-    sendResponse(reply, 200, preceptor);
+    const preceptors = await getPreceptorsByName(name); // returns array
+    sendResponse(reply, 200, preceptors); // always return array (possibly empty)
   } catch (error: any) {
-    sendErrorResponse(reply, 500, "Error fetching preceptor by name");
+    sendErrorResponse(reply, 500, "Error fetching preceptors by name");
   }
 };

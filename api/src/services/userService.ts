@@ -26,24 +26,37 @@ export const getUserById = async (
 export const createUser = async (
   data: CreateUserDTO
 ): Promise<UserWithoutPassword> => {
-  const existingUser = await prisma.user.findUnique({
-    where: { username: data.username },
+  // Check if login already exists in usuario table
+  const existingUser = await prisma.usuario.findUnique({
+    where: { login: data.username },
   });
 
   if (existingUser) {
     throw new Error("Username already exists");
   }
 
-  const hashedPassword = await bcrypt.hash(data.password, SALT_ROUNDS);
-  const user = await prisma.user.create({
+  // Insert into usuario table
+  const usuario = await prisma.usuario.create({
     data: {
-      ...data,
-      password: hashedPassword,
-      birthDate: new Date(data.birthDate),
+      nome_completo: data.name,
+      login: data.username,
+      tipo: data.role,
+      especialidade: data.specialty || null,
+      status: "Ativado",
     },
   });
-  const { password, ...userWithoutPassword } = user;
-  return userWithoutPassword;
+
+  // Return a compatible UserWithoutPassword object
+  return {
+    id: usuario.id,
+    name: usuario.nome_completo,
+    username: usuario.login,
+    role: usuario.tipo,
+    specialty: usuario.especialidade,
+    status: usuario.status,
+    createdAt: usuario.createdAt || new Date(), // fallback if not present
+    // birthDate, phone, etc. are not present in this table
+  } as UserWithoutPassword;
 };
 
 export const updateOwnUser = async (

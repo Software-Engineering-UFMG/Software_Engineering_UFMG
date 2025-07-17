@@ -4,42 +4,65 @@ import { Box, Typography, Button, TextField, RadioGroup, FormControlLabel, Radio
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
 import ebserh from "../../assets/images/ebserh.jpg";
 import RED from "../../assets/images/RED.png";
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs from "dayjs";
+import { submitQuestionnaire as apiSubmitQuestionnaire, getTodaysQuestionnaire as apiGetTodaysQuestionnaire, getMe } from "../../services/api";
+import { useAuth } from "../../context/AuthContext"; // already imported
 
 export const QuestionnairePage = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const patientData = location.state?.patient;
-    const [answers, setAnswers] = useState<Record<string, any>>({});
+    const [answers, setAnswers] = useState<Record<string, any>>({ characteristics: [] }); // Initialize characteristics as an empty array
     const [isDisabled, setIsDisabled] = useState(false);
-    const [circleColor, setCircleColor] = useState("green");
+    const [red2greenValue, setRed2greenValue] = useState("red"); // default to red
+    const [submissionError, setSubmissionError] = useState<string | null>(null); // State for error messages
+    const [errorField, setErrorField] = useState<string | null>(null); // Track which field caused the error
+    const [submitAttempted, setSubmitAttempted] = useState(false); // Track if submit was attempted
+    const { user } = useAuth(); // <-- get user from context
 
     useEffect(() => {
-        console.log("Patient Data:", patientData); // Debug log
-        if (!patientData) {
-            navigate(-1);
-            return;
-        }
-        checkLastSubmission();
+        // Check if user is logged in using /me endpoint
+        const checkAuth = async () => {
+            try {
+                await getMe();
+            } catch {
+                navigate("/");
+                return;
+            }
+            console.log("Patient Data:", patientData); // Debug log
+            if (!patientData) {
+                navigate(-1);
+                return;
+            }
+            checkTodaysQuestionnaire();
+        };
+        checkAuth();
+        // eslint-disable-next-line
     }, [patientData, navigate]);
 
     useEffect(() => {
         updateRedToGreenSign();
+        // Only clear error message and field if user edits any field after a submission attempt with an error.
+        // The submitAttempted flag remains true until a successful submission or explicit reset.
+        if (submitAttempted && errorField) {
+            setSubmissionError(null);
+            setErrorField(null);
+            // setSubmitAttempted(false); // <-- REMOVE THIS LINE
+        }
     }, [answers]);
 
-    const checkLastSubmission = () => {
-        const lastSubmission = localStorage.getItem(`questionnaireSubmission_${patientData?.name}`);
-        if (lastSubmission) {
-            const lastDate = new Date(lastSubmission);
-            const today = new Date();
-
-            lastDate.setHours(0, 0, 0, 0);
-            today.setHours(0, 0, 0, 0);
-
-            if (lastDate.getTime() === today.getTime()) {
-                setIsDisabled(true);
-            } else {
-                setIsDisabled(false);
-            }
+    const checkTodaysQuestionnaire = async () => {
+        if (!patientData?.preceptorPacienteId) return;
+        try {
+            const res = await apiGetTodaysQuestionnaire(patientData.preceptorPacienteId);
+            if (res.exists) setIsDisabled(true);
+            else setIsDisabled(false);
+        } catch (e) {
+            // fallback: allow if error
+            setIsDisabled(false);
         }
     };
 
@@ -47,39 +70,165 @@ export const QuestionnairePage = () => {
         setAnswers((prev) => ({ ...prev, [id]: value }));
     };
 
-    const submitMockData = async () => {
-        console.log("Enviando respostas para o servidor:", answers);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+    const handleSubmitQuestionnaire = async () => {
+        // Debug: log patientData
+        console.log("patientData:", patientData);
 
-        const mockResponse = {
-            status: 200,
-            message: "Questionário enviado com sucesso!",
+        if (!patientData?.preceptorPacienteId) {
+            setSubmissionError("ID do vínculo preceptor-paciente não encontrado.");
+            return;
+        }
+        // Ensure waitingType and examDetails are always arrays
+        const safeAnswers = {
+            ...answers,
+            waitingType: Array.isArray(answers.waitingType) ? answers.waitingType : [],
+            examDetails: Array.isArray(answers.examDetails) ? answers.examDetails : [],
         };
 
-        if (mockResponse.status === 200) {
-            console.log(mockResponse.message);
-            localStorage.setItem(`questionnaireSubmission_${patientData?.name}`, new Date().toISOString());
+        const mappedRed2GreenValue = red2greenValue === "red" ? "Vermelho" : "Verde";
+
+        const payload = {
+            preceptorPacienteId: patientData.preceptorPacienteId, // <-- use the relation ID
+            answers: safeAnswers,
+            red2green: mappedRed2GreenValue,
+            dischargeConfirmed: answers.dischargeConfirmed === "yes",
+        };
+        console.log("Questionnaire payload:", payload);
+        try {
+            await apiSubmitQuestionnaire(payload);
             setIsDisabled(true);
-            navigate(-1);
-        } else {
-            console.error("Erro ao enviar o questionário.");
+            // Redirect based on user role
+            if (user?.role === "NIR") {
+                navigate("/NIRMainpage/NIRDashboard");
+            } else if (user?.role === "Assistencial") {
+                navigate("/preceptor/AssistencialDashboard");
+            } else {
+                navigate(-1); // fallback
+            }
+        } catch (e: any) {
+            if (e.response?.status === 409) {
+                setSubmissionError("O questionário já foi respondido hoje.");
+                setIsDisabled(true);
+            } else {
+                setSubmissionError("Erro ao enviar o questionário.");
+            }
         }
     };
 
+    const validateAnswers = (): boolean => {
+        const requiredFields = [
+            "dischargeDate",
+            "clinicalCriteria",
+            "needsAdmission",
+            "outpatient",
+            "hospitalDischarge",
+            "waiting",
+            // "dischargeConfirmed", // <-- REMOVE THIS LINE
+        ];
+
+        for (const field of requiredFields) {
+            if (
+                answers[field] === undefined ||
+                answers[field] === "" ||
+                // Ensure characteristics (even if empty array) is not caught by this general check if it were in requiredFields
+                (Array.isArray(answers[field]) && answers[field].length === 0 && field !== "characteristics") 
+            ) {
+                if (answers[field] === undefined || answers[field] === "") {
+                    setSubmissionError(`O campo "${getFieldName(field)}" é obrigatório.`);
+                    setErrorField(field);
+                    return false;
+                }
+            }
+        }
+
+        // Validate dischargeDate is not in the past
+        if (answers.dischargeDate) {
+            const selected = dayjs(answers.dischargeDate);
+            const today = dayjs().startOf('day');
+            if (!selected.isValid()) {
+                setSubmissionError("Selecione uma data de alta prevista válida.");
+                setErrorField("dischargeDate");
+                return false;
+            }
+            // Check if selected date is before today (past)
+            if (selected.isBefore(today, 'day')) {
+                setSubmissionError("A data de alta prevista para o paciente não pode ser no passado");
+                setErrorField("dischargeDate");
+                return false;
+            }
+        }
+
+        // Ensure at least one characteristic is selected.
+        // This check assumes 'characteristics' is always an array due to initialization.
+        if (answers.characteristics.length === 0) { // MODIFIED CONDITION
+            setSubmissionError("Pelo menos uma característica deve ser selecionada.");
+            setErrorField("characteristics");
+            return false;
+        }
+
+        if (answers.waiting === "yes") {
+            if (!answers.waitingType || answers.waitingType.length === 0) {
+                setSubmissionError("Se o paciente está aguardando, especifique o quê.");
+                setErrorField("waitingType");
+                return false;
+            }
+            if (answers.waitingType.includes("exam") && (!answers.examDetails || answers.examDetails.length === 0)) {
+                setSubmissionError("Se o paciente aguarda por exame, especifique o tipo do exame.");
+                setErrorField("examDetails");
+                return false;
+            }
+        }
+
+        setSubmissionError(null);
+        setErrorField(null);
+        return true;
+    };
+    
+    // Helper function to get user-friendly field names
+    const getFieldName = (fieldId: string): string => {
+        const names: Record<string, string> = {
+            dischargeDate: "Data de Alta Prevista",
+            clinicalCriteria: "Critérios Clínicos para Alta",
+            characteristics: "Características do Paciente",
+            needsAdmission: "Condição Clínica para Internação",
+            outpatient: "Intervenções Ambulatoriais",
+            hospitalDischarge: "Intervenção Efetiva para Alta",
+            waiting: "Paciente Aguardando Algo",
+            dischargeConfirmed: "Alta Confirmada Hoje",
+            waitingType: "Tipo de Espera",
+            examDetails: "Detalhes do Exame"
+        };
+        return names[fieldId] || fieldId;
+    };
+
+
     const handleSubmit = () => {
-        submitMockData(); // Chama a função para simular o envio
+        setSubmitAttempted(true);
+        if (validateAnswers()) {
+            setSubmitAttempted(false);
+            handleSubmitQuestionnaire();
+        }
     };
 
     const updateRedToGreenSign = () => {
+        // Only set to green if all required answers are filled and correct
         if (
-            answers.needsAdmission === "no" ||
-            answers.outpatient === "yes" ||
-            answers.hospitalDischarge === "no" ||
-            answers.waiting === "yes"
+            answers.needsAdmission === undefined ||
+            answers.outpatient === undefined ||
+            answers.hospitalDischarge === undefined ||
+            answers.waiting === undefined
         ) {
-            setCircleColor("red");
+            setRed2greenValue("red");
+        } else if (answers.needsAdmission === "no") {
+            setRed2greenValue("red");
+        } else if (answers.outpatient === "yes") {
+            setRed2greenValue("red");
+        } else if (answers.hospitalDischarge === "no") {
+            setRed2greenValue("red");
+        } else if (answers.waiting === "yes") {
+            setRed2greenValue("red");
         } else {
-            setCircleColor("green");
+            setRed2greenValue("green");
         }
     };
 
@@ -298,43 +447,36 @@ export const QuestionnairePage = () => {
                 }}
             >
                 {/* Pergunta 1: Data de Alta Prevista */}
-                <Box
-                    sx={{
-                        mb: 4,
-                        p: 2,
-                    }}
-                >
+                <Box sx={{ mb: 4, p: 2 }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         Qual é a data de alta prevista para o paciente?
                     </Typography>
-                    <TextField
-                        type="date"
-                        fullWidth
-                        variant="outlined"
-                        value={answers.dischargeDate || ""}
-                        onChange={(e) => handleChange("dischargeDate", e.target.value)}
-                        sx={{
-                            "& .MuiOutlinedInput-root": {
-                                borderRadius: "8px",
-                                backgroundColor: "#f9f9f9",
-                                "&:hover .MuiOutlinedInput-notchedOutline": {
-                                    borderColor: "#4caf50",
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                            label="Data de Alta Prevista"
+                            format="DD-MM-YYYY"
+                            value={answers.dischargeDate ? dayjs(answers.dischargeDate) : null}
+                            onChange={newVal => {
+                                const iso = newVal?.toISOString() || '';
+                                handleChange("dischargeDate", iso);
+                            }}
+                            slotProps={{
+                                textField: {
+                                    fullWidth: true,
+                                    margin: 'normal',
+                                    // Remove error/helperText here, handle below for consistent error display
                                 },
-                                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                                    borderColor: "#4caf50",
-                                },
-                            },
-                        }}
-                    />
+                            }}
+                        />
+                    </LocalizationProvider>
+                    {submitAttempted && errorField === "dischargeDate" && (
+                        <Typography color="error" sx={{ mt: 1 }}>
+                            {submissionError}
+                        </Typography>
+                    )}
                 </Box>
-
                 {/* Pergunta 2: Critérios Clínicos */}
-                <Box
-                    sx={{
-                        mb: 4,
-                        p: 2,
-                    }}
-                >
+                <Box sx={{ mb: 4, p: 2 }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         Quais são os critérios clínicos para alta do paciente?
                     </Typography>
@@ -359,19 +501,17 @@ export const QuestionnairePage = () => {
                             },
                         }}
                     />
+                    {submitAttempted && errorField === "clinicalCriteria" && (
+                        <Typography color="error" sx={{ mt: 1 }}>
+                            {submissionError}
+                        </Typography>
+                    )}
                 </Box>
-
                 {/* Pergunta 3: Características do Paciente */}
-                <Box
-                    sx={{
-                        mb: 4,
-                        p: 2,
-                    }}
-                >
+                <Box sx={{ mb: 4, p: 2 }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         O paciente possui alguma das características abaixo?
                     </Typography>
-
                     <Box
                         sx={{
                             display: "flex",
@@ -415,15 +555,14 @@ export const QuestionnairePage = () => {
                             </label>
                         ))}
                     </Box>
+                    {submitAttempted && errorField === "characteristics" && (
+                        <Typography color="error" sx={{ mt: 1 }}>
+                            {submissionError}
+                        </Typography>
+                    )}
                 </Box>
-
                 {/* Pergunta 4: Internação */}
-                <Box
-                    sx={{
-                        mb: 4,
-                        p: 2,
-                    }}
-                >
+                <Box sx={{ mb: 4, p: 2 }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         Se o paciente estivesse sendo admitido hoje no Pronto Socorro, a sua condição clínica determinaria internação?
                     </Typography>
@@ -442,15 +581,14 @@ export const QuestionnairePage = () => {
                         <FormControlLabel value="yes" control={<Radio />} label="Sim" />
                         <FormControlLabel value="no" control={<Radio />} label="Não" />
                     </RadioGroup>
+                    {submitAttempted && errorField === "needsAdmission" && (
+                        <Typography color="error" sx={{ mt: 1 }}>
+                            {submissionError}
+                        </Typography>
+                    )}
                 </Box>
-
                 {/* Pergunta 5: Intervenções Ambulatoriais */}
-                <Box
-                    sx={{
-                        mb: 4,
-                        p: 2,
-                    }}
-                >
+                <Box sx={{ mb: 4, p: 2 }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         As intervenções diagnósticas ou terapêuticas que o paciente receberá hoje poderiam ser realizadas ambulatorialmente?
                     </Typography>
@@ -469,15 +607,14 @@ export const QuestionnairePage = () => {
                         <FormControlLabel value="yes" control={<Radio />} label="Sim" />
                         <FormControlLabel value="no" control={<Radio />} label="Não" />
                     </RadioGroup>
+                    {submitAttempted && errorField === "outpatient" && (
+                        <Typography color="error" sx={{ mt: 1 }}>
+                            {submissionError}
+                        </Typography>
+                    )}
                 </Box>
-
                 {/* Pergunta 6: Intervenção Efetiva */}
-                <Box
-                    sx={{
-                        mb: 4,
-                        p: 2,
-                    }}
-                >
+                <Box sx={{ mb: 4, p: 2 }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         O paciente recebeu uma intervenção efetiva hoje para deixá-lo mais próximo à alta hospitalar?
                     </Typography>
@@ -496,15 +633,14 @@ export const QuestionnairePage = () => {
                         <FormControlLabel value="yes" control={<Radio />} label="Sim" />
                         <FormControlLabel value="no" control={<Radio />} label="Não" />
                     </RadioGroup>
+                    {submitAttempted && errorField === "hospitalDischarge" && (
+                        <Typography color="error" sx={{ mt: 1 }}>
+                            {submissionError}
+                        </Typography>
+                    )}
                 </Box>
-
                 {/* Pergunta 7: Aguardando Algo */}
-                <Box
-                    sx={{
-                        mb: 4,
-                        p: 2,
-                    }}
-                >
+                <Box sx={{ mb: 4, p: 2 }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         O paciente está aguardando por algo?
                     </Typography>
@@ -529,15 +665,14 @@ export const QuestionnairePage = () => {
                         <FormControlLabel value="yes" control={<Radio />} label="Sim" />
                         <FormControlLabel value="no" control={<Radio />} label="Não" />
                     </RadioGroup>
-
+                    {submitAttempted && errorField === "waiting" && (
+                        <Typography color="error" sx={{ mt: 1 }}>
+                            {submissionError}
+                        </Typography>
+                    )}
                     {/* Campos Aninhados */}
                     {answers.waiting === "yes" && (
-                        <Box
-                            sx={{
-                                mb: 4,
-                                p: 2,
-                            }}
-                        >
+                        <Box sx={{ mb: 4, p: 2 }}>
                             <Typography variant="h6" sx={{ mb: 2 }}>
                                 O que o paciente está aguardando?
                             </Typography>
@@ -570,7 +705,7 @@ export const QuestionnairePage = () => {
                                     { value: "externalTransferResources", label: "Transferência e recursos externos" },
                                     {
                                         value: "interconsultDecisionOrCare",
-                                        label: "Atendimento ou decisão interconsulta",
+                                        label: "Atendimento ou decisão de interconsulta",
                                     },
                                 ].map((opt) => (
                                     <Box key={opt.value}>
@@ -631,13 +766,52 @@ export const QuestionnairePage = () => {
                                                         <span>{subOpt.label}</span>
                                                     </label>
                                                 ))}
+                                                {submitAttempted && errorField === "examDetails" && (
+                                                    <Typography color="error" sx={{ mt: 1 }}>
+                                                        {submissionError}
+                                                    </Typography>
+                                                )}
                                             </Box>
                                         )}
                                     </Box>
                                 ))}
+                                {/* Moved error display for waitingType inside this Box */}
+                                {submitAttempted && errorField === "waitingType" && (
+                                    <Typography color="error" sx={{ mt: 1 }}>
+                                        {submissionError}
+                                    </Typography>
+                                )}
                             </Box>
+                            {/* Removed error display for waitingType from here */}
                         </Box>
                     )}
+                </Box>
+                {/* Nova Pergunta: Alta do paciente foi confirmada? */}
+                <Box sx={{ mb: 4, p: 2 }}>
+                    <Typography variant="h6" sx={{ mb: 2 }}>
+                        Alta confirmada no dia de hoje?
+                    </Typography>
+                    <RadioGroup
+                        row
+                        value={answers.dischargeConfirmed ?? "no"}
+                        onChange={(e) => handleChange("dischargeConfirmed", e.target.value)}
+                        sx={{
+                            border: "1px solid #4caf50",
+                            borderRadius: "8px",
+                            pl: 2,
+                            width: "25%",
+                            justifyContent: "center",
+                        }}
+                    >
+                        <FormControlLabel value="yes" control={<Radio />} label="Sim" />
+                        <FormControlLabel value="no" control={<Radio />} label="Não" />
+                    </RadioGroup>
+                    {/* REMOVE ERROR DISPLAY BLOCK FOR dischargeConfirmed */}
+                    {/* {submitAttempted && errorField === "dischargeConfirmed" && (
+                        <Typography color="error" sx={{ mt: 1 }}>
+                            {submissionError}
+                        </Typography>
+                    )} */}
                 </Box>
 
                 <Box
@@ -656,7 +830,7 @@ export const QuestionnairePage = () => {
                             width: 120,
                             height: 120,
                             borderRadius: "50%",
-                            backgroundColor: circleColor,
+                            backgroundColor: red2greenValue, // always use red2greenValue
                             color: "#fff",
                             fontWeight: "bold",
                             boxShadow: 3,
@@ -665,6 +839,8 @@ export const QuestionnairePage = () => {
                         Red2Green
                     </Box>
                 </Box>
+                {/* Hidden input or value for red2green if you need to send it */}
+                {/* <input type="hidden" value={red2greenValue} /> */}
 
                 {/* Rodapé com Botões */}
                 <Box
@@ -672,30 +848,40 @@ export const QuestionnairePage = () => {
                         display: "flex",
                         justifyContent: "space-between",
                         mt: 4,
+                        gap: 2, // Add some gap between buttons
                     }}
                 >
                     <Button
-                        variant="text"
+                        variant="contained" // Changed from text to contained for better styling consistency
                         color="success"
                         onClick={handleSubmit}
                         sx={{
                             backgroundColor: "#86efac",
+                            color: "white", // Ensure text is white for better contrast on green
                             "&:hover": {
                                 backgroundColor: "#4ade80",
                             },
+                            px: 4, // Increased horizontal padding
+                            py: 1.5, // Increased vertical padding
+                            fontSize: "1rem", // Increased font size
                         }}
                     >
                         Enviar
                     </Button>
                     <Button
-                        variant="text"
-                        color="success"
+                        variant="contained" // Changed from text to contained for better styling consistency
+                        color="error" // Changed to error for a more distinct "cancel" action
                         onClick={() => navigate(-1)}
                         sx={{
-                            backgroundColor: "#86efac",
+                            backgroundColor: "#f87171", // A common red for cancel/error
+                            color: "white", // Ensure text is white
                             "&:hover": {
-                                backgroundColor: "#4ade80",
+                                backgroundColor: "#ef4444", // Darker red on hover
                             },
+                            px: 4, // Increased horizontal padding
+                            py: 1.5, // Increased vertical padding
+
+                            fontSize: "1rem", // Increased font size
                         }}
                     >
                         Cancelar

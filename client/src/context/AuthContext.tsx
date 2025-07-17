@@ -5,7 +5,7 @@ import React, {
     useContext,
     useEffect,
   } from "react";
-  import { useNavigate } from "react-router";
+  import { useNavigate, useLocation } from "react-router";
   import { User } from "../types/userTypes";
   import { useGlobalContext } from "./GlobalContext";
   import { logout, getMe } from "../services/api"; 
@@ -31,10 +31,15 @@ import React, {
   });
   
   export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<User | null>(() => {
+      // Try to load user from localStorage on initial render
+      const stored = localStorage.getItem("user");
+      return stored ? JSON.parse(stored) : null;
+    });
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const { setLoading } = useGlobalContext();
     const navigate = useNavigate();
+    const location = useLocation();
   
     useEffect(() => {
       const checkLoginStatus = async () => {
@@ -42,9 +47,14 @@ import React, {
           setLoading(true);
           const userData = await getMe(); 
           setUser(userData);
+          localStorage.setItem("user", JSON.stringify(userData)); // persist user
         } catch (error) {
           setUser(null);
-          navigate("/"); 
+          localStorage.removeItem("user"); // clear on error
+          const publicRoutes = ["/", "/login","/information", "/registration", "/success"];
+          if (!publicRoutes.includes(location.pathname)) {
+            navigate("/"); 
+          }
         } finally {
           setLoading(false);
           setIsLoading(false);
@@ -52,10 +62,11 @@ import React, {
       };
     
       checkLoginStatus();
-    }, []);
+    }, [location.pathname, navigate, setLoading]);
   
     const handleLogin = (userData: User) => {
       setUser(userData);
+      localStorage.setItem("user", JSON.stringify(userData)); // persist user
       navigate("/dashboard");
     };
   

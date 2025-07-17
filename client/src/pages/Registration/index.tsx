@@ -198,37 +198,12 @@ export const Registration = () => {
         />
 
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <DemoContainer components={['DatePicker']}>
-            <DatePicker
-              label="Data de nascimento"
-              format="DD-MM-YYYY"
-              value={formData.birthDate ? dayjs(formData.birthDate) : null}
-              onChange={newVal => {
-                const iso = newVal?.toISOString() || '';
-                setFormData(prev => ({ ...prev, birthDate: iso }));
-                const future = newVal ? newVal.toDate() > new Date() : false;
-                setErrors(prev => ({ ...prev, birthDate: !iso, birthDateFuture: future }));
-              }}
-              slotProps={{
-                textField: {
-                  fullWidth: true,
-                  margin: 'normal',
-                  error: errors.birthDate || errors.birthDateFuture,
-                  helperText:
-                    errors.birthDate
-                      ? 'Este campo não pode ficar vazio'
-                      : errors.birthDateFuture
-                        ? 'A data não pode ser futura'
-                        : '',
-                },
-              }}
-            />
-          </DemoContainer>
+          
         </LocalizationProvider>
 
         <TextField
           fullWidth
-          label="Login"
+          label="Login da Ebserh"
           name="login"
           value={formData.login}
           onChange={handleChange}
@@ -243,20 +218,11 @@ export const Registration = () => {
           }
         />
 
-        <TextField
-          fullWidth
-          label="Telefone"
-          name="phone"
-          value={formData.phone}
-          onChange={handleChange}
-          margin="normal"
-          error={errors.phone}
-          helperText={errors.phone && 'Este campo não pode ficar vazio'}
-        />
+        
 
         <TextField
           fullWidth
-          label="Senha"
+          label="Senha da Ebserh"
           name="password"
           type="password"
           value={formData.password}
@@ -266,23 +232,7 @@ export const Registration = () => {
           helperText={errors.password && 'Este campo não pode ficar vazio'}
         />
 
-        <TextField
-          fullWidth
-          label="Confirmar senha"
-          name="confirmPassword"
-          type="password"
-          value={formData.confirmPassword}
-          onChange={handleChange}
-          margin="normal"
-          error={errors.confirmPassword}
-          helperText={
-            errors.confirmPassword
-              ? (!formData.confirmPassword.trim()
-                  ? 'Este campo não pode ficar vazio'
-                  : 'As senhas não coincidem')
-              : ''
-          }
-        />
+        
 
         <FormControl
           component="fieldset"
@@ -297,7 +247,7 @@ export const Registration = () => {
           >
             <FormControlLabel value="NIR" control={<Radio />} label="NIR" />
             <FormControlLabel value="Assistencial" control={<Radio />} label="Assistencial" />
-            <FormControlLabel value="Admin" control={<Radio />} label="Admin" />
+            
           </RadioGroup>
           {errors.userType && (
             <Typography variant="caption" color="error">
@@ -336,7 +286,7 @@ export const Registration = () => {
           disabled={isLoading}
           sx={{ mt: 2, backgroundColor: '#86efac', '&:hover': { backgroundColor: '#4ade80' } }}
         >
-          {isLoading ? 'CARREGANDO...' : 'Registrar'}
+          {isLoading ? 'CARREGANDO...' : 'Solicitar cadastro'}
         </Button>
 
         <Button component={RouterLink} to="/" variant="contained" fullWidth sx={{ mt: 2, backgroundColor: '#86efac', '&:hover': { backgroundColor: '#4ade80' }}}>

@@ -158,7 +158,7 @@ export const Login = memo(() => {
               type="text"
               value={username}
               onChange={handleUsernameChange}
-              className="p-10"
+              className="p-10 border-black"
             />
             <div className="min-h-[14px]">
               {errorMessage.username && (
@@ -174,6 +174,7 @@ export const Login = memo(() => {
               type="password"
               value={password}
               onChange={handlePasswordChange}
+              className="border-black"
             />
             <div className="min-h-[14px]">
               {errorMessage.password && (
@@ -198,14 +199,16 @@ export const Login = memo(() => {
               {loading ? "Carregando..." : "Entrar"}
             </button>
 
-            <Link
+            
+          </div>
+          <Link
               to="/registration"
               className="cursor-pointer rounded-xl bg-green-300 !p-3 text-white hover:bg-green-400 flex justify-center"
             >
               Cadastrar Usuário
             </Link>
-          </div>
         </form>
+        
       </div>
     </div>
   );

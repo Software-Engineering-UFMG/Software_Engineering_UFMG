@@ -31,6 +31,20 @@ export const getPreceptorByName = async (
   }
 };
 
+export const getPreceptorsByName = async (
+  name: string
+): Promise<Preceptor[]> => {
+  try {
+    const preceptors = await hospitalPrisma.preceptor.findMany({
+      where: { name: { contains: name, mode: "insensitive" } },
+    });
+    return preceptors;
+  } catch (error) {
+    console.error("Error fetching preceptors by name:", error);
+    throw new Error("Could not fetch preceptors by name");
+  }
+};
+
 export const getAllPreceptors = async (): Promise<Preceptor[]> => {
   try {
     const preceptors = await hospitalPrisma.preceptor.findMany();

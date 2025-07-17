@@ -63,7 +63,14 @@ export const createUserHandler = async (
       );
     }
 
-    const newUser = await createUser(req.body);
+    // Only pass the fields relevant to usuario table
+    const newUser = await createUser({
+      name: req.body.name,
+      username: req.body.username,
+      role: req.body.role,
+      specialty: req.body.specialty,
+    } as CreateUserDTO);
+
     sendResponse(reply, 201, newUser);
   } catch (error: any) {
     if (error.message === "Username already exists") {

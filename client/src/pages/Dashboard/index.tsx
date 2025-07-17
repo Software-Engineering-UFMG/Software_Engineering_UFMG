@@ -38,7 +38,10 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  SelectChangeEvent,
+  FormHelperText,
 } from "@mui/material";
+import { createUser } from "../../services/api";
 
 export const Dashboard = () => {
   const { handleLogout: authLogout } = useAuth();
@@ -77,7 +80,127 @@ export const Dashboard = () => {
     birthdate: false,
     phone: false,
   });
-  const [showPassword, setShowPassword] = useState<boolean>(false);
+
+  // New user creation popup state
+  const [isNewUserPopupOpen, setIsNewUserPopupOpen] = useState(false);
+  const [newUserFormData, setNewUserFormData] = useState({
+    fullName: "",
+    login: "",
+    password: "",
+    confirmPassword: "",
+    userType: "",
+    specialty: "",
+  });
+  const [newUserErrors, setNewUserErrors] = useState({
+    fullName: false,
+    login: false,
+    loginExists: false,
+    password: false,
+    confirmPassword: false,
+    userType: false,
+    specialty: false,
+  });
+  const [isNewUserLoading, setIsNewUserLoading] = useState(false);
+
+  const specialties = [
+    "Clínica Médica",
+    "Cardiologia",
+    "Pediatria",
+    "Gastroenterologia",
+    "Estudante de Medicina",
+  ];
+
+  const handleNewUserChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+
+    if (name === 'login' && newUserErrors.loginExists) {
+      setNewUserErrors(prev => ({ ...prev, loginExists: false }));
+    }
+
+    setNewUserFormData(prev => ({
+      ...prev,
+      [name]: value,
+      ...(name === 'userType' && value !== 'Assistencial' && { specialty: '' }),
+    }));
+
+    setNewUserErrors(prev => ({
+      ...prev,
+      [name]: false,
+      ...(name === 'confirmPassword' && { confirmPassword: value !== newUserFormData.password }),
+      ...(name === 'userType' && { userType: false }),
+      ...(name === 'specialty' && { specialty: false }),
+    }));
+  };
+
+  const handleNewUserSelectChange = (e: SelectChangeEvent<string>) => {
+    const { name, value } = e.target;
+    setNewUserFormData(prev => ({ ...prev, [name]: value }));
+    setNewUserErrors(prev => ({ ...prev, [name]: false }));
+  };
+
+  const handleNewUserSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const validationErrors = {
+      fullName: newUserFormData.fullName.trim() === '',
+      login: newUserFormData.login.trim() === '',
+      loginExists: false,
+      password: newUserFormData.password.trim() === '',
+      confirmPassword:
+        newUserFormData.confirmPassword.trim() === '' ||
+        newUserFormData.confirmPassword !== newUserFormData.password,
+      userType: newUserFormData.userType.trim() === '',
+      specialty:
+        newUserFormData.userType === 'Assistencial' &&
+        newUserFormData.specialty.trim() === '',
+    };
+
+    setNewUserErrors(validationErrors);
+    if (Object.values(validationErrors).some(Boolean)) return;
+
+    setIsNewUserLoading(true);
+    try {
+      await createUser({
+        name: newUserFormData.fullName,
+        username: newUserFormData.login,
+        password: newUserFormData.confirmPassword,
+        role: newUserFormData.userType as 'NIR' | 'Assistencial' | 'Admin',
+        specialty: newUserFormData.specialty,
+      });
+      
+      // Refresh users list
+      const updatedUsers = await getAllUsers();
+      setUsers(updatedUsers);
+      
+      // Close popup and reset form
+      setIsNewUserPopupOpen(false);
+      setNewUserFormData({
+        fullName: "",
+        login: "",
+        password: "",
+        confirmPassword: "",
+        userType: "",
+        specialty: "",
+      });
+      setNewUserErrors({
+        fullName: false,
+        login: false,
+        loginExists: false,
+        password: false,
+        confirmPassword: false,
+        userType: false,
+        specialty: false,
+      });
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        setNewUserErrors(prev => ({ ...prev, loginExists: true }));
+      }
+    } finally {
+      setIsNewUserLoading(false);
+    }
+  };
 
   const handleOpenEditModal = async (userId: number) => {
     try {
@@ -121,35 +244,18 @@ export const Dashboard = () => {
       if (!editUserId || !editUserData.role) return;
       const errors = {
         name: !editUserData.name.trim(),
-        username: !editUserData.username.trim() || editUserData.username.length < 4,
-        birthdate: !editUserData.birthdate.trim(),
-        phone: !editUserData.phone.trim() || !/^\(\d{2}\)\d{4,5}-\d{4}$/.test(editUserData.phone),
+        username: false,
+        birthdate: false,
+        phone: false,
       };
       setFieldErrors(errors);
       if (Object.values(errors).some(Boolean)) {
         return; 
       }
-      if (changePassword) {
-        if (!editUserData.password || editUserData.password.trim() === "") {
-          setPasswordError("A senha não pode estar em branco.");
-          return;
-        }
-        if (editUserData.password.length < 6) {
-          setPasswordError("A senha deve ter pelo menos 6 caracteres.");
-          return;
-        }
-      }
-      setPasswordError(null);
       const updatedUserData: any = {
         name: editUserData.name,
-        birthDate: dayjs(editUserData.birthdate).format("DD/MM/YYYY"), 
-        phone: editUserData.phone,
-        username: editUserData.username,
         role: editUserData.role,
       };
-      if (changePassword) {
-        updatedUserData.password = editUserData.password;
-      }
       await updateUserById(editUserId, updatedUserData);
       const updatedUsers = await getAllUsers();
       setUsers(updatedUsers);
@@ -229,6 +335,19 @@ export const Dashboard = () => {
       <Typography variant="h4" gutterBottom>
         Painel Administrativo
       </Typography>
+      
+      <Button
+        onClick={() => setIsNewUserPopupOpen(true)}
+        variant="contained"
+        sx={{ 
+          mb: 2, 
+          backgroundColor: '#86efac', 
+          '&:hover': { backgroundColor: '#4ade80' } 
+        }}
+      >
+        Cadastrar novo usuário
+      </Button>
+
       <div style={{ display: "flex", gap: "16px", marginBottom: "16px" }}>
         <TextField
           label="Nome"
@@ -240,16 +359,7 @@ export const Dashboard = () => {
           fullWidth
           margin="dense"
         />
-        <TextField
-          label="Login"
-          variant="outlined"
-          value={filters.login}
-          onChange={(e) =>
-            setFilters((prev) => ({ ...prev, login: e.target.value }))
-          }
-          fullWidth
-          margin="dense"
-        />
+        
         <FormControl fullWidth variant="outlined" margin="dense">
           <InputLabel id="role-filter-label" htmlFor="role-select">
             Função
@@ -421,130 +531,21 @@ export const Dashboard = () => {
             error={fieldErrors.name}
             helperText={fieldErrors.name ? "O nome não pode estar em branco." : ""}
           />
-          <TextField
-            label="Login"
-            fullWidth
-            margin="dense"
-            value={editUserData.username || ""}
-            onChange={(e) => {
-              setEditUserData((prev) => ({ ...prev, username: e.target.value }));
-              if (e.target.value.trim() && e.target.value.length >= 4) {
-                setFieldErrors((prev) => ({ ...prev, username: false }));
-              }
-            }}
-            error={fieldErrors.username}
-            helperText={
-              fieldErrors.username
-                ? "O login deve ter pelo menos 4 caracteres e não pode estar em branco."
-                : ""
-            }
-          />
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker
-              label="Data de Nascimento"
-              value={editUserData.birthdate ? dayjs(editUserData.birthdate) : null}
-              onChange={(newVal) => {
-                const iso = newVal?.toISOString() || "";
-                if (newVal && newVal.isAfter(dayjs())) {
-                  setFieldErrors((prev) => ({ ...prev, birthdate: true }));
-                  return;
-                }
-                setEditUserData((prev) => ({ ...prev, birthdate: iso }));
-                if (iso) {
-                  setFieldErrors((prev) => ({ ...prev, birthdate: false }));
-                }
-              }}
-              format="DD/MM/YYYY"
-              maxDate={dayjs()}
-              slotProps={{
-                textField: {
-                  fullWidth: true,
-                  margin: "dense",
-                  error: fieldErrors.birthdate,
-                  helperText: fieldErrors.birthdate
-                    ? "A data de nascimento não pode estar em branco ou no futuro."
-                    : "",
-                  onBlur: (e: React.FocusEvent<HTMLInputElement>) => {
-                    const typedDate = dayjs(e.target.value, "DD/MM/YYYY", true);
-                    if (typedDate.isValid() && typedDate.isAfter(dayjs())) {
-                      setFieldErrors((prev) => ({ ...prev, birthdate: true }));
-                    }
-                  },
-                },
-              }}
-            />
-          </LocalizationProvider>
-          <TextField
-            label="Função"
-            fullWidth
-            margin="dense"
-            value={editUserData.role}
-            disabled
-          />
-          <TextField
-            label="Telefone"
-            fullWidth
-            margin="dense"
-            value={editUserData.phone || ""}
-            onChange={(e) => {
-              const raw = e.target.value.replace(/\D/g, '');
-              let formatted = raw;
-              if (raw.length <= 2) formatted = `(${raw}`;
-              else if (raw.length <= 7) formatted = `(${raw.slice(0, 2)})${raw.slice(2)}`;
-              else formatted = `(${raw.slice(0, 2)})${raw.slice(2, 7)}-${raw.slice(7, 11)}`;
-              setEditUserData((prev) => ({ ...prev, phone: formatted }));
-              if (/^\(\d{2}\)\d{4,5}-\d{4}$/.test(formatted)) {
-                setFieldErrors((prev) => ({ ...prev, phone: false }));
-              }
-            }}
-            error={fieldErrors.phone}
-            helperText={
-              fieldErrors.phone
-                ? "O telefone deve estar no formato (XX)XXXXX-XXXX e não pode estar em branco."
-                : ""
-            }
-          />
+          
           <FormControl component="fieldset" fullWidth margin="dense">
-            <Typography variant="subtitle1">Alterar Senha?</Typography>
+            <Typography variant="subtitle1">Tipo de usuário</Typography>
             <RadioGroup
-              row
-              value={changePassword ? "yes" : "no"}
-              onChange={(e) => setChangePassword(e.target.value === "yes")}
+              name="role"
+              value={editUserData.role || ""}
+              onChange={(e) => {
+                setEditUserData((prev) => ({ ...prev, role: e.target.value as "NIR" | "Assistencial" | "Admin" }));
+              }}
             >
-              <FormControlLabel value="no" control={<Radio />} label="Não" />
-              <FormControlLabel value="yes" control={<Radio />} label="Sim" />
+              <FormControlLabel value="NIR" control={<Radio />} label="NIR" />
+              <FormControlLabel value="Assistencial" control={<Radio />} label="Assistencial" />
+              <FormControlLabel value="Admin" control={<Radio />} label="Admin" />
             </RadioGroup>
           </FormControl>
-          {changePassword && (
-            <TextField
-              label="Nova Senha"
-              fullWidth
-              margin="dense"
-              type={showPassword ? "text" : "password"}
-              value={editUserData.password}
-              onChange={(e) => {
-                const newPassword = e.target.value;
-                setEditUserData((prev) => ({ ...prev, password: newPassword }));
-                if (newPassword.length > 0 && newPassword.length < 6) {
-                  setPasswordError("A senha deve ter pelo menos 6 caracteres.");
-                } else {
-                  setPasswordError(null);
-                }
-              }}
-              error={!!passwordError}
-              helperText={passwordError}
-              InputProps={{
-                endAdornment: (
-                  <IconButton
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                ),
-              }}
-            />
-          )}
         </DialogContent>
         <DialogActions>
           <Button
@@ -564,13 +565,124 @@ export const Dashboard = () => {
               backgroundColor: "#86efac",
               "&:hover": { backgroundColor: "#4ade80" },
             }}
-            disabled={changePassword && !!passwordError}
           >
             Salvar
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+      </div>
+
+      {/* New User Creation Pop-up Dialog */}
+      <Dialog open={isNewUserPopupOpen} onClose={() => setIsNewUserPopupOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Cadastrar novo usuário</DialogTitle>
+        <DialogContent>
+          <form onSubmit={handleNewUserSubmit}>
+            <TextField
+              fullWidth
+              label="Nome completo"
+              name="fullName"
+              value={newUserFormData.fullName}
+              onChange={handleNewUserChange}
+              margin="normal"
+              error={newUserErrors.fullName}
+              helperText={newUserErrors.fullName && 'Este campo não pode ficar vazio'}
+            />
+
+            <TextField
+              fullWidth
+              label="Login"
+              name="login"
+              value={newUserFormData.login}
+              onChange={handleNewUserChange}
+              margin="normal"
+              error={newUserErrors.login || newUserErrors.loginExists}
+              helperText={
+                newUserErrors.login
+                  ? 'Este campo não pode ficar vazio'
+                  : newUserErrors.loginExists
+                    ? 'Este login já está em uso'
+                    : ''
+              }
+            />
+
+            <TextField
+              fullWidth
+              label="Senha"
+              name="password"
+              type="password"
+              value={newUserFormData.password}
+              onChange={handleNewUserChange}
+              margin="normal"
+              error={newUserErrors.password}
+              helperText={newUserErrors.password && 'Este campo não pode ficar vazio'}
+            />
+
+            
+
+            <FormControl
+              component="fieldset"
+              margin="normal"
+              error={newUserErrors.userType}
+            >
+              <Typography variant="subtitle1">Tipo de usuário</Typography>
+              <RadioGroup
+                name="userType"
+                value={newUserFormData.userType}
+                onChange={handleNewUserChange}
+              >
+                <FormControlLabel value="NIR" control={<Radio />} label="NIR" />
+                <FormControlLabel value="Assistencial" control={<Radio />} label="Assistencial" />
+                <FormControlLabel value="Admin" control={<Radio />} label="Admin" />
+              </RadioGroup>
+              {newUserErrors.userType && (
+                <Typography variant="caption" color="error">
+                  Pelo menos uma opção deve ser selecionada
+                </Typography>
+              )}
+            </FormControl>
+
+            {newUserFormData.userType === "Assistencial" && (
+              <FormControl fullWidth margin="normal" error={newUserErrors.specialty}>
+                <InputLabel id="new-user-specialty-label">Especialidade</InputLabel>
+                <Select
+                  labelId="new-user-specialty-label"
+                  id="new-user-specialty-select"
+                  name="specialty"
+                  value={newUserFormData.specialty}
+                  onChange={handleNewUserSelectChange}
+                  label="Especialidade"
+                >
+                  {specialties.map(s => (
+                    <MenuItem key={s} value={s}>
+                      {s}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {newUserErrors.specialty && (
+                  <FormHelperText>Este campo não pode ficar vazio</FormHelperText>
+                )}
+              </FormControl>
+            )}
+          </form>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => setIsNewUserPopupOpen(false)}
+            sx={{ backgroundColor: '#86efac', '&:hover': { backgroundColor: '#4ade80' } }}
+          >
+            Cancelar
+          </Button>
+          <Button 
+            onClick={handleNewUserSubmit}
+            variant="contained"
+            disabled={isNewUserLoading}
+            sx={{ backgroundColor: '#86efac', '&:hover': { backgroundColor: '#4ade80' } }}
+          >
+            {isNewUserLoading ? 'CARREGANDO...' : 'Cadastrar'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <button
         onClick={handleLogoutClick}
         style={{
@@ -594,3 +706,4 @@ export const Dashboard = () => {
 };
 
 export default Dashboard;
+                    

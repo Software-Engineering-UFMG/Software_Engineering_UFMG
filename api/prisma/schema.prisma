@@ -31,6 +31,16 @@ model User {
   createdAt DateTime @default(now())
 }
 
+model Usuario {
+  id             Int     @id @default(autoincrement())
+  nome_completo  String  @db.VarChar(50)
+  login          String  @unique @db.VarChar(50)
+  tipo           String  @db.VarChar(20)
+  especialidade  String? @db.VarChar(30)
+  status         String  @db.VarChar(10)
+  createdAt      DateTime @default(now())
+}
+
 model PreceptorPaciente {
   id             Int      @id @default(autoincrement()) //id da relação preceptor paciente
   preceptorId    Int      // id do preceptor (do hospital)
@@ -39,4 +49,29 @@ model PreceptorPaciente {
   red2green      String   @db.VarChar(20) // verde/vermelho/à preencher
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  scheduledDeactivationAt DateTime? // <-- add this line
+
+  questionnaires Questionnaire[]
+}
+
+model Questionnaire {
+  id                   Int      @id @default(autoincrement())
+  preceptorPacienteId  Int
+
+  // Explicit fields from the questionnaire
+  dischargeDate        DateTime
+  clinicalCriteria     String
+  characteristics      String[] // Array of strings
+  needsAdmission       String   // "yes" | "no"
+  outpatient           String   // "yes" | "no"
+  hospitalDischarge    String   // "yes" | "no"
+  waiting              String   // "yes" | "no"
+  waitingType          String[] // Array of strings, nullable if waiting == "no"
+  examDetails          String[] // Array of strings, nullable if not waiting for exam
+  dischargeConfirmed   Boolean
+
+  red2green            String   @db.VarChar(20)
+  createdAt            DateTime @default(now())
+
+  preceptorPaciente    PreceptorPaciente @relation(fields: [preceptorPacienteId], references: [id])
 }

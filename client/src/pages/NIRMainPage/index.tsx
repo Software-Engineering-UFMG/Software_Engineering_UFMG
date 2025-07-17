@@ -19,7 +19,8 @@ export const NIRMainpage = () => {
   };
 
   useEffect(() => {
-    if (!user && !isLoading) {
+    if (isLoading) return; // Wait until loading is false
+    if (!user) {
       navigate("/");
     }
   }, [user, isLoading, navigate]);

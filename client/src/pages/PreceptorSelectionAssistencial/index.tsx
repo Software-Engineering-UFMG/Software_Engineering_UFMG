@@ -1,19 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
-import { Typography, Box, TextField, InputAdornment, List, ListItem, ListItemButton } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
+import { Typography, Box, TextField, List, ListItem, ListItemButton, CircularProgress } from "@mui/material";
 import { useAuth } from "../../context/AuthContext";
+import { getPreceptorsByName } from "../../services/api";
 
 
 export const Preceptor = () => {
   const { user, isLoading } = useAuth();
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [filteredPreceptors, setFilteredPreceptors] = useState<string[]>([]);
+  // States for the TextField-based search
+  const [preceptorInput, setPreceptorInput] = useState<string>("");
+  const [preceptorOptions, setPreceptorOptions] = useState<any[]>([]);
+  const [selectedPreceptor, setSelectedPreceptor] = useState<any | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
-  const [selectedPreceptor, setSelectedPreceptor] = useState<string | null>(null);
+
   const { handleLogout: authLogout } = useAuth();
   const navigate = useNavigate();
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const handleLogoutClick = async () => {
     await authLogout(); 
@@ -26,21 +29,50 @@ export const Preceptor = () => {
     }
   }, [user, isLoading, navigate]);
 
-  // Debounced search effect
+  // Debounced search effect for preceptorInput
   useEffect(() => {
-   
-  },);
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
 
-  const handlePreceptorSelect = (preceptor: string) => {
+    if (preceptorInput.trim() === "") {
+      setPreceptorOptions([]);
+      setSearchLoading(false); 
+      // If user clears input, and a preceptor was selected, ensure it's deselected
+      // This is handled in the TextField's onChange if preceptorInput !== selectedPreceptor.name
+      return;
+    }
+
+    debounceTimeout.current = setTimeout(async () => {
+      setSearchLoading(true); // Set loading true right before the API call
+      try {
+        const data = await getPreceptorsByName(preceptorInput);
+        setPreceptorOptions(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Error fetching preceptors:", error);
+        setPreceptorOptions([]);
+      } finally {
+        setSearchLoading(false); // Set loading false after API call
+      }
+    }, 300); // 300ms debounce
+
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, [preceptorInput]);
+
+  const handlePreceptorSelect = (preceptor: any) => {
     setSelectedPreceptor(preceptor);
-    setSearchTerm(preceptor);
-    setFilteredPreceptors([]);
+    setPreceptorInput(preceptor.name); // Set TextField to selected preceptor's name
+    setPreceptorOptions([]); // Hide/clear suggestions after selection
   };
 
   const handleContinue = () => {
     if (selectedPreceptor) {
       navigate("/preceptor/AssistencialDashboard", {
-        state: { preceptorName: selectedPreceptor },
+        state: { preceptorName: selectedPreceptor.name, preceptorId: selectedPreceptor.id },
       });
     }
   };
@@ -75,45 +107,62 @@ export const Preceptor = () => {
           Editar seu cadastro
         </button>
       </Box>
+      
+      {/* TextField for preceptor selection */}
       <Box sx={{ display: "flex", justifyContent: "center", mb: 4, position: "relative" }}>
-        <TextField
-          placeholder="Digite o nome do preceptor"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
-          sx={{ width: "50%" }}
-          disabled={searchLoading}
-        />
-        {filteredPreceptors.length > 0 && (
-          <List
-            sx={{
-              position: "absolute",
-              top: "100%",
-              width: "50%",
-              backgroundColor: "white",
-              border: "1px solid #ccc",
-              borderRadius: "4px",
-              zIndex: 10,
-              maxHeight: "150px",
-              overflowY: "auto",
+        <Box sx={{ width: "50%", position: "relative" }}>
+          <TextField
+            label="Digite o nome do preceptor"
+            variant="outlined"
+            fullWidth
+            value={preceptorInput}
+            onChange={e => {
+              const newValue = e.target.value;
+              setPreceptorInput(newValue);
+              // If user types something different from selected preceptor, deselect
+              if (selectedPreceptor && newValue !== selectedPreceptor.name) {
+                setSelectedPreceptor(null);
+              }
             }}
-          >
-            {filteredPreceptors.map((preceptor, index) => (
-              <ListItem key={index} disablePadding>
-                <ListItemButton onClick={() => handlePreceptorSelect(preceptor)}>
-                  {preceptor}
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-        )}
+            autoComplete="off"
+            disabled={searchLoading}
+            InputProps={{
+              endAdornment: searchLoading ? <CircularProgress size={20} /> : null,
+            }}
+          />
+          {preceptorOptions.length > 0 && !selectedPreceptor && (
+            <List
+              sx={{
+                position: "absolute",
+                top: "100%", // Position below the TextField
+                left: 0,
+                width: "100%",
+                backgroundColor: "#f5f5f5",
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+                zIndex: 10,
+                maxHeight: "150px",
+                overflowY: "auto",
+                padding: "8px 0",
+                boxSizing: "border-box",
+                marginTop: "4px", // Small gap from TextField
+              }}
+            >
+              {preceptorOptions.map((preceptor: any) => (
+                <ListItem key={preceptor.id} disablePadding>
+                  <ListItemButton
+                    onMouseDown={e => e.preventDefault()} // Prevents TextField blur before click
+                    onClick={() => handlePreceptorSelect(preceptor)}
+                  >
+                    {preceptor.name}
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+          )}
+        </Box>
       </Box>
+
       <Box sx={{ display: "flex", justifyContent: "end" }}>
       <button
         onClick={handleLogoutClick}
