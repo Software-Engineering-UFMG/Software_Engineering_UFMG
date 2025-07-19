@@ -11,6 +11,7 @@ export const Preceptor = () => {
   // States for the TextField-based search
   const [preceptorInput, setPreceptorInput] = useState<string>("");
   const [preceptorOptions, setPreceptorOptions] = useState<any[]>([]);
+  const [allPreceptors, setAllPreceptors] = useState<any[]>([]);
   const [selectedPreceptor, setSelectedPreceptor] = useState<any | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
 
@@ -29,6 +30,20 @@ export const Preceptor = () => {
     }
   }, [user, isLoading, navigate]);
 
+  // Load all preceptors on component mount
+  useEffect(() => {
+    const loadPreceptors = async () => {
+      try {
+        const data = await getPreceptorsByName(""); // Get all preceptors
+        setAllPreceptors(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Error loading preceptors:", error);
+        setAllPreceptors([]);
+      }
+    };
+    loadPreceptors();
+  }, []);
+
   // Debounced search effect for preceptorInput
   useEffect(() => {
     if (debounceTimeout.current) {
@@ -38,41 +53,46 @@ export const Preceptor = () => {
     if (preceptorInput.trim() === "") {
       setPreceptorOptions([]);
       setSearchLoading(false); 
-      // If user clears input, and a preceptor was selected, ensure it's deselected
-      // This is handled in the TextField's onChange if preceptorInput !== selectedPreceptor.name
       return;
     }
 
     debounceTimeout.current = setTimeout(async () => {
-      setSearchLoading(true); // Set loading true right before the API call
+      setSearchLoading(true);
       try {
-        const data = await getPreceptorsByName(preceptorInput);
-        setPreceptorOptions(Array.isArray(data) ? data : []);
+        // Filter preceptors client-side by name (since we don't have name field in hospital DB)
+        // We'll use 'usuario' field as the name identifier
+        const filtered = allPreceptors.filter(preceptor => 
+          preceptor.usuario && preceptor.usuario.toLowerCase().includes(preceptorInput.toLowerCase())
+        );
+        setPreceptorOptions(filtered);
       } catch (error) {
-        console.error("Error fetching preceptors:", error);
+        console.error("Error filtering preceptors:", error);
         setPreceptorOptions([]);
       } finally {
-        setSearchLoading(false); // Set loading false after API call
+        setSearchLoading(false);
       }
-    }, 300); // 300ms debounce
+    }, 300);
 
     return () => {
       if (debounceTimeout.current) {
         clearTimeout(debounceTimeout.current);
       }
     };
-  }, [preceptorInput]);
+  }, [preceptorInput, allPreceptors]);
 
   const handlePreceptorSelect = (preceptor: any) => {
     setSelectedPreceptor(preceptor);
-    setPreceptorInput(preceptor.name); // Set TextField to selected preceptor's name
-    setPreceptorOptions([]); // Hide/clear suggestions after selection
+    setPreceptorInput(preceptor.usuario || ''); // Use 'usuario' field as name
+    setPreceptorOptions([]);
   };
 
   const handleContinue = () => {
     if (selectedPreceptor) {
       navigate("/preceptor/AssistencialDashboard", {
-        state: { preceptorName: selectedPreceptor.name, preceptorId: selectedPreceptor.id },
+        state: { 
+          preceptorName: selectedPreceptor.usuario, 
+          preceptorId: selectedPreceptor.matricula // Use matricula as ID
+        },
       });
     }
   };
@@ -100,12 +120,12 @@ export const Preceptor = () => {
             {user?.specialty ? `${user.specialty} - ${user.role}` : user?.role}
           </Typography>
         </Box>
-        <button
+        {/* <button
           onClick={() => navigate("/preceptor/editRegistration")}
           className="cursor-pointer rounded-xl bg-green-300 !p-3 text-white hover:bg-green-400"
         >
           Editar seu cadastro
-        </button>
+        </button> */}
       </Box>
       
       {/* TextField for preceptor selection */}
@@ -120,7 +140,7 @@ export const Preceptor = () => {
               const newValue = e.target.value;
               setPreceptorInput(newValue);
               // If user types something different from selected preceptor, deselect
-              if (selectedPreceptor && newValue !== selectedPreceptor.name) {
+              if (selectedPreceptor && newValue !== selectedPreceptor.usuario) {
                 setSelectedPreceptor(null);
               }
             }}
@@ -149,12 +169,12 @@ export const Preceptor = () => {
               }}
             >
               {preceptorOptions.map((preceptor: any) => (
-                <ListItem key={preceptor.id} disablePadding>
+                <ListItem key={preceptor.matricula} disablePadding>
                   <ListItemButton
                     onMouseDown={e => e.preventDefault()} // Prevents TextField blur before click
                     onClick={() => handlePreceptorSelect(preceptor)}
                   >
-                    {preceptor.name}
+                    {preceptor.usuario}
                   </ListItemButton>
                 </ListItem>
               ))}

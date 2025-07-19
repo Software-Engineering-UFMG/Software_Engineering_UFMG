@@ -53,12 +53,12 @@ export const NIRMainpage = () => {
             </Typography>
           )}
         </Box>
-        <button
+        {/* <button
           onClick={() => navigate("/NIRMainpage/editNir")}
           className="cursor-pointer rounded-xl bg-green-300 !p-3 text-white hover:bg-green-400"
         >
           Editar seu cadastro
-        </button>
+        </button> */}
       </Box>
       <Box sx={{ display: "flex", justifyContent: "center", mb: 4 }}>
         <button

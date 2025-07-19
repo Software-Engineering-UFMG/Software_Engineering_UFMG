@@ -4,6 +4,7 @@ import { authRoutes } from "./authRoutes";
 import { preceptorRoutes } from "./preceptorRoutes";
 import { patientRoutes } from "./patientRoutes";
 import { preceptorPacienteRoutes } from "./preceptorPacienteRoutes";
+import { ldapRoutes } from "./ldapRoutes";
 
 
 export const registerRoutes = (app: FastifyInstance) => {
@@ -12,6 +13,7 @@ export const registerRoutes = (app: FastifyInstance) => {
   preceptorRoutes(app);
   patientRoutes(app);
   preceptorPacienteRoutes(app);
+  ldapRoutes(app);
 };
 
 

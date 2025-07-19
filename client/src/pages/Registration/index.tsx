@@ -16,42 +16,32 @@ import {
 } from "@mui/material";
 import { Link as RouterLink, useNavigate } from "react-router";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import dayjs from "dayjs";
 import axios from 'axios';
-import { createUser } from "../../services/api";
+import { createUser, checkLdapUser } from "../../services/api";
 
 export const Registration = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     fullName: "",
-    birthDate: "",
     login: "",
-    phone: "",
-    password: "",
-    confirmPassword: "",
+    password: "", // Keep password for LDAP check only
     userType: "",
     specialty: "",
   });
 
   const [errors, setErrors] = useState({
     fullName: false,
-    birthDate: false,
     login: false,
     loginExists: false,
-    phone: false,
-    password: false,
-    confirmPassword: false,
-    birthDateFuture: false,
     userType: false,
     specialty: false,
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [ldapError, setLdapError] = useState<string | null>(null);
 
   const specialties = [
     "Clínica Médica",
@@ -70,18 +60,6 @@ export const Registration = () => {
       setErrors(prev => ({ ...prev, loginExists: false }));
     }
 
-    if (name === 'phone') {
-      const raw = value.replace(/\D/g, '');
-      let formatted = raw;
-      if (raw.length <= 2) formatted = `(${raw}`;
-      else if (raw.length <= 7) formatted = `(${raw.slice(0,2)})${raw.slice(2)}`;
-      else formatted = `(${raw.slice(0,2)})${raw.slice(2,7)}-${raw.slice(7,11)}`;
-
-      setFormData(prev => ({ ...prev, phone: formatted }));
-      setErrors(prev => ({ ...prev, phone: false }));
-      return;
-    }
-
     setFormData(prev => ({
       ...prev,
       [name]: value,
@@ -91,16 +69,9 @@ export const Registration = () => {
     setErrors(prev => ({
       ...prev,
       [name]: false,
-      ...(name === 'birthDate' && { birthDateFuture: false }),
-      ...(name === 'confirmPassword' && { confirmPassword: value !== formData.password }),
       ...(name === 'userType' && { userType: false }),
       ...(name === 'specialty' && { specialty: false }),
     }));
-
-    if (name === 'birthDate') {
-      const isFuture = new Date(value) > new Date();
-      setErrors(prev => ({ ...prev, birthDateFuture: isFuture }));
-    }
   };
 
   const handleSelectChange = (e: SelectChangeEvent<string>) => {
@@ -111,19 +82,13 @@ export const Registration = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const today = new Date();
+    console.log("Registration form submitted");
 
+    // Only validate fields required for user creation
     const validationErrors = {
       fullName: formData.fullName.trim() === '',
-      birthDate: formData.birthDate.trim() === '',
       login: formData.login.trim() === '',
       loginExists: false,
-      phone: formData.phone.trim() === '',
-      password: formData.password.trim() === '',
-      confirmPassword:
-        formData.confirmPassword.trim() === '' ||
-        formData.confirmPassword !== formData.password,
-      birthDateFuture: new Date(formData.birthDate) > today,
       userType: formData.userType.trim() === '',
       specialty:
         formData.userType === 'Assistencial' &&
@@ -131,31 +96,51 @@ export const Registration = () => {
     };
 
     setErrors(validationErrors);
-    if (Object.values(validationErrors).some(Boolean)) return;
+    setLdapError(null);
+    if (Object.values(validationErrors).some(Boolean)) {
+      console.log("Validation failed:", validationErrors);
+      return;
+    }
 
     setIsLoading(true);
     try {
-      // Format birthDate to DD/MM/YYYY before sending
-      let formattedBirthDate = formData.birthDate;
-      if (formattedBirthDate) {
-        const d = dayjs(formattedBirthDate);
-        if (d.isValid()) {
-          formattedBirthDate = d.format("DD/MM/YYYY");
-        }
+      console.log("Calling checkLdapUser with:", formData.login, formData.password);
+
+      if (!formData.login || !formData.password) {
+        console.error("Login or password missing, not calling API");
+        setLdapError("Login e senha são obrigatórios para verificação LDAP.");
+        setIsLoading(false);
+        return;
       }
+
+      // Step 1: Check LDAP first
+      const ldapRes = await checkLdapUser(formData.login, formData.password);
+      console.log("LDAP response:", ldapRes);
+
+      // Step 2: If LDAP returns false, block user creation
+      if (!ldapRes.exists) {
+        setLdapError("Usuário não existe no servidor do hospital ou a senha está incorreta. Por favor tente novamente!.");
+        setIsLoading(false);
+        return; // STOP HERE - do not create user
+      }
+
+      // Step 3: Only if LDAP returns true, proceed to create user
+      console.log("LDAP verification successful. Proceeding to create user...");
+
       await createUser({
         name: formData.fullName,
-        birthDate: formattedBirthDate,
         username: formData.login,
-        phone: formData.phone,
-        password: formData.confirmPassword,
         role: formData.userType as 'NIR' | 'Assistencial' | 'Admin',
         specialty: formData.specialty,
       });
+
       navigate('/success');
     } catch (error) {
+      console.error("Error in registration submit:", error);
       if (axios.isAxiosError(error) && error.response?.status === 409) {
-        setErrors(prev => ({ ...prev, loginExists: true }));
+        setErrors(prev => ({ ...prev, loginExists: true })); // Sets error state
+      } else {
+        setLdapError("Erro interno. Tente novamente mais tarde.");
       }
     } finally {
       setIsLoading(false);
@@ -197,10 +182,6 @@ export const Registration = () => {
           helperText={errors.fullName && 'Este campo não pode ficar vazio'}
         />
 
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          
-        </LocalizationProvider>
-
         <TextField
           fullWidth
           label="Login da Ebserh"
@@ -218,8 +199,6 @@ export const Registration = () => {
           }
         />
 
-        
-
         <TextField
           fullWidth
           label="Senha da Ebserh"
@@ -228,11 +207,8 @@ export const Registration = () => {
           value={formData.password}
           onChange={handleChange}
           margin="normal"
-          error={errors.password}
-          helperText={errors.password && 'Este campo não pode ficar vazio'}
+          helperText="Senha usada apenas para verificação LDAP"
         />
-
-        
 
         <FormControl
           component="fieldset"
@@ -247,7 +223,6 @@ export const Registration = () => {
           >
             <FormControlLabel value="NIR" control={<Radio />} label="NIR" />
             <FormControlLabel value="Assistencial" control={<Radio />} label="Assistencial" />
-            
           </RadioGroup>
           {errors.userType && (
             <Typography variant="caption" color="error">
@@ -277,6 +252,12 @@ export const Registration = () => {
               <FormHelperText>Este campo não pode ficar vazio</FormHelperText>
             )}
           </FormControl>
+        )}
+
+        {ldapError && (
+          <Typography color="error" sx={{ mt: 1, mb: 1 }}>
+            {ldapError}
+          </Typography>
         )}
 
         <Button

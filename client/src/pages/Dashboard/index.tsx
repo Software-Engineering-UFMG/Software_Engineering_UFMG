@@ -18,11 +18,7 @@ import {
   CircularProgress,
   Tooltip,
 } from "@mui/material";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import dayjs from "dayjs";
-import { Edit, Delete, ToggleOn, ToggleOff, Visibility, VisibilityOff } from "@mui/icons-material";
+import { Edit, Delete, ToggleOn, ToggleOff} from "@mui/icons-material";
 import { useNavigate } from "react-router";
 import { getAllUsers } from "../../services/api";
 import { updateUserById } from "../../services/api";
@@ -41,7 +37,8 @@ import {
   SelectChangeEvent,
   FormHelperText,
 } from "@mui/material";
-import { createUser } from "../../services/api";
+import { createUser,checkLdapUser } from "../../services/api";
+import axios from "axios";
 
 export const Dashboard = () => {
   const { handleLogout: authLogout } = useAuth();
@@ -59,17 +56,13 @@ export const Dashboard = () => {
   const [editUserData, setEditUserData] = useState<{
     name: string;
     username: string;
-    birthdate: string;
     role: "NIR" | "Assistencial" | "Admin" | undefined;
-    phone: string;
-    password: string;
+    specialty?: string;
   }>({
     name: "",
     username: "",
-    birthdate: "",
     role: undefined,
-    phone: "",
-    password: "",
+    specialty: "",
   });
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
@@ -77,8 +70,6 @@ export const Dashboard = () => {
   const [fieldErrors, setFieldErrors] = useState({
     name: false,
     username: false,
-    birthdate: false,
-    phone: false,
   });
 
   // New user creation popup state
@@ -148,9 +139,7 @@ export const Dashboard = () => {
       login: newUserFormData.login.trim() === '',
       loginExists: false,
       password: newUserFormData.password.trim() === '',
-      confirmPassword:
-        newUserFormData.confirmPassword.trim() === '' ||
-        newUserFormData.confirmPassword !== newUserFormData.password,
+      confirmPassword: false,
       userType: newUserFormData.userType.trim() === '',
       specialty:
         newUserFormData.userType === 'Assistencial' &&
@@ -162,10 +151,28 @@ export const Dashboard = () => {
 
     setIsNewUserLoading(true);
     try {
+      console.log("Admin panel: Calling checkLdapUser with:", newUserFormData.login, newUserFormData.password);
+
+      // Step 1: Check LDAP first (same as registration page)
+      const ldapRes = await checkLdapUser(newUserFormData.login, newUserFormData.password);
+      console.log("Admin panel: LDAP response:", ldapRes);
+
+      // Step 2: If LDAP returns false, show specific admin panel error
+      if (!ldapRes.exists) {
+        setNewUserErrors(prev => ({ 
+          ...prev, 
+          loginExists: true // Use loginExists to show error below login field
+        }));
+        setIsNewUserLoading(false);
+        return; // STOP HERE - do not create user
+      }
+
+      // Step 3: Only if LDAP returns true, proceed to create user
+      console.log("Admin panel: LDAP verification successful. Proceeding to create user...");
+
       await createUser({
         name: newUserFormData.fullName,
         username: newUserFormData.login,
-        password: newUserFormData.confirmPassword,
         role: newUserFormData.userType as 'NIR' | 'Assistencial' | 'Admin',
         specialty: newUserFormData.specialty,
       });
@@ -193,7 +200,11 @@ export const Dashboard = () => {
         userType: false,
         specialty: false,
       });
+
+      console.log("Admin panel: User created successfully");
+
     } catch (error) {
+      console.error("Admin panel: Error in user creation:", error);
       if (axios.isAxiosError(error) && error.response?.status === 409) {
         setNewUserErrors(prev => ({ ...prev, loginExists: true }));
       }
@@ -208,10 +219,8 @@ export const Dashboard = () => {
       setEditUserData({
         name: user.name || "",
         username: user.username || "",
-        birthdate: user.birthDate ? dayjs(user.birthDate).toISOString() : "",
         role: user.role || undefined,
-        phone: user.phone || "",
-        password: "",
+        specialty: user.specialty || "",
       });
       setEditUserId(userId);
       setEditModalOpen(true);
@@ -224,17 +233,12 @@ export const Dashboard = () => {
     setEditUserData({
       name: "",
       username: "",
-      birthdate: "",
       role: undefined,
-      phone: "",
-      password: "",
+      specialty: "",
     });
-    setChangePassword(false);
     setFieldErrors({
       name: false,
       username: false,
-      birthdate: false,
-      phone: false,
     });
     setPasswordError(null);
   };
@@ -245,17 +249,20 @@ export const Dashboard = () => {
       const errors = {
         name: !editUserData.name.trim(),
         username: false,
-        birthdate: false,
-        phone: false,
       };
       setFieldErrors(errors);
       if (Object.values(errors).some(Boolean)) {
         return; 
       }
+      
+      // Only send fields that exist in Usuario model
       const updatedUserData: any = {
         name: editUserData.name,
         role: editUserData.role,
+        // Add specialty if role is Assistencial
+        ...(editUserData.role === 'Assistencial' && editUserData.specialty && { specialty: editUserData.specialty })
       };
+      
       await updateUserById(editUserId, updatedUserData);
       const updatedUsers = await getAllUsers();
       setUsers(updatedUsers);
@@ -288,20 +295,23 @@ export const Dashboard = () => {
     try {
       const userToUpdate = users.find((user) => user.id === userId);
       if (!userToUpdate) return;
-      const updatedStatus =
-        userToUpdate.status === "Active" ? "Inactive" : "Active";
+      
+      // Fix: Use correct status values that match your Usuario table
+      const updatedStatus = userToUpdate.status === "Ativado" ? "Desativado" : "Ativado";
+      
       const updatedUserData = {
-        ...userToUpdate,
-        status: updatedStatus,
-        birthDate: dayjs(userToUpdate.birthDate).format("DD/MM/YYYY"),
+        status: updatedStatus, // Remove type assertion, send as string
       };
+      
       const updatedUser = await updateUserById(userId, updatedUserData);
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
           user.id === userId ? { ...user, status: updatedUser.status } : user
         )
       );
-    } catch (error) {}
+    } catch (error) {
+      console.error("Error toggling user status:", error);
+    }
   };
 
   const handleDeleteUser = async () => {
@@ -326,7 +336,8 @@ export const Dashboard = () => {
         filters.login.toLowerCase()
       ) &&
       (user.role?.toLowerCase() || "").includes(filters.role.toLowerCase()) &&
-      (user.status?.toLowerCase() || "").includes(filters.status.toLowerCase())
+      // Fixed status filtering to match actual status values
+      (filters.status === "" || user.status === filters.status)
     );
   });
 
@@ -393,8 +404,8 @@ export const Dashboard = () => {
             label="Status"
           >
             <MenuItem value="">Todos</MenuItem>
-            <MenuItem value="Active">Ativado</MenuItem>
-            <MenuItem value="Inactive">Desativado</MenuItem>
+            <MenuItem value="Ativado">Ativado</MenuItem>
+            <MenuItem value="Desativado">Desativado</MenuItem>
           </Select>
         </FormControl>
       </div>
@@ -431,7 +442,7 @@ export const Dashboard = () => {
                     {user.role === "Assistencial" ? user.specialty : "N/A"}
                   </TableCell>
                   <TableCell>
-                    {user.status === "Active" ? "Ativado" : "Desativado"}
+                    {user.status === "Ativado" ? "Ativado" : "Desativado"}
                   </TableCell>
                   <TableCell>
                     <Tooltip title="Editar usuário">
@@ -444,16 +455,16 @@ export const Dashboard = () => {
                     </Tooltip>
                     <Tooltip
                       title={
-                        user.status === "Active"
+                        user.status === "Ativado"
                           ? "Desativar usuário"
                           : "Ativar usuário"
                       }
                     >
                       <IconButton
-                        color={user.status === "Active" ? "success" : "default"}
+                        color={user.status === "Ativado" ? "success" : "default"}
                         onClick={() => handleToggleActive(user.id)}
                       >
-                        {user.status === "Active" ? (
+                        {user.status === "Ativado" ? (
                           <ToggleOn />
                         ) : (
                           <ToggleOff />
@@ -538,7 +549,13 @@ export const Dashboard = () => {
               name="role"
               value={editUserData.role || ""}
               onChange={(e) => {
-                setEditUserData((prev) => ({ ...prev, role: e.target.value as "NIR" | "Assistencial" | "Admin" }));
+                const newRole = e.target.value as "NIR" | "Assistencial" | "Admin";
+                setEditUserData((prev) => ({ 
+                  ...prev, 
+                  role: newRole,
+                  // Clear specialty if not Assistencial
+                  ...(newRole !== 'Assistencial' && { specialty: '' })
+                }));
               }}
             >
               <FormControlLabel value="NIR" control={<Radio />} label="NIR" />
@@ -546,6 +563,27 @@ export const Dashboard = () => {
               <FormControlLabel value="Admin" control={<Radio />} label="Admin" />
             </RadioGroup>
           </FormControl>
+
+          {/* Add specialty field for Assistencial users */}
+          {editUserData.role === "Assistencial" && (
+            <FormControl fullWidth margin="normal">
+              <InputLabel id="edit-specialty-label">Especialidade</InputLabel>
+              <Select
+                labelId="edit-specialty-label"
+                value={editUserData.specialty || ""}
+                onChange={(e) => {
+                  setEditUserData((prev) => ({ ...prev, specialty: e.target.value }));
+                }}
+                label="Especialidade"
+              >
+                {specialties.map(s => (
+                  <MenuItem key={s} value={s}>
+                    {s}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
         </DialogContent>
         <DialogActions>
           <Button
@@ -600,7 +638,7 @@ export const Dashboard = () => {
                 newUserErrors.login
                   ? 'Este campo não pode ficar vazio'
                   : newUserErrors.loginExists
-                    ? 'Este login já está em uso'
+                    ? 'Credenciais LDAP inválidas ou usuário já existe no sistema' // Updated message
                     : ''
               }
             />
@@ -706,4 +744,4 @@ export const Dashboard = () => {
 };
 
 export default Dashboard;
-                    
+

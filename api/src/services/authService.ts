@@ -1,5 +1,4 @@
 import { prisma } from "../config/prisma"
-import bcrypt from "bcrypt";
 import { generateToken, verifyToken } from "../utils/jwtUtils";
 import { UserWithoutPassword } from "../types/userTypes";
 
@@ -7,41 +6,73 @@ export const loginUser = async (
   username: string,
   password: string
 ): Promise<{ user: UserWithoutPassword; token: string }> => {
-  const user = await prisma.user.findUnique({ where: { username } });
+  // Only check Usuario table (no more User table)
+  const user = await prisma.usuario.findUnique({ where: { login: username } });
 
-  if (!user || !(await bcrypt.compare(password, user.password))) {
+  if (!user) {
     throw new Error("Invalid username or password");
   }
 
+  // Check if user status is "Ativado" - block deactivated users from logging in
+  if (user.status !== "Ativado") {
+    throw new Error("Account is deactivated. Please contact administrator for activation.");
+  }
+
+  // Since we already verified LDAP on the frontend, we don't need to verify password again here
+  // The frontend has already confirmed that the LDAP credentials are correct
+  
   const token = generateToken({
     id: user.id,
-    username: user.username,
-    role: user.role,
+    username: user.login,
+    role: user.tipo,
   });
 
-  const { password: _, ...userWithoutPassword } = user;
-  return { user: userWithoutPassword, token };
+  return { 
+    user: {
+      id: user.id,
+      name: user.nome_completo,
+      username: user.login,
+      role: user.tipo,
+      specialty: user.especialidade,
+      status: user.status,
+      createdAt: user.createdAt,
+    } as UserWithoutPassword, 
+    token 
+  };
 };
 
 export const verifyUserToken = async (
   token: string
 ): Promise<{ user: UserWithoutPassword }> => {
   const decoded = verifyToken(token);
-  const user = await prisma.user.findUnique({ where: { id: decoded.id } });
-
+  
+  // Only check Usuario table
+  const user = await prisma.usuario.findUnique({ where: { id: decoded.id } });
+  
   if (!user) {
     throw new Error("User not found");
   }
 
-  const { password: _, ...userWithoutPassword } = user;
-  return { user: userWithoutPassword };
+  return { 
+    user: {
+      id: user.id,
+      name: user.nome_completo,
+      username: user.login,
+      role: user.tipo,
+      specialty: user.especialidade,
+      status: user.status,
+      createdAt: user.createdAt,
+    } as UserWithoutPassword
+  };
 };
 
 export const renewUserToken = async (
   token: string
 ): Promise<{ user: UserWithoutPassword; token: string }> => {
   const decoded = verifyToken(token);
-  const user = await prisma.user.findUnique({ where: { id: decoded.id } });
+  
+  // Only check Usuario table
+  const user = await prisma.usuario.findUnique({ where: { id: decoded.id } });
 
   if (!user) {
     throw new Error("User not found");
@@ -49,10 +80,21 @@ export const renewUserToken = async (
 
   const newToken = generateToken({
     id: user.id,
-    username: user.username,
-    role: user.role,
+    username: user.login,
+    role: user.tipo,
   });
 
-  const { password: _, ...userWithoutPassword } = user;
-  return { user: userWithoutPassword, token: newToken };
+  return { 
+    user: {
+      id: user.id,
+      name: user.nome_completo,
+      username: user.login,
+      role: user.tipo,
+      specialty: user.especialidade,
+      status: user.status,
+      createdAt: user.createdAt,
+    } as UserWithoutPassword, 
+    token: newToken 
+  };
 };
+

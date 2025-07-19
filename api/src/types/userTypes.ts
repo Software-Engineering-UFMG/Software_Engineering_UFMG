@@ -5,14 +5,30 @@ import {
   updateUserSchema,
 } from "../schemas/userSchemas";
 
-export type User = {
+// Remove the old User type, keep only Usuario-based types
+export type UserWithoutPassword = {
   id: number;
-  status: "Active" | "Inactive";
+  name: string;
+  username: string;
+  role: "NIR" | "Assistencial" | "Admin";
+  specialty?: string | null;
+  status: string;
   createdAt: Date;
-} & z.infer<typeof createUserSchema>;
-
-export type UserWithoutPassword = Omit<User, "password">;
+};
 
 export type CreateUserDTO = z.infer<typeof createUserSchema>;
-export type UpdateUserDTO = z.infer<typeof updateUserSchema>;
-export type UpdateUserByIdDTO = z.infer<typeof updateUserByIdSchema>;
+
+export interface UpdateUserDTO {
+  name?: string;
+  role?: "NIR" | "Assistencial" | "Admin";
+  specialty?: string | null;
+  status?: string; 
+}
+
+export interface UpdateUserByIdDTO {
+  name?: string;
+  role?: "NIR" | "Assistencial" | "Admin";
+  specialty?: string | null;
+  status?: string; 
+}
+  

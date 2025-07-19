@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { login } from "../../services/api";
+import { login, createUser, checkLdapUser } from "../../services/api";
 import { useGlobalContext } from "../../context/GlobalContext";
 import { useAuth } from "../../context/AuthContext";
 import { Input } from "../../components/Input";
@@ -64,41 +64,43 @@ export const Login = memo(() => {
     }
   };
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    if (!username.trim() || !password.trim()) {
+      setErrorMessage((prevState) => ({
+        ...prevState,
+        username: !username.trim() ? "O campo login é obrigatório" : null,
+        password: !password.trim() ? "O campo senha é obrigatório" : null,
+      }));
+      return;
+    }
 
     setLoading(true);
     setErrorMessage({ username: null, password: null, userAccountWrong: null });
 
     try {
-      if (!validateForm()) {
-        return;
+      console.log("Step 1: Checking LDAP credentials first...");
+      
+      // Step 1: Check LDAP credentials BEFORE attempting backend login
+      const ldapResponse = await checkLdapUser(username, password);
+      console.log("LDAP check response:", ldapResponse);
+      
+      // Step 2: If LDAP returns false, show LDAP error and stop
+      if (!ldapResponse.exists) {
+        console.log("LDAP verification failed - showing password error");
+        setErrorMessage((prevState) => ({
+          ...prevState,
+          userAccountWrong: "Login ou senha incorretos. Verifique suas credenciais do hospital.",
+        }));
+        setLoading(false);
+        return; // STOP HERE - don't proceed to backend login
       }
+      
+      console.log("Step 2: LDAP verification successful. Proceeding with backend login...");
+      
+      // Step 3: Only if LDAP passes, proceed with backend login
       const userData = await login(username, password);
-      if (!userData) {
-        setErrorMessage((prevState) => ({
-          ...prevState,
-          userAccountWrong: "Login ou senha incorretos",
-        }));
-        return;
-      }
-
-      if (userData.error === "InvalidPassword") {
-        setErrorMessage((prevState) => ({
-          ...prevState,
-          password: "Senha incorreta",
-        }));
-        return;
-      }
-
-      if (userData.status === "Inactive") {
-        setErrorMessage((prevState) => ({
-          ...prevState,
-          userAccountWrong: "O usuário está inativo",
-        }));
-        return;
-      }
-
       handleLogin(userData);
 
       switch (userData.role) {
@@ -115,15 +117,54 @@ export const Login = memo(() => {
           throw new Error("Invalid user role");
       }
     } catch (error: any) {
-      if (error.response?.status === 401) {
+      console.error("Erro no login:", error);
+      console.log("Full error object:", error);
+      console.log("Error response:", error.response);
+      console.log("Error response data:", error.response?.data);
+
+      // Handle different error message formats
+      let errorMessage = "";
+      
+      if (error.response?.data?.error?.message) {
+        errorMessage = error.response.data.error.message;
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      console.log("Extracted error message:", errorMessage);
+
+      // Since we already passed LDAP check, any error here is from backend
+      if (
+        errorMessage.toLowerCase().includes("deactivated") ||
+        errorMessage.toLowerCase().includes("desativada") ||
+        errorMessage.toLowerCase().includes("account is deactivated") ||
+        error.response?.status === 403
+      ) {
+        console.log("Setting deactivated user message");
         setErrorMessage((prevState) => ({
           ...prevState,
-          userAccountWrong: "Login ou senha incorretos",
+          userAccountWrong:
+            "Usuário cadastrado, porém desativado. Entre em contato com algum administrador para ativar sua conta.",
+        }));
+      } else if (
+        errorMessage.toLowerCase().includes("invalid username or password") ||
+        error.response?.status === 401
+      ) {
+        // This should not happen if LDAP passed, but just in case
+        console.log("Setting invalid credentials message");
+        setErrorMessage((prevState) => ({
+          ...prevState,
+          userAccountWrong: "Usuário ou senha inválidos.",
         }));
       } else {
+        console.log("Setting generic error message");
         setErrorMessage((prevState) => ({
           ...prevState,
-          userAccountWrong: "Erro ao tentar fazer login",
+          userAccountWrong: "Erro no login. Tente novamente.",
         }));
       }
     } finally {
@@ -176,14 +217,14 @@ export const Login = memo(() => {
               onChange={handlePasswordChange}
               className="border-black"
             />
-            <div className="min-h-[14px]">
+            <div className="min-h-[40px]"> {/* Increased from min-h-[14px] to accommodate longer messages */}
               {errorMessage.password && (
-                <div className="mt-1 h-[10px] text-sm text-red-600">
+                <div className="mt-1 text-sm text-red-600">
                   {errorMessage.password}
                 </div>
               )}
               {errorMessage.userAccountWrong && (
-                <div className="mt-1 h-[10px] text-sm text-red-600">
+                <div className="mt-1 text-sm text-red-600 leading-relaxed"> {/* Removed h-[10px] constraint and added leading-relaxed */}
                   {errorMessage.userAccountWrong}
                 </div>
               )}
@@ -198,17 +239,14 @@ export const Login = memo(() => {
             >
               {loading ? "Carregando..." : "Entrar"}
             </button>
-
-            
           </div>
           <Link
-              to="/registration"
-              className="cursor-pointer rounded-xl bg-green-300 !p-3 text-white hover:bg-green-400 flex justify-center"
-            >
-              Cadastrar Usuário
-            </Link>
+            to="/registration"
+            className="cursor-pointer rounded-xl bg-green-300 !p-3 text-white hover:bg-green-400 flex justify-center"
+          >
+            Cadastrar Usuário
+          </Link>
         </form>
-        
       </div>
     </div>
   );

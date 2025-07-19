@@ -1,14 +1,17 @@
 import { hospitalPrisma } from "../config/hospitalPrisma";
-import { Preceptor } from "../../generated/hospital-client";
 
 export const getPreceptorById = async (
   id: number
-): Promise<Preceptor | null> => {
+): Promise<any | null> => {
   try {
-    const preceptor = await hospitalPrisma.preceptor.findUnique({
-      where: { id },
+    const servidor = await hospitalPrisma.rap_servidores.findFirst({
+      where: { 
+        matricula: id,
+        ind_situacao: "A", // Only active employees
+        ind_situacao_servidor: "P" // Only professors
+      }
     });
-    return preceptor;
+    return servidor;
   } catch (error) {
     console.error("Error fetching preceptor by ID:", error);
     throw new Error("Could not fetch preceptor by ID");
@@ -17,12 +20,13 @@ export const getPreceptorById = async (
 
 export const getPreceptorByName = async (
   name: string
-): Promise<Preceptor | null> => {
+): Promise<any | null> => {
   try {
-    // Assuming you want to find the first match if names are not unique.
-    // If names are unique, findUnique could be used with a unique index on name.
-    const preceptor = await hospitalPrisma.preceptor.findFirst({
-      where: { name: { contains: name, mode: "insensitive" } }, // Case-insensitive partial match
+    const preceptor = await hospitalPrisma.rap_servidores.findFirst({
+      where: { 
+        ind_situacao: "A",
+        ind_situacao_servidor: "P"
+      }
     });
     return preceptor;
   } catch (error) {
@@ -33,10 +37,13 @@ export const getPreceptorByName = async (
 
 export const getPreceptorsByName = async (
   name: string
-): Promise<Preceptor[]> => {
+): Promise<any[]> => {
   try {
-    const preceptors = await hospitalPrisma.preceptor.findMany({
-      where: { name: { contains: name, mode: "insensitive" } },
+    const preceptors = await hospitalPrisma.rap_servidores.findMany({
+      where: { 
+        ind_situacao: "A",
+        ind_situacao_servidor: "P"
+      }
     });
     return preceptors;
   } catch (error) {
@@ -45,9 +52,14 @@ export const getPreceptorsByName = async (
   }
 };
 
-export const getAllPreceptors = async (): Promise<Preceptor[]> => {
+export const getAllPreceptors = async (): Promise<any[]> => {
   try {
-    const preceptors = await hospitalPrisma.preceptor.findMany();
+    const preceptors = await hospitalPrisma.rap_servidores.findMany({
+      where: { 
+        ind_situacao: "A",
+        ind_situacao_servidor: "P"
+      }
+    });
     return preceptors;
   } catch (error) {
     console.error("Error fetching all preceptors:", error);

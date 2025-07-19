@@ -42,6 +42,13 @@ import React, {
     const location = useLocation();
   
     useEffect(() => {
+      const publicRoutes = ["/", "/login", "/information", "/registration", "/success"];
+      if (publicRoutes.includes(location.pathname)) {
+        setIsLoading(false);
+        setLoading(false);
+        return; // Do not check /me on public routes
+      }
+  
       const checkLoginStatus = async () => {
         try {
           setLoading(true);
@@ -51,10 +58,7 @@ import React, {
         } catch (error) {
           setUser(null);
           localStorage.removeItem("user"); // clear on error
-          const publicRoutes = ["/", "/login","/information", "/registration", "/success"];
-          if (!publicRoutes.includes(location.pathname)) {
-            navigate("/"); 
-          }
+          navigate("/"); 
         } finally {
           setLoading(false);
           setIsLoading(false);

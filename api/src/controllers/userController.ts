@@ -53,7 +53,7 @@ export const createUserHandler = async (
   reply: FastifyReply
 ) => {
   try {
-    const { name, username } = req.body;
+    const { name, username, role, specialty } = req.body;
 
     if (!name || !username) {
       return sendErrorResponse(
@@ -63,18 +63,17 @@ export const createUserHandler = async (
       );
     }
 
-    // Only pass the fields relevant to usuario table
     const newUser = await createUser({
-      name: req.body.name,
-      username: req.body.username,
-      role: req.body.role,
-      specialty: req.body.specialty,
+      name,
+      username,
+      role,
+      specialty,
     } as CreateUserDTO);
 
     sendResponse(reply, 201, newUser);
   } catch (error: any) {
     if (error.message === "Username already exists") {
-      return sendErrorResponse(reply, 409, error.message);
+      return sendErrorResponse(reply, 409, error.message); // Returns 409 Conflict
     }
     sendErrorResponse(reply, 500, "An unexpected error occurred");
   }
@@ -97,16 +96,6 @@ export const updateOwnUserHandler = async (
       return sendErrorResponse(reply, 401, "Unauthorized");
     }
 
-    const { currentPassword, password } = req.body;
-
-    if (password && !currentPassword) {
-      return sendErrorResponse(
-        reply,
-        400,
-        "Current password is required to update the password."
-      );
-    }
-
     const user = await getUserById(userId);
 
     if (!user) {
@@ -121,10 +110,6 @@ export const updateOwnUserHandler = async (
 
     sendResponse(reply, 200, updatedUser);
   } catch (error: any) {
-    if (error.message === "Current password is incorrect.") {
-      return sendErrorResponse(reply, 401, error.message);
-    }
-
     sendErrorResponse(reply, 500, "An unexpected error occurred");
   }
 };
@@ -152,8 +137,10 @@ export const updateUserByIdHandler = async (
       return sendErrorResponse(reply, 404, "Logged-in user not found");
     }
 
+    console.log("Logged user role:", loggedUser.role); // Add debug log
+
     if (loggedUser.role !== "Admin") {
-      return sendErrorResponse(reply, 403, "Forbidden: Admin role required");
+      return sendErrorResponse(reply, 403, `Forbidden: Admin role required. Current role: ${loggedUser.role}`);
     }
 
     const { id } = req.params;
@@ -170,6 +157,7 @@ export const updateUserByIdHandler = async (
 
     sendResponse(reply, 200, updatedUser);
   } catch (error: any) {
+    console.error("Error in updateUserByIdHandler:", error); // Add debug log
     sendErrorResponse(reply, 500, "An unexpected error occurred");
   }
 };
@@ -196,3 +184,4 @@ export const deleteUserHandler = async (
     sendErrorResponse(reply, 500, "An unexpected error occurred");
   }
 };
+

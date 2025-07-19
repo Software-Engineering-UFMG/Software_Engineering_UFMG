@@ -8,18 +8,34 @@ datasource hospitalDb {
   url      = env("HOSPITAL_DATABASE_URL")
 }
 
-model Patient {
-  id            Int      @id @default(autoincrement())
-  name          String   @hospitalDb.VarChar(100)
-  medicalRecord String   @unique @hospitalDb.VarChar(50)
-  hospitalbed   String?  @hospitalDb.VarChar(20)
-  birthDate     DateTime
-  entranceDate  DateTime
-  dischargingDate DateTime?
-  status        String   @hospitalDb.VarChar(20)
-}
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model rap_servidores {
+  matricula             Int
+  vin_codigo            Int       @hospitalDb.SmallInt
+  cct_codigo            Int?
+  oca_car_codigo        String?   @hospitalDb.VarChar(10)
+  oca_codigo            Int?
+  pes_codigo            Int
+  dt_inicio_vinculo     DateTime  @hospitalDb.Timestamp(6)
+  htr_codigo            Int?
+  cct_codigo_atua       Int?
+  dt_fim_vinculo        DateTime? @hospitalDb.Timestamp(6)
+  usuario               String?   @hospitalDb.VarChar(30)
+  email                 String?   @hospitalDb.VarChar(45)
+  grf_codigo            Int?      @hospitalDb.SmallInt
+  ind_situacao          String?   @hospitalDb.VarChar(1)
+  alterado_em           DateTime? @hospitalDb.Timestamp(6)
+  ser_matricula         Int?
+  ser_vin_codigo        Int?      @hospitalDb.SmallInt
+  ram_nro_ramal         Int?      @hospitalDb.SmallInt
+  tipo_remuneracao      String?   @hospitalDb.VarChar(1)
+  carga_horaria         Int?      @hospitalDb.SmallInt
+  horario_padrao        String?   @hospitalDb.VarChar(50)
+  cod_starh             Int?      @unique(map: "rap_ser_uk1")
+  cct_codigo_desempenho Int?
+  version               Int?      @default(0)
+  ind_situacao_servidor String?   @hospitalDb.VarChar(1)
+  unf_seq_lotacao       Int?      @hospitalDb.SmallInt
 
-model Preceptor {
-  id   Int    @id @default(autoincrement())
-  name String @hospitalDb.VarChar(100)
+  @@id([matricula, vin_codigo])
 }

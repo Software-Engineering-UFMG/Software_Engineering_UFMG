@@ -11,12 +11,9 @@ export const checkLdapUserHandler = async (
   }
   try {
     const exists = await checkUserInLdap(login, password);
-    if (exists) {
-      return reply.send({ exists: true });
-    } else {
-      return reply.send({ exists: false });
-    }
+    return reply.send({ exists });
   } catch (error) {
     return reply.status(500).send({ message: "LDAP error" });
   }
 };
+ 

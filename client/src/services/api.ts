@@ -13,15 +13,20 @@ export const login = async (username: string, password: string) => {
 
 export const createUser = async (userData: {
   name: string;
-  birthDate: string;
-  phone: string;
   username: string;
-  password: string;
   role: "NIR" | "Assistencial" | "Admin";
   specialty?: string;
 }) => {
+  console.log("API: createUser called");
   try {
-    const response = await api.post("/user", userData);
+    // Only send fields that exist in the Usuario model
+    const payload = {
+      name: userData.name,
+      username: userData.username,
+      role: userData.role,
+      specialty: userData.specialty,
+    };
+    const response = await api.post("/user", payload);
     return response.data;
   } catch (error: any) {
     console.error("Erro ao criar usuário:", error);
@@ -76,13 +81,9 @@ export const updateUserById = async (
   id: number,
   userData: {
     name?: string;
-    birthDate?: string;
-    phone?: string;
-    username?: string;
-    password?: string;
     role?: "NIR" | "Assistencial" | "Admin";
     specialty?: string;
-    status?: "Active" | "Inactive";
+    status?: string; // Change from "Active" | "Inactive" to string to match Usuario table
   }
 ) => {
   try {
@@ -148,7 +149,7 @@ export const getPatientsByMedicalRecord = async (medicalRecord: string) => {
 
 export const getPreceptorByName = async (name: string) => {
   try {
-    const response = await api.get(`/preceptor/name/${name}`);
+    const response = await api.get(`/preceptors`); // Get all preceptors and filter client-side for now
     return response.data;
   } catch (error: any) {
     console.error("Erro ao obter preceptor por nome:", error);
@@ -158,7 +159,7 @@ export const getPreceptorByName = async (name: string) => {
 
 export const getPreceptorsByName = async (name: string) => {
   try {
-    const response = await api.get(`/preceptor/name/${name}`);
+    const response = await api.get(`/preceptors`); // Get all preceptors from hospital DB
     return response.data; // Should be an array
   } catch (error: any) {
     console.error("Erro ao obter preceptores por nome:", error);
@@ -276,6 +277,7 @@ export const deleteAllQuestionnairesForRelation = async (preceptorPacienteId: nu
 //Route used to make the LDAP verification
 
 export const checkLdapUser = async (login: string, password: string) => {
+  console.log("API: checkLdapUser called");
   try {
     const response = await api.post("/ldap/check-user", { login, password });
     return response.data; // { exists: boolean }

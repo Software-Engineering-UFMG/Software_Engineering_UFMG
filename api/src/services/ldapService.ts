@@ -1,8 +1,6 @@
 // @ts-ignore
 declare module 'ldapjs';
 
-import ldap from "ldapjs";
-
 const {
   LDAP_URL,
   LDAP_BIND_DN,
@@ -21,58 +19,36 @@ if (
   throw new Error("Missing LDAP environment variables");
 }
 
+// Mock LDAP database - Add your test users here
+const mockLdapUsers = [
+  { login: "admin", password: "admin123" },
+  { login: "doctor.silva", password: "password123" },
+  { login: "nurse.maria", password: "nurse456" },
+  { login: "nir.joao", password: "nir789" },
+  { login: "medstudent", password: "student123" },
+  { login: "cardiologist", password: "cardio456" },
+  { login: "luistieres@gmail.com",password:"luistieres"},
+  { login: "admin",password:"admin"}
+  // Add more test users as needed
+];
+
 export async function checkUserInLdap(login: string, password: string): Promise<boolean> {
-  return new Promise((resolve, reject) => {
-    const client = ldap.createClient({ url: LDAP_URL });
+  console.log(`LDAP Service: Checking credentials for login: ${login}`);
+  
+  // Check if user exists in mock database
+  const user = mockLdapUsers.find(u => u.login === login && u.password === password);
+  
+  if (user) {
+    console.log(`LDAP Service: User ${login} found and password matches`);
+    return true;
+  } else {
+    console.log(`LDAP Service: User ${login} not found or password incorrect`);
+    return false;
+  }
 
-    // First bind as service user
-    client.bind(LDAP_BIND_DN!, LDAP_BIND_PASSWORD!, (err: Error | null) => {
-      if (err) {
-        client.unbind();
-        return reject(new Error("LDAP service bind failed"));
-      }
-
-      const opts = {
-        filter: `(${LDAP_IDENTIFYING_ATTRIBUTE}=${login})`,
-        scope: "sub",
-        attributes: ["dn"],
-      };
-
-      client.search(LDAP_BASE_DN!, opts, (err: Error | null, res: any) => {
-        if (err) {
-          client.unbind();
-          return reject(new Error("LDAP search failed"));
-        }
-
-        let userDN: string | null = null;
-
-        res.on("searchEntry", (entry: any) => {
-          userDN = entry.objectName;
-        });
-
-        res.on("error", (err: Error) => {
-          client.unbind();
-          reject(new Error("LDAP search error"));
-        });
-
-        res.on("end", async () => {
-          if (!userDN) {
-            client.unbind();
-            return resolve(false); 
-          }
-
-          
-          const userClient = ldap.createClient({ url: LDAP_URL });
-          userClient.bind(userDN, password, (err: Error | null) => {
-            userClient.unbind();
-            client.unbind();
-            if (err) {
-              return resolve(false); 
-            }
-            return resolve(true); 
-          });
-        });
-      });
-    });
-  });
+  // --- Original LDAP code below (commented out for testing) ---
+  // return new Promise((resolve, reject) => {
+  //   const client = ldap.createClient({ url: LDAP_URL });
+  //   // ...existing code...
+  // });
 }
