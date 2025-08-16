@@ -28,7 +28,8 @@ const mockLdapUsers = [
   { login: "medstudent", password: "student123" },
   { login: "cardiologist", password: "cardio456" },
   { login: "luistieres@gmail.com",password:"luistieres"},
-  { login: "admin",password:"admin"}
+  { login: "admin",password:"admin"},
+  { login:"teste",password:"teste"}
   // Add more test users as needed
 ];
 
