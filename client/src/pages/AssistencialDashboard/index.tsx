@@ -28,7 +28,6 @@ import {
   ToggleOn,
   ToggleOff,
   HighlightOff,
-  Refresh, // <-- add this import
 } from "@mui/icons-material";
 import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../../context/AuthContext";
@@ -39,11 +38,18 @@ import {
   deletePreceptorPaciente,
   updatePreceptorPacientePreceptor,
   getPreceptorsByName,
-  createPreceptorPaciente, // <-- add this import
-  deleteAllQuestionnairesForRelation, // <-- add this import
-  getPatientDischargePrediction, // Add this import
+  createPreceptorPaciente,
+  deleteAllQuestionnairesForRelation,
+  getPatientDischargePrediction,
+  cleanupScheduledDeletions, // <-- add this import
 } from "../../services/api";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+// Configure dayjs with timezone support
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 function AssistencialDashboard() {
   const { user, isLoading } = useAuth();
@@ -73,6 +79,9 @@ function AssistencialDashboard() {
   const [addPatientOptions, setAddPatientOptions] = useState<any[]>([]);
   const [addSelectedPatient, setAddSelectedPatient] = useState<any | null>(null);
 
+  // Add state for showing deletion status
+  const [showDeletionInfo, setShowDeletionInfo] = useState(false);
+
   // Fetch only this preceptor's relations
   const fetchRelations = async () => {
     if (!preceptorId) return;
@@ -98,15 +107,12 @@ function AssistencialDashboard() {
   // Move parseDate function outside to be reusable
   const parseDate = (dateStr: string | null | undefined) => {
     if (!dateStr) return "";
-    // If it's already in YYYY-MM-DD format, parse it directly
-    if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      const parsed = dayjs(dateStr, 'YYYY-MM-DD');
-      return parsed.format("DD/MM/YYYY");
-    }
-    // Fallback for other formats
-    const parsed = dayjs(dateStr);
-    if (parsed.isValid()) {
-      return parsed.format("DD/MM/YYYY");
+    
+    // Parse the date and convert to Brazil timezone for display
+    const date = dayjs.utc(dateStr).tz('America/Sao_Paulo');
+    
+    if (date.isValid()) {
+      return date.format("DD/MM/YYYY");
     }
     return "";
   };
@@ -115,9 +121,11 @@ function AssistencialDashboard() {
   const mappedPatients = patients.map((patient) => {
     let tempoInternacao = 0;
     if (patient.entranceDate) {
-      const entrance = dayjs(patient.entranceDate);
+      // Calculate days using Brazil timezone
+      const entrance = dayjs.utc(patient.entranceDate).tz('America/Sao_Paulo');
+      const now = dayjs().tz('America/Sao_Paulo');
       if (entrance.isValid()) {
-        tempoInternacao = dayjs().diff(entrance, "day");
+        tempoInternacao = now.diff(entrance, "day");
       }
     }
     
@@ -131,6 +139,10 @@ function AssistencialDashboard() {
     // Fix birth date parsing
     const dataNascimento = parseDate(patient.birthDate);
     
+    // Check if deletion is scheduled
+    const isDeletionScheduled = patient.scheduledDeletionAt && 
+      new Date(patient.scheduledDeletionAt) > new Date();
+    
     return {
       id: patient.id,
       paciente: patient.patientName || "",
@@ -141,6 +153,8 @@ function AssistencialDashboard() {
       tempoInternacao,
       red2Green: patient.red2green || "À preencher",
       status: statusPt,
+      isDeletionScheduled,
+      scheduledDeletionAt: patient.scheduledDeletionAt,
     };
   });
 
@@ -263,10 +277,19 @@ function AssistencialDashboard() {
   const handleToggleStatus = async (patient: any) => {
     try {
       const newStatus = patient.status === "Ativado" ? "Desativado" : "Ativado";
+      
+      if (newStatus === "Desativado") {
+        // Show info about scheduled deletion
+        alert("Paciente será desativado e agendado para exclusão em 2 minutos. Você pode reativar para cancelar a exclusão.");
+      } else if (patient.isDeletionScheduled) {
+        // Show info about canceling deletion
+        alert("Reativando paciente e cancelando exclusão agendada.");
+      }
+      
       await updatePreceptorPacienteStatus(patient.id, newStatus);
       fetchRelations();
     } catch (error) {
-      // handle error
+      console.error("Error toggling status:", error);
     }
   };
 
@@ -307,10 +330,12 @@ function AssistencialDashboard() {
   const handleChangePreceptor = async () => {
     if (!relationToEdit || !selectedPreceptor) return;
     try {
-      await updatePreceptorPacientePreceptor(relationToEdit.id, selectedPreceptor.id);
+      // Use matricula (which is the ID in the hospital database) instead of id
+      const preceptorId = selectedPreceptor.matricula || selectedPreceptor.id;
+      await updatePreceptorPacientePreceptor(relationToEdit.id, preceptorId);
       fetchRelations();
     } catch (error) {
-      // handle error
+      console.error("Error changing preceptor:", error);
     }
     handleCloseModal();
   };
@@ -360,10 +385,20 @@ function AssistencialDashboard() {
     fetchRelations();
   };
 
-  // Handle manual refresh
-  const handleRefresh = () => {
-    window.location.reload();
-  };
+  // Add effect to periodically check for scheduled deletions
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        await cleanupScheduledDeletions();
+        // Refresh the data after cleanup
+        fetchRelations();
+      } catch (error) {
+        console.error("Error during scheduled cleanup:", error);
+      }
+    }, 30000); // Check every 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div style={{ padding: "16px" }}>
@@ -419,20 +454,6 @@ function AssistencialDashboard() {
             onClick={() => navigate("/preceptor/AssistencialDashboard/statisticsAssistencial", { state: { preceptorId, preceptorName } })}
           >
             Painel de Estatística
-          </Button>
-        </Grid>
-        <Grid item xs="auto">
-          <Button
-            variant="contained"
-            style={{
-              backgroundColor: "#90ee90",
-              color: "white",
-              minWidth: "150px",
-            }}
-            onClick={handleRefresh}
-            startIcon={<Refresh />}
-          >
-            Atualizar
           </Button>
         </Grid>
         <Grid item xs="auto">
@@ -534,8 +555,20 @@ function AssistencialDashboard() {
           </TableHead>
           <TableBody>
             {filteredData.map((row, index) => (
-              <TableRow key={index}>
-                <TableCell>{row.paciente}</TableCell>
+              <TableRow 
+                key={index}
+                sx={{
+                  backgroundColor: row.isDeletionScheduled ? '#ffebee' : 'inherit',
+                }}
+              >
+                <TableCell>
+                  {row.paciente}
+                  {row.isDeletionScheduled && (
+                    <div style={{ fontSize: '0.8em', color: 'red', fontStyle: 'italic' }}>
+                      Exclusão agendada em: {dayjs(row.scheduledDeletionAt).tz('America/Sao_Paulo').format('HH:mm:ss')}
+                    </div>
+                  )}
+                </TableCell>
                 <TableCell>{row.dataNascimento}</TableCell>
                 <TableCell>{row.leito}</TableCell>
                 <TableCell>{row.previsaoAlta}</TableCell>
@@ -562,7 +595,7 @@ function AssistencialDashboard() {
                   {row.status === "Ativado" ? (
                     <>
                       <IconButton
-                        title="Desativar paciente"
+                        title="Desativar paciente (agenda exclusão em 2 min)"
                         onClick={() => handleToggleStatus(row)}
                       >
                         <ToggleOn style={{ color: "green" }} />
@@ -600,10 +633,10 @@ function AssistencialDashboard() {
                     </>
                   ) : (
                     <IconButton
-                      title="Ativar paciente"
+                      title={row.isDeletionScheduled ? "Ativar paciente (cancela exclusão)" : "Ativar paciente"}
                       onClick={() => handleToggleStatus(row)}
                     >
-                      <ToggleOff style={{ color: "red" }} />
+                      <ToggleOff style={{ color: row.isDeletionScheduled ? "orange" : "red" }} />
                     </IconButton>
                   )}
                 </TableCell>
@@ -612,6 +645,7 @@ function AssistencialDashboard() {
           </TableBody>
         </Table>
       </TableContainer>
+      
       {/* Delete confirmation modal */}
       <Modal open={deleteModalOpen} onClose={handleCloseDeleteModal}>
         <Box
@@ -719,18 +753,25 @@ function AssistencialDashboard() {
                   boxSizing: "border-box",
                 }}
               >
-                {preceptorOptions.map((preceptor: any) => (
-                  <ListItem key={preceptor.id} disablePadding>
-                    <ListItemButton
-                      onClick={() => {
-                        setSelectedPreceptor(preceptor);
-                        setPreceptorInput(preceptor.name);
-                      }}
-                    >
-                      <ListItemText primary={preceptor.name} />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
+                {preceptorOptions.map((preceptor: any) => {
+                  // Use matricula as key if available, fallback to id
+                  const key = preceptor.matricula || preceptor.id || Math.random();
+                  // Use nome_completo first, then fallback to name
+                  const displayName = preceptor.nome_completo || preceptor.name || 'Nome não disponível';
+                  
+                  return (
+                    <ListItem key={key} disablePadding>
+                      <ListItemButton
+                        onClick={() => {
+                          setSelectedPreceptor(preceptor);
+                          setPreceptorInput(displayName);
+                        }}
+                      >
+                        <ListItemText primary={displayName} />
+                      </ListItemButton>
+                    </ListItem>
+                  );
+                })}
               </List>
             )}
           </div>

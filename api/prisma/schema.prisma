@@ -14,36 +14,37 @@ model Usuario {
   tipo          String   @db.VarChar(20)
   especialidade String?  @db.VarChar(30)
   status        String   @db.VarChar(10)
-  createdAt     DateTime @default(now())
+  createdAt     DateTime @default(now()) @db.Timestamptz
 }
 
 model PreceptorPaciente {
-  id                      Int             @id @default(autoincrement())
-  preceptorId             Int
-  medicalRecord           String
-  status                  String          @db.VarChar(20)
-  red2green               String          @db.VarChar(20)
-  createdAt               DateTime        @default(now())
-  updatedAt               DateTime        @updatedAt
-  scheduledDeactivationAt DateTime?
-  questionnaires          Questionnaire[]
+  id                    Int       @id @default(autoincrement())
+  preceptorId          Int
+  medicalRecord        String
+  status               String
+  red2green            String
+  scheduledDeactivationAt DateTime? @db.Timestamptz
+  scheduledDeletionAt  DateTime? @db.Timestamptz
+  createdAt            DateTime  @default(now()) @db.Timestamptz
+  updatedAt            DateTime  @updatedAt @db.Timestamptz
+  questionnaires       Questionnaire[]
+
+  @@map("preceptor_paciente")
 }
 
 model Questionnaire {
   id                  Int               @id @default(autoincrement())
   preceptorPacienteId Int
-  dischargeDate       DateTime
+  dischargeDate       DateTime          @db.Timestamptz
   clinicalCriteria    String
   characteristics     String[]
   needsAdmission      String
   outpatient          String
-  hospitalDischarge   String
-  waiting             String
   waitingType         String[]
   examDetails         String[]
   dischargeConfirmed  Boolean
   red2green           String            @db.VarChar(20)
-  createdAt           DateTime          @default(now())
+  createdAt           DateTime          @default(now()) @db.Timestamptz
   preceptorPaciente   PreceptorPaciente @relation(fields: [preceptorPacienteId], references: [id])
 }
 

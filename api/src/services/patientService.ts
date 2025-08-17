@@ -6,21 +6,23 @@ export const getPatientByMedicalRecord = async (
   try {
     const result = await hospitalPrisma.$queryRaw`
       SELECT 
-        codigo,
-        nome,
-        dt_nascimento,
-        prontuario,
-        cpf,
-        nome_mae,
-        sexo,
-        qrt_numero,
-        unf_seq,
-        lto_lto_id,
-        dt_ult_internacao,
-        prnt_ativo
-      FROM agh.aip_pacientes 
-      WHERE prontuario = ${parseInt(medicalRecord)}
-        AND prnt_ativo = 'A'
+        p.codigo,
+        p.nome,
+        p.dt_nascimento,
+        p.prontuario,
+        p.cpf,
+        p.nome_mae,
+        p.sexo,
+        COALESCE(i.qrt_numero, p.qrt_numero) as qrt_numero,
+        p.unf_seq,
+        COALESCE(i.lto_lto_id, p.lto_lto_id) as lto_lto_id,
+        p.dt_ult_internacao,
+        p.prnt_ativo
+      FROM agh.aip_pacientes p
+      LEFT JOIN agh.ain_internacoes i ON p.codigo = i.pac_codigo 
+        AND i.ind_paciente_internado = 'S'
+      WHERE p.prontuario = ${parseInt(medicalRecord)}
+        AND p.prnt_ativo = 'A'
     `;
     
     const patient = (result as any[])[0];
@@ -54,23 +56,25 @@ export const getPatientsByMedicalRecord = async (
     
     const result = await hospitalPrisma.$queryRaw`
       SELECT 
-        codigo,
-        nome,
-        TO_CHAR(dt_nascimento, 'YYYY-MM-DD') as dt_nascimento,
-        prontuario,
-        cpf,
-        nome_mae,
-        sexo,
-        qrt_numero,
-        unf_seq,
-        lto_lto_id,
-        dt_ult_internacao,
-        prnt_ativo
-      FROM agh.aip_pacientes 
-      WHERE prontuario::text ILIKE ${`%${searchTerm}%`}
-        AND prnt_ativo = 'A'
-        AND prontuario IS NOT NULL
-      ORDER BY prontuario
+        p.codigo,
+        p.nome,
+        TO_CHAR(p.dt_nascimento, 'YYYY-MM-DD') as dt_nascimento,
+        p.prontuario,
+        p.cpf,
+        p.nome_mae,
+        p.sexo,
+        COALESCE(i.qrt_numero, p.qrt_numero) as qrt_numero,
+        p.unf_seq,
+        COALESCE(i.lto_lto_id, p.lto_lto_id) as lto_lto_id,
+        p.dt_ult_internacao,
+        p.prnt_ativo
+      FROM agh.aip_pacientes p
+      LEFT JOIN agh.ain_internacoes i ON p.codigo = i.pac_codigo 
+        AND i.ind_paciente_internado = 'S'
+      WHERE p.prontuario::text ILIKE ${`%${searchTerm}%`}
+        AND p.prnt_ativo = 'A'
+        AND p.prontuario IS NOT NULL
+      ORDER BY p.prontuario
       LIMIT 10
     `;
     

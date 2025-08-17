@@ -8,7 +8,8 @@ import {
   getPreceptorPacienteWithDetailsByPreceptorIdHandler, 
   submitQuestionnaireHandler, 
   getTodaysQuestionnaireHandler, 
-  deleteAllQuestionnairesForRelationHandler, // <-- add this import
+  deleteAllQuestionnairesForRelationHandler,
+  deleteScheduledPreceptorPacientesHandler, // <-- add this import
 } from "../controllers/preceptorPacienteController";
 
 export const preceptorPacienteRoutes = (app: FastifyInstance) => {
@@ -46,5 +47,11 @@ export const preceptorPacienteRoutes = (app: FastifyInstance) => {
   app.delete(
     "/preceptor-paciente/:preceptorPacienteId/questionnaires",
     deleteAllQuestionnairesForRelationHandler
+  );
+  
+  // New route for cleaning up scheduled deletions
+  app.post(
+    "/preceptor-paciente/cleanup-scheduled",
+    deleteScheduledPreceptorPacientesHandler
   );
 };

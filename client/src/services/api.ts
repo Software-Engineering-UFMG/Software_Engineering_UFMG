@@ -362,4 +362,15 @@ export const getPatientDischargePrediction = async (medicalRecord: string) => {
   }
 };
 
+// Trigger cleanup of scheduled deletions
+export const cleanupScheduledDeletions = async () => {
+  try {
+    const response = await api.post("/preceptor-paciente/cleanup-scheduled");
+    return response.data;
+  } catch (error: any) {
+    console.error("Erro ao limpar relações agendadas para exclusão:", error);
+    throw error;
+  }
+};
+
 export default api;
