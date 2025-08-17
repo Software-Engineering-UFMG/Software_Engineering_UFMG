@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { getPatientByMedicalRecord, getPatientsByMedicalRecord } from "../services/patientService";
+import { getPatientByMedicalRecord, getPatientsByMedicalRecord, getPatientDischargePrediction } from "../services/patientService";
 import { sendResponse, sendErrorResponse } from "../utils/responseUtils";
 
 interface GetPatientByMedicalRecordParams {
@@ -42,5 +42,16 @@ export const getPatientsByMedicalRecordHandler = async (
     sendResponse(reply, 200, patients); // always return array (possibly empty)
   } catch (error: any) {
     sendErrorResponse(reply, 500, "Error fetching patients by medical record");
+  }
+};
+
+export const getPatientDischargePredictionHandler = async (request: FastifyRequest, reply: FastifyReply) => {
+  const { medicalRecord } = request.params as { medicalRecord: string };
+  
+  try {
+    const result = await getPatientDischargePrediction(medicalRecord);
+    reply.send(result);
+  } catch (error: any) {
+    reply.status(500).send({ error: error.message });
   }
 };

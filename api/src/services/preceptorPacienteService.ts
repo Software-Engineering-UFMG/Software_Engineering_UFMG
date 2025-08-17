@@ -24,25 +24,59 @@ export const getAllPreceptorPacienteWithDetails = async () => {
   const relations = await prisma.preceptorPaciente.findMany();
   const results = await Promise.all(
     relations.map(async (rel) => {
-      // This fetches the preceptor's details from the hospital database
-      const preceptor = await hospitalPrisma.preceptor.findUnique({
-        where: { id: rel.preceptorId },
-      });
-      // This fetches the patient's details from the hospital database
-      const patient = await hospitalPrisma.patient.findUnique({
-        where: { medicalRecord: rel.medicalRecord },
-      });
+      // Query using prontuario (medical record) from real hospital table
+      const patientResult = await hospitalPrisma.$queryRaw`
+        SELECT 
+          p.codigo,
+          p.nome,
+          TO_CHAR(p.dt_nascimento, 'YYYY-MM-DD') as dt_nascimento,
+          p.prontuario,
+          p.cpf,
+          p.qrt_numero,
+          p.unf_seq,
+          p.lto_lto_id,
+          p.dt_ult_internacao,
+          COALESCE(i.dt_prev_alta, p.dt_ult_alta) as discharge_prediction,
+          CASE 
+            WHEN i.ind_paciente_internado = 'S' THEN 'hospitalized'
+            ELSE 'not_hospitalized'
+          END as hospitalization_status
+
+        FROM agh.aip_pacientes p
+        LEFT JOIN agh.ain_internacoes i ON p.codigo = i.pac_codigo 
+          AND i.ind_paciente_internado = 'S'
+        WHERE p.prontuario = ${parseInt(rel.medicalRecord)}
+        AND p.prnt_ativo = 'A'
+      `;
+      
+      const patient = (patientResult as any[])[0];
+      
+      // Get preceptor info
+      const preceptorResult = await hospitalPrisma.$queryRaw`
+        SELECT 
+          s.matricula,
+          p.nome as nome_completo
+        FROM agh.rap_servidores s
+        LEFT JOIN agh.rap_pessoas_fisicas p ON s.pes_codigo = p.codigo
+        WHERE s.matricula = ${rel.preceptorId}
+        AND s.ind_situacao = 'A' 
+        AND s.ind_situacao_servidor = 'P'
+      `;
+      
+      const preceptor = (preceptorResult as any[])[0];
+      
       return {
         id: rel.id,
-        preceptorName: preceptor?.name || null,
-        patientName: patient?.name || null,
-        birthDate: patient?.birthDate || null,
-        hospitalbed: patient?.hospitalbed || null,
-        entranceDate: patient?.entranceDate || null,
-        dischargingDate: patient?.dischargingDate || null,
+        preceptorName: preceptor?.nome_completo || null,
+        patientName: patient?.nome || null,
+        birthDate: patient?.dt_nascimento || null, // Now a formatted string
+        hospitalbed: patient?.qrt_numero || patient?.lto_lto_id || null,
+        entranceDate: patient?.dt_ult_internacao || null,
+        dischargingDate: patient?.dt_ult_alta || null, // Maps to frontend
         red2green: rel.red2green,
         status: rel.status,
-        medicalRecord: rel.medicalRecord, // <-- add this line
+        medicalRecord: rel.medicalRecord,
+        patientCodigo: patient?.codigo || null,
       };
     })
   );
@@ -56,23 +90,59 @@ export const getPreceptorPacienteWithDetailsByPreceptorId = async (preceptorId: 
   });
   const results = await Promise.all(
     relations.map(async (rel) => {
-      const preceptor = await hospitalPrisma.preceptor.findUnique({
-        where: { id: rel.preceptorId },
-      });
-      const patient = await hospitalPrisma.patient.findUnique({
-        where: { medicalRecord: rel.medicalRecord },
-      });
+      // Query using prontuario (medical record) from real hospital table
+      const patientResult = await hospitalPrisma.$queryRaw`
+        SELECT 
+          p.codigo,
+          p.nome,
+          TO_CHAR(p.dt_nascimento, 'YYYY-MM-DD') as dt_nascimento,
+          p.prontuario,
+          p.cpf,
+          p.qrt_numero,
+          p.unf_seq,
+          p.lto_lto_id,
+          p.dt_ult_internacao,
+          COALESCE(i.dt_prev_alta, p.dt_ult_alta) as discharge_prediction,
+          CASE 
+            WHEN i.ind_paciente_internado = 'S' THEN 'hospitalized'
+            ELSE 'not_hospitalized'
+          END as hospitalization_status
+
+        FROM agh.aip_pacientes p
+        LEFT JOIN agh.ain_internacoes i ON p.codigo = i.pac_codigo 
+          AND i.ind_paciente_internado = 'S'
+        WHERE p.prontuario = ${parseInt(rel.medicalRecord)}
+        AND p.prnt_ativo = 'A'
+      `;
+      
+      const patient = (patientResult as any[])[0];
+      
+      // Get preceptor info
+      const preceptorResult = await hospitalPrisma.$queryRaw`
+        SELECT 
+          s.matricula,
+          p.nome as nome_completo
+        FROM agh.rap_servidores s
+        LEFT JOIN agh.rap_pessoas_fisicas p ON s.pes_codigo = p.codigo
+        WHERE s.matricula = ${rel.preceptorId}
+        AND s.ind_situacao = 'A' 
+        AND s.ind_situacao_servidor = 'P'
+      `;
+      
+      const preceptor = (preceptorResult as any[])[0];
+      
       return {
         id: rel.id,
-        preceptorName: preceptor?.name || null,
-        patientName: patient?.name || null,
-        birthDate: patient?.birthDate || null,
-        hospitalbed: patient?.hospitalbed || null,
-        entranceDate: patient?.entranceDate || null,
-        dischargingDate: patient?.dischargingDate || null,
+        preceptorName: preceptor?.nome_completo || null,
+        patientName: patient?.nome || null,
+        birthDate: patient?.dt_nascimento || null, // Now a formatted string
+        hospitalbed: patient?.qrt_numero || patient?.lto_lto_id || null,
+        entranceDate: patient?.dt_ult_internacao || null,
+        dischargingDate: patient?.dt_ult_alta || null, // Maps to frontend
         red2green: rel.red2green,
         status: rel.status,
-        medicalRecord: rel.medicalRecord, // <-- add this line
+        medicalRecord: rel.medicalRecord,
+        patientCodigo: patient?.codigo || null,
       };
     })
   );
