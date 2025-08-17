@@ -233,7 +233,7 @@ export const Login = memo(() => {
 
           <div className="flex flex-col gap-5">
             <button
-              className="cursor-pointer rounded-xl bg-green-300 !p-3 text-white hover:bg-green-400"
+              className="cursor-pointer rounded-xl bg-red-500 !p-3 text-white hover:bg-red-600"
               type="submit"
               disabled={loading}
             >

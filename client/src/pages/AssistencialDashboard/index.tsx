@@ -28,6 +28,7 @@ import {
   ToggleOn,
   ToggleOff,
   HighlightOff,
+  Refresh, // <-- add this import
 } from "@mui/icons-material";
 import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../../context/AuthContext";
@@ -40,6 +41,7 @@ import {
   getPreceptorsByName,
   createPreceptorPaciente, // <-- add this import
   deleteAllQuestionnairesForRelation, // <-- add this import
+  getPatientDischargePrediction, // Add this import
 } from "../../services/api";
 import dayjs from "dayjs";
 
@@ -93,14 +95,24 @@ function AssistencialDashboard() {
     // eslint-disable-next-line
   }, [preceptorId]);
 
+  // Move parseDate function outside to be reusable
+  const parseDate = (dateStr: string | null | undefined) => {
+    if (!dateStr) return "";
+    // If it's already in YYYY-MM-DD format, parse it directly
+    if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      const parsed = dayjs(dateStr, 'YYYY-MM-DD');
+      return parsed.format("DD/MM/YYYY");
+    }
+    // Fallback for other formats
+    const parsed = dayjs(dateStr);
+    if (parsed.isValid()) {
+      return parsed.format("DD/MM/YYYY");
+    }
+    return "";
+  };
+
   // Map backend patients to table rows
   const mappedPatients = patients.map((patient) => {
-    const parseDate = (dateStr: string | null | undefined) => {
-      if (!dateStr) return "";
-      const isoParsed = dayjs(dateStr);
-      if (isoParsed.isValid()) return isoParsed.format("DD/MM/YYYY");
-      return dayjs(dateStr, "YYYY-MM-DD HH:mm:ss").format("DD/MM/YYYY");
-    };
     let tempoInternacao = 0;
     if (patient.entranceDate) {
       const entrance = dayjs(patient.entranceDate);
@@ -108,35 +120,93 @@ function AssistencialDashboard() {
         tempoInternacao = dayjs().diff(entrance, "day");
       }
     }
+    
     let statusPt = "";
     if (patient.status === "Active" || patient.status === "Ativado")
       statusPt = "Ativado";
     else if (patient.status === "Inactive" || patient.status === "Desativado")
       statusPt = "Desativado";
     else statusPt = patient.status || "";
-    const rawBirthDate =
-      patient.birthDate ||
-      patient.birthdate ||
-      patient.birth_date ||
-      "";
-    const dataNascimento = rawBirthDate
-      ? dayjs(rawBirthDate, "YYYY-MM-DD HH:mm:ss").format("DD/MM/YYYY")
-      : "";
+    
+    // Fix birth date parsing
+    const dataNascimento = parseDate(patient.birthDate);
+    
     return {
-      id: patient.id, // This is the PreceptorPaciente relation ID
+      id: patient.id,
       paciente: patient.patientName || "",
       dataNascimento,
       leito: patient.hospitalbed || patient.hospitalBed || "",
-      // Assuming API provides medicalRecord as patient.medicalRecord or patient.patientMedicalRecord
       medicalRecord: patient.medicalRecord || patient.patientMedicalRecord || "", 
-      previsaoAlta: parseDate(patient.dischargingDate),
+      previsaoAlta: "Carregando...", // Initial value, will be updated
       tempoInternacao,
       red2Green: patient.red2green || "À preencher",
       status: statusPt,
     };
   });
 
-  const filteredData = mappedPatients.filter(
+  // Add effect to load discharge predictions
+  useEffect(() => {
+    const loadDischargePredictions = async () => {
+      for (const patient of patients) {
+        if (patient.medicalRecord) {
+          try {
+            const result = await getPatientDischargePrediction(patient.medicalRecord);
+            // Update the patient object with the discharge prediction
+            setPatients(prevPatients => 
+              prevPatients.map(p => 
+                p.medicalRecord === patient.medicalRecord 
+                  ? { 
+                      ...p, 
+                      dischargePrediction: result.isHospitalized 
+                        ? result.dischargePrediction 
+                        : "Não está internado" // Always set this string when not hospitalized
+                    }
+                  : p
+              )
+            );
+          } catch (error) {
+            console.error(`Error loading discharge prediction for ${patient.medicalRecord}:`, error);
+            // Set error state for this patient
+            setPatients(prevPatients => 
+              prevPatients.map(p => 
+                p.medicalRecord === patient.medicalRecord 
+                  ? { ...p, dischargePrediction: "Não está internado" }
+                  : p
+              )
+            );
+          }
+        }
+      }
+    };
+
+    if (patients.length > 0) {
+      loadDischargePredictions();
+    }
+  }, [patients.length]); // Only run when patients are loaded
+
+  // Update the mappedPatients to use the new discharge prediction
+  const mappedPatientsWithPredictions = mappedPatients.map((patient, index) => {
+    const originalPatient = patients[index];
+    
+    // Handle discharge prediction display
+    let previsaoAlta = "Carregando..."; // Default loading state
+    
+    if (originalPatient?.dischargePrediction) {
+      if (originalPatient.dischargePrediction === "Não está internado") {
+        previsaoAlta = "Não está internado";
+      } else {
+        // It's a date, parse it
+        previsaoAlta = parseDate(originalPatient.dischargePrediction);
+      }
+    }
+    
+    return {
+      ...patient,
+      previsaoAlta
+    };
+  });
+
+  const filteredData = mappedPatientsWithPredictions.filter(
     (row) =>
       row.paciente.toLowerCase().includes(searchPaciente.toLowerCase()) &&
       row.leito.toLowerCase().includes(searchLeito.toLowerCase()) &&
@@ -290,6 +360,11 @@ function AssistencialDashboard() {
     fetchRelations();
   };
 
+  // Handle manual refresh
+  const handleRefresh = () => {
+    window.location.reload();
+  };
+
   return (
     <div style={{ padding: "16px" }}>
       <Typography variant="h4" gutterBottom>
@@ -344,6 +419,20 @@ function AssistencialDashboard() {
             onClick={() => navigate("/preceptor/AssistencialDashboard/statisticsAssistencial", { state: { preceptorId, preceptorName } })}
           >
             Painel de Estatística
+          </Button>
+        </Grid>
+        <Grid item xs="auto">
+          <Button
+            variant="contained"
+            style={{
+              backgroundColor: "#90ee90",
+              color: "white",
+              minWidth: "150px",
+            }}
+            onClick={handleRefresh}
+            startIcon={<Refresh />}
+          >
+            Atualizar
           </Button>
         </Grid>
         <Grid item xs="auto">
@@ -769,3 +858,4 @@ function AssistencialDashboard() {
 }
 
 export default AssistencialDashboard;
+

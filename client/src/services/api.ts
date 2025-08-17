@@ -147,9 +147,11 @@ export const getPatientsByMedicalRecord = async (medicalRecord: string) => {
   }
 };
 
+// Replace the existing preceptor functions with these updated ones:
+
 export const getPreceptorByName = async (name: string) => {
   try {
-    const response = await api.get(`/preceptors`); // Get all preceptors and filter client-side for now
+    const response = await api.get(`/preceptor/name/${encodeURIComponent(name)}`);
     return response.data;
   } catch (error: any) {
     console.error("Erro ao obter preceptor por nome:", error);
@@ -159,10 +161,73 @@ export const getPreceptorByName = async (name: string) => {
 
 export const getPreceptorsByName = async (name: string) => {
   try {
-    const response = await api.get(`/preceptors`); // Get all preceptors from hospital DB
-    return response.data; // Should be an array
+    console.log("DEBUG: Calling getPreceptorsByName with name:", name);
+    // Get all preceptors and filter client-side since we don't have a specific search endpoint
+    const response = await api.get(`/preceptors`);
+    console.log("DEBUG: API response received:", response.data);
+    const allPreceptors = response.data;
+    
+    // Ensure allPreceptors is an array
+    if (!Array.isArray(allPreceptors)) {
+      console.error("DEBUG: allPreceptors is not an array:", allPreceptors);
+      return [];
+    }
+    
+    console.log("DEBUG: Number of preceptors:", allPreceptors.length);
+    
+    // Filter by name if provided
+    if (name.trim()) {
+      const filtered = allPreceptors.filter((preceptor: any) => {
+        // Add safety checks for the preceptor object
+        if (!preceptor || typeof preceptor !== 'object') {
+          console.warn("DEBUG: Invalid preceptor object:", preceptor);
+          return false;
+        }
+        
+        const nome = preceptor.nome_completo || preceptor.name || '';
+        return nome.toLowerCase().includes(name.toLowerCase());
+      });
+      console.log("DEBUG: Filtered preceptors:", filtered.length);
+      return filtered;
+    }
+    
+    return [];
   } catch (error: any) {
     console.error("Erro ao obter preceptores por nome:", error);
+    console.error("DEBUG: Error details:", error.response?.data);
+    throw error;
+  }
+};
+
+// Add a new function to get all preceptors
+export const getAllPreceptors = async () => {
+  try {
+    console.log("DEBUG: Calling getAllPreceptors");
+    const response = await api.get(`/preceptors`);
+    console.log("DEBUG: getAllPreceptors response:", response.data);
+    
+    // Ensure response.data is an array
+    if (!Array.isArray(response.data)) {
+      console.error("DEBUG: Response data is not an array:", response.data);
+      return [];
+    }
+    
+    console.log("DEBUG: getAllPreceptors response count:", response.data.length);
+    return response.data;
+  } catch (error: any) {
+    console.error("Erro ao obter todos os preceptores:", error);
+    console.error("DEBUG: Error details:", error.response?.data);
+    throw error;
+  }
+};
+
+// Add a function to get preceptor by ID
+export const getPreceptorById = async (id: number) => {
+  try {
+    const response = await api.get(`/preceptor/${id}`);
+    return response.data;
+  } catch (error: any) {
+    console.error("Erro ao obter preceptor por ID:", error);
     throw error;
   }
 };
@@ -283,6 +348,16 @@ export const checkLdapUser = async (login: string, password: string) => {
     return response.data; // { exists: boolean }
   } catch (error: any) {
     console.error("Erro ao checar usuário LDAP:", error);
+    throw error;
+  }
+};
+
+export const getPatientDischargePrediction = async (medicalRecord: string) => {
+  try {
+    const response = await api.get(`/patient/discharge-prediction/${medicalRecord}`);
+    return response.data;
+  } catch (error: any) {
+    console.error("Erro ao obter previsão de alta do paciente:", error);
     throw error;
   }
 };
