@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import {
   getPatientByMedicalRecordHandler,
   getPatientsByMedicalRecordHandler,
+  getPatientDischargePredictionHandler, // Add this import
 } from "../controllers/patientController";
 
 interface GetPatientByMedicalRecordParams {
@@ -16,5 +17,9 @@ export const patientRoutes = (app: FastifyInstance) => {
   app.get<{ Params: GetPatientByMedicalRecordParams }>(
     "/patient/medicalrecords/:medicalRecord",
     getPatientsByMedicalRecordHandler
+  );
+  app.get<{ Params: GetPatientByMedicalRecordParams }>(
+    "/patient/discharge-prediction/:medicalRecord",
+    getPatientDischargePredictionHandler
   );
 };

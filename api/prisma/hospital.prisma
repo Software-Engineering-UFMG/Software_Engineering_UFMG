@@ -38,4 +38,257 @@ model rap_servidores {
   unf_seq_lotacao       Int?      @hospitalDb.SmallInt
 
   @@id([matricula, vin_codigo])
+  @@index([cct_codigo], map: "rap_ser_cct_fk1_i")
+  @@index([cct_codigo_atua], map: "rap_ser_cct_fk2_i")
+  @@index([cct_codigo_desempenho], map: "rap_ser_cct_fk3_i")
+  @@index([ind_situacao], map: "rap_ser_ind_situacao_i")
+  @@index([oca_car_codigo, oca_codigo], map: "rap_ser_oca_fk1_i")
+  @@index([pes_codigo], map: "rap_ser_pes_fk1_i")
+  @@index([ser_matricula, ser_vin_codigo], map: "rap_ser_ser_fk1_i")
+  @@index([vin_codigo], map: "rap_ser_vin_fk1_i")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model ain_internacoes {
+  seq                        Int       @id
+  pac_codigo                 Int
+  esp_seq                    Int       @hospitalDb.SmallInt
+  ser_matricula_digita       Int
+  ser_vin_codigo_digita      Int       @hospitalDb.SmallInt
+  ser_matricula_professor    Int
+  ser_vin_codigo_professor   Int       @hospitalDb.SmallInt
+  dthr_internacao            DateTime  @hospitalDb.Timestamp(6)
+  env_pront_unid_int         String?   @default("N") @hospitalDb.VarChar(1)
+  tci_seq                    Int       @hospitalDb.SmallInt
+  csp_cnv_codigo             Int       @hospitalDb.SmallInt
+  csp_seq                    Int       @hospitalDb.SmallInt
+  oev_seq                    Int       @hospitalDb.SmallInt
+  ind_saida_pac              String?   @default("N") @hospitalDb.VarChar(1)
+  ind_dif_classe             String?   @default("N") @hospitalDb.VarChar(1)
+  ind_paciente_internado     String?   @default("S") @hospitalDb.VarChar(1)
+  ind_local_paciente         String    @hospitalDb.VarChar(1)
+  lto_lto_id                 String?   @hospitalDb.VarChar(14)
+  qrt_numero                 Int?      @hospitalDb.SmallInt
+  unf_seq                    Int?      @hospitalDb.SmallInt
+  tam_codigo                 String?   @hospitalDb.VarChar(3)
+  atu_seq                    Int?
+  dt_prev_alta               DateTime? @hospitalDb.Timestamp(6)
+  dthr_alta_medica           DateTime? @hospitalDb.Timestamp(6)
+  dt_saida_paciente          DateTime? @hospitalDb.Timestamp(6)
+  iho_seq_origem             Int?      @hospitalDb.SmallInt
+  iho_seq_transferencia      Int?      @hospitalDb.SmallInt
+  justificativa_alt_del      String?   @hospitalDb.VarChar(240)
+  dthr_primeiro_evento       DateTime? @hospitalDb.Timestamp(6)
+  dthr_ultimo_evento         DateTime? @hospitalDb.Timestamp(6)
+  iph_seq                    Int?
+  iph_pho_seq                Int?      @hospitalDb.SmallInt
+  ind_alta_manual            String?   @hospitalDb.VarChar(1)
+  prontuario_legal           String?   @hospitalDb.VarChar(1)
+  doc_obito                  BigInt?
+  pjq_seq                    Int?
+  ind_cons_marcada           String?   @hospitalDb.VarChar(1)
+  apo_seq                    Int?      @hospitalDb.SmallInt
+  dthr_aviso_samis           DateTime? @hospitalDb.Date
+  dthr_prontuario_buscado    DateTime? @hospitalDb.Date
+  version                    Int       @default(0)
+  seq_medico_externo         Int?
+  proc_internacao_paciente   String?   @hospitalDb.VarChar(2)
+  local_atendimento_paciente String?   @hospitalDb.VarChar(100)
+  mod_assistencial           String?   @hospitalDb.VarChar(2)
+
+  @@index([apo_seq], map: "ain_int_apo_fk1_i")
+  @@index([atu_seq], map: "ain_int_atu_fk1_i")
+  @@index([csp_cnv_codigo, csp_seq], map: "ain_int_csp_fk1_i")
+  @@index([dt_saida_paciente], map: "ain_int_dt_saida_paciente_i")
+  @@index([dthr_alta_medica], map: "ain_int_dthr_alta_medica_i")
+  @@index([dthr_internacao], map: "ain_int_dthr_internacao_i")
+  @@index([esp_seq], map: "ain_int_esp_fk1_i")
+  @@index([iho_seq_origem], map: "ain_int_iho_fk1_i")
+  @@index([iho_seq_transferencia], map: "ain_int_iho_fk2_i")
+  @@index([ind_local_paciente], map: "ain_int_ind_local_pac_i")
+  @@index([ind_paciente_internado], map: "ain_int_ind_pac_i")
+  @@index([ind_saida_pac], map: "ain_int_ind_sai_i")
+  @@index([iph_pho_seq, iph_seq], map: "ain_int_iph_fk1_i")
+  @@index([lto_lto_id], map: "ain_int_lto_fk1_i")
+  @@index([oev_seq], map: "ain_int_oev_fk1_i")
+  @@index([pac_codigo], map: "ain_int_pac_fk1_i")
+  @@index([pjq_seq], map: "ain_int_pjq_fk1_i")
+  @@index([qrt_numero], map: "ain_int_qrt_fk1_i")
+  @@index([ser_matricula_digita, ser_vin_codigo_digita], map: "ain_int_ser_fk1_i")
+  @@index([ser_matricula_professor, ser_vin_codigo_professor], map: "ain_int_ser_fk2_i")
+  @@index([tam_codigo], map: "ain_int_tam_fk1_i")
+  @@index([tci_seq], map: "ain_int_tci_fk1_i")
+  @@index([unf_seq], map: "ain_int_unf_fk1_i")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model ain_leitos {
+  lto_id                  String  @id @hospitalDb.VarChar(14)
+  qrt_numero              Int     @hospitalDb.SmallInt
+  leito                   String  @hospitalDb.VarChar(4)
+  ind_cons_clin_unidade   String  @hospitalDb.VarChar(1)
+  ind_bloq_leito_limpeza  String  @hospitalDb.VarChar(1)
+  tml_codigo              Int     @hospitalDb.SmallInt
+  unf_seq                 Int     @hospitalDb.SmallInt
+  ind_situacao            String? @default("A") @hospitalDb.VarChar(1)
+  esp_seq                 Int?    @hospitalDb.SmallInt
+  int_seq                 Int?
+  ind_pertence_refl       String? @default("S") @hospitalDb.VarChar(1)
+  ind_cons_esp            String  @hospitalDb.VarChar(1)
+  ser_matricula           Int?
+  ser_vin_codigo          Int?    @hospitalDb.SmallInt
+  ind_acompanhamento_ccih String? @hospitalDb.VarChar(1)
+  version                 Int?    @default(0)
+  tpclsfcclto_seq         Int?    @hospitalDb.SmallInt
+  ind_leito_extra         String  @default("N") @hospitalDb.Char(1)
+
+  @@unique([qrt_numero, leito], map: "ain_lto_uk1")
+  @@index([esp_seq], map: "ain_lto_esp_fk1_i")
+  @@index([int_seq], map: "ain_lto_int_fk1_i")
+  @@index([qrt_numero], map: "ain_lto_qrt_fk1_i")
+  @@index([ser_matricula, ser_vin_codigo], map: "ain_lto_ser_fk1_i")
+  @@index([tml_codigo], map: "ain_lto_tml_fk1_i")
+  @@index([unf_seq], map: "ain_lto_unf_fk1_i")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model aip_pacientes {
+  codigo                        Int       @id
+  cct_codigo_cadastro           Int
+  ser_matricula_cadastro        Int
+  ser_vin_codigo_cadastro       Int       @hospitalDb.SmallInt
+  nome                          String    @hospitalDb.VarChar(100)
+  nome_mae                      String    @hospitalDb.VarChar(100)
+  dt_nascimento                 DateTime  @hospitalDb.Timestamp(6)
+  dt_identificacao              DateTime  @hospitalDb.Timestamp(6)
+  cct_codigo_recadastro         Int?
+  cdd_codigo                    Int?
+  nac_codigo                    Int?      @hospitalDb.SmallInt
+  ocp_codigo                    Int?
+  uf_sigla                      String?   @hospitalDb.VarChar(2)
+  ser_matricula_recadastro      Int?
+  ser_vin_codigo_recadastro     Int?      @hospitalDb.SmallInt
+  cor                           String?   @hospitalDb.VarChar(1)
+  sexo                          String?   @hospitalDb.VarChar(1)
+  grau_instrucao                Int?      @hospitalDb.SmallInt
+  nome_pai                      String?   @hospitalDb.VarChar(100)
+  naturalidade                  String?   @hospitalDb.VarChar(40)
+  ddd_fone_residencial          Int?      @hospitalDb.SmallInt
+  fone_residencial              BigInt?
+  ddd_fone_recado               Int?      @hospitalDb.SmallInt
+  fone_recado                   String?   @hospitalDb.VarChar(15)
+  estado_civil                  String?   @hospitalDb.VarChar(1)
+  cpf                           BigInt?
+  prontuario                    Int?      @unique(map: "aip_pac_uk1")
+  dt_obito                      DateTime? @hospitalDb.Timestamp(6)
+  rg                            String?   @hospitalDb.VarChar(20)
+  orgao_emis_rg                 String?   @hospitalDb.VarChar(10)
+  observacao                    String?   @hospitalDb.VarChar(240)
+  prnt_ativo                    String?   @hospitalDb.VarChar(1)
+  cad_confirmado                String?   @default("N") @hospitalDb.VarChar(1)
+  ind_gera_prontuario           String?   @default("N") @hospitalDb.VarChar(1)
+  dt_ult_internacao             DateTime? @hospitalDb.Timestamp(6)
+  dt_ult_alta                   DateTime? @hospitalDb.Timestamp(6)
+  dt_ult_consulta               DateTime? @hospitalDb.Timestamp(6)
+  dt_ult_procedimento           DateTime? @hospitalDb.Timestamp(6)
+  dt_ult_atend_hosp_dia         DateTime? @hospitalDb.Timestamp(6)
+  dt_ult_alta_hosp_dia          DateTime? @hospitalDb.Timestamp(6)
+  qrt_numero                    Int?      @hospitalDb.SmallInt
+  unf_seq                       Int?      @hospitalDb.SmallInt
+  lto_lto_id                    String?   @hospitalDb.VarChar(14)
+  reg_nascimento                String?   @hospitalDb.VarChar(32)
+  nro_cartao_saude              BigInt?
+  dt_recadastro                 DateTime? @hospitalDb.Timestamp(6)
+  ind_paciente_vip              String    @hospitalDb.VarChar(1)
+  pac_codigo_mae                Int?
+  tipo_data_obito               String?   @hospitalDb.VarChar(3)
+  dt_obito_externo              DateTime? @hospitalDb.Timestamp(6)
+  rna_gso_pac_codigo            Int?
+  rna_gso_seqp                  Int?      @hospitalDb.SmallInt
+  rna_seqp                      Int?      @hospitalDb.SmallInt
+  numero_pis                    BigInt?
+  volumes                       Int?      @hospitalDb.SmallInt
+  ind_pac_protegido             String?   @hospitalDb.VarChar(1)
+  criado_em                     DateTime? @hospitalDb.Timestamp(6)
+  ind_pac_agfa                  String?   @default("N") @hospitalDb.VarChar(1)
+  sexo_biologico                String?   @hospitalDb.VarChar(1)
+  version                       Int?      @default(0)
+  etn_id                        BigInt?
+  id_sistema_legado             BigInt?
+  nome_social                   String?   @hospitalDb.VarChar(50)
+  cnh                           Decimal?  @hospitalDb.Decimal(11, 0)
+  data_validade_cnh             DateTime? @hospitalDb.Timestamp(6)
+  email                         String?   @hospitalDb.VarChar(50)
+  rel_codigo                    Int?
+  dt_exp_germe_multirresistente DateTime? @hospitalDb.Date
+  germe_multirresistente        String?   @hospitalDb.VarChar(1)
+  pac_codigo_valido             Int?
+
+  @@index([dt_identificacao], map: "aip_pac_dt_identificacao")
+  @@index([dt_nascimento], map: "aip_pac_dt_nasc")
+  @@index([nro_cartao_saude], map: "aip_pac_nro_cartao_saude_idx1")
+  @@index([pac_codigo_mae], map: "aip_pac_pac_fk1_i")
+  @@index([ser_matricula_cadastro, ser_vin_codigo_cadastro], map: "aip_pac_ser_fk1_i")
+  @@index([ser_matricula_recadastro, ser_vin_codigo_recadastro], map: "aip_pac_ser_fk2_i")
+  @@index([prontuario, codigo], map: "aip_pacientes_prontuario_idx1")
+  @@index([prontuario, criado_em], map: "aip_pacientes_prontuario_idx2")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model rap_pessoas_fisicas {
+  codigo                  Int       @id
+  cpf                     BigInt?   @unique(map: "rap_pes_uk1")
+  nome                    String    @hospitalDb.VarChar(50)
+  nome_mae                String    @hospitalDb.VarChar(45)
+  pac_prontuario          Int?
+  nome_pai                String?   @hospitalDb.VarChar(45)
+  dt_nascimento           DateTime  @hospitalDb.Timestamp(6)
+  sexo                    String    @hospitalDb.VarChar(1)
+  nome_usual              String?   @hospitalDb.VarChar(15)
+  grau_instrucao          Int?      @hospitalDb.SmallInt
+  estado_civil            String?   @hospitalDb.VarChar(1)
+  bcl_clo_lgr_codigo      Int?
+  bcl_clo_cep             Int?
+  bcl_bai_codigo          Int?
+  cdd_codigo              Int?
+  nac_codigo              Int       @hospitalDb.SmallInt
+  logradouro              String?   @hospitalDb.VarChar(60)
+  compl_logradouro        String?   @hospitalDb.VarChar(15)
+  nro_logradouro          Int?
+  cep                     Int?
+  bairro                  String?   @hospitalDb.VarChar(60)
+  cidade_nascimento       String?   @hospitalDb.VarChar(40)
+  uf_sigla                String?   @hospitalDb.VarChar(2)
+  nro_identidade          String?   @hospitalDb.VarChar(14)
+  nro_cart_profissional   Int?
+  serie_cart_profissional String?   @hospitalDb.VarChar(5)
+  pis_pasep               BigInt?
+  nro_tit_eleitor         BigInt?
+  zona_tit_eleitor        Int?      @hospitalDb.SmallInt
+  secao_tit_eleitor       Int?      @hospitalDb.SmallInt
+  ddd_fone_residencial    Int?      @hospitalDb.SmallInt
+  fone_residencial        BigInt?
+  ramal_fone_residencial  Int?
+  ddd_fone_celular        Int?      @hospitalDb.SmallInt
+  fone_celular            BigInt?
+  ddd_fone_pager_bip      Int?      @hospitalDb.SmallInt
+  fone_pager_bip          Int?
+  nro_pager_bip           String?   @hospitalDb.VarChar(15)
+  email_particular        String?   @hospitalDb.VarChar(45)
+  criado_em               DateTime? @hospitalDb.Timestamp(6)
+  ser_matricula           Int?
+  ser_vin_codigo          Int?      @hospitalDb.SmallInt
+  pac_codigo              Int?      @unique(map: "rap_pes_uk2")
+  version                 Int       @default(0)
+  cdd_codigo_municipio    Int?
+  uf_orgao                String?   @hospitalDb.VarChar(2)
+  dt_emissao_documento    DateTime? @hospitalDb.Timestamp(6)
+  orgao_emissor_rg        Int?      @hospitalDb.SmallInt
+
+  @@index([pac_prontuario], map: "rap_pes_prnt_i")
+  @@index([ser_matricula, ser_vin_codigo], map: "rap_pes_ser_fk1_i")
 }

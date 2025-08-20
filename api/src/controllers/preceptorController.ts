@@ -19,11 +19,14 @@ export const getAllPreceptorsHandler = async (
   request: FastifyRequest,
   reply: FastifyReply
 ) => {
-  console.log("DEBUG: getAllPreceptorsHandler entered"); // Add this line for debugging
+  console.log("DEBUG: getAllPreceptorsHandler entered");
   try {
     const preceptors = await getAllPreceptors();
+    console.log("DEBUG: Preceptors fetched successfully, count:", preceptors.length);
+    console.log("DEBUG: First preceptor sample:", preceptors[0]);
     sendResponse(reply, 200, preceptors);
   } catch (error: any) {
+    console.error("DEBUG: Error in getAllPreceptorsHandler:", error);
     sendErrorResponse(reply, 500, "Error fetching preceptors");
   }
 };
@@ -56,14 +59,17 @@ export const getPreceptorByNameHandler = async (
 ) => {
   try {
     const { name } = request.params;
+    console.log("DEBUG: Searching preceptors by name:", name);
 
     if (!name || typeof name !== 'string' || name.trim() === "") {
       return sendErrorResponse(reply, 400, "Invalid name format. Name must be a non-empty string.");
     }
 
-    const preceptors = await getPreceptorsByName(name); // returns array
-    sendResponse(reply, 200, preceptors); // always return array (possibly empty)
+    const preceptors = await getPreceptorsByName(name);
+    console.log("DEBUG: Preceptors found by name, count:", preceptors.length);
+    sendResponse(reply, 200, preceptors);
   } catch (error: any) {
+    console.error("DEBUG: Error in getPreceptorByNameHandler:", error);
     sendErrorResponse(reply, 500, "Error fetching preceptors by name");
   }
 };

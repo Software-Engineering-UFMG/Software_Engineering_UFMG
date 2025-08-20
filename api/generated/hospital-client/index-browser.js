@@ -20,12 +20,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.10.1
- * Query Engine version: 9b628578b3b7cae625e8c927178f15a170e74a9c
+ * Prisma Client JS version: 6.14.0
+ * Query Engine version: 717184b7b35ea05dfa71a3236b7af656013e1e49
  */
 Prisma.prismaVersion = {
-  client: "6.10.1",
-  engine: "9b628578b3b7cae625e8c927178f15a170e74a9c"
+  client: "6.14.0",
+  engine: "717184b7b35ea05dfa71a3236b7af656013e1e49"
 }
 
 Prisma.PrismaClientKnownRequestError = () => {
@@ -149,6 +149,199 @@ exports.Prisma.Rap_servidoresScalarFieldEnum = {
   unf_seq_lotacao: 'unf_seq_lotacao'
 };
 
+exports.Prisma.Ain_internacoesScalarFieldEnum = {
+  seq: 'seq',
+  pac_codigo: 'pac_codigo',
+  esp_seq: 'esp_seq',
+  ser_matricula_digita: 'ser_matricula_digita',
+  ser_vin_codigo_digita: 'ser_vin_codigo_digita',
+  ser_matricula_professor: 'ser_matricula_professor',
+  ser_vin_codigo_professor: 'ser_vin_codigo_professor',
+  dthr_internacao: 'dthr_internacao',
+  env_pront_unid_int: 'env_pront_unid_int',
+  tci_seq: 'tci_seq',
+  csp_cnv_codigo: 'csp_cnv_codigo',
+  csp_seq: 'csp_seq',
+  oev_seq: 'oev_seq',
+  ind_saida_pac: 'ind_saida_pac',
+  ind_dif_classe: 'ind_dif_classe',
+  ind_paciente_internado: 'ind_paciente_internado',
+  ind_local_paciente: 'ind_local_paciente',
+  lto_lto_id: 'lto_lto_id',
+  qrt_numero: 'qrt_numero',
+  unf_seq: 'unf_seq',
+  tam_codigo: 'tam_codigo',
+  atu_seq: 'atu_seq',
+  dt_prev_alta: 'dt_prev_alta',
+  dthr_alta_medica: 'dthr_alta_medica',
+  dt_saida_paciente: 'dt_saida_paciente',
+  iho_seq_origem: 'iho_seq_origem',
+  iho_seq_transferencia: 'iho_seq_transferencia',
+  justificativa_alt_del: 'justificativa_alt_del',
+  dthr_primeiro_evento: 'dthr_primeiro_evento',
+  dthr_ultimo_evento: 'dthr_ultimo_evento',
+  iph_seq: 'iph_seq',
+  iph_pho_seq: 'iph_pho_seq',
+  ind_alta_manual: 'ind_alta_manual',
+  prontuario_legal: 'prontuario_legal',
+  doc_obito: 'doc_obito',
+  pjq_seq: 'pjq_seq',
+  ind_cons_marcada: 'ind_cons_marcada',
+  apo_seq: 'apo_seq',
+  dthr_aviso_samis: 'dthr_aviso_samis',
+  dthr_prontuario_buscado: 'dthr_prontuario_buscado',
+  version: 'version',
+  seq_medico_externo: 'seq_medico_externo',
+  proc_internacao_paciente: 'proc_internacao_paciente',
+  local_atendimento_paciente: 'local_atendimento_paciente',
+  mod_assistencial: 'mod_assistencial'
+};
+
+exports.Prisma.Ain_leitosScalarFieldEnum = {
+  lto_id: 'lto_id',
+  qrt_numero: 'qrt_numero',
+  leito: 'leito',
+  ind_cons_clin_unidade: 'ind_cons_clin_unidade',
+  ind_bloq_leito_limpeza: 'ind_bloq_leito_limpeza',
+  tml_codigo: 'tml_codigo',
+  unf_seq: 'unf_seq',
+  ind_situacao: 'ind_situacao',
+  esp_seq: 'esp_seq',
+  int_seq: 'int_seq',
+  ind_pertence_refl: 'ind_pertence_refl',
+  ind_cons_esp: 'ind_cons_esp',
+  ser_matricula: 'ser_matricula',
+  ser_vin_codigo: 'ser_vin_codigo',
+  ind_acompanhamento_ccih: 'ind_acompanhamento_ccih',
+  version: 'version',
+  tpclsfcclto_seq: 'tpclsfcclto_seq',
+  ind_leito_extra: 'ind_leito_extra'
+};
+
+exports.Prisma.Aip_pacientesScalarFieldEnum = {
+  codigo: 'codigo',
+  cct_codigo_cadastro: 'cct_codigo_cadastro',
+  ser_matricula_cadastro: 'ser_matricula_cadastro',
+  ser_vin_codigo_cadastro: 'ser_vin_codigo_cadastro',
+  nome: 'nome',
+  nome_mae: 'nome_mae',
+  dt_nascimento: 'dt_nascimento',
+  dt_identificacao: 'dt_identificacao',
+  cct_codigo_recadastro: 'cct_codigo_recadastro',
+  cdd_codigo: 'cdd_codigo',
+  nac_codigo: 'nac_codigo',
+  ocp_codigo: 'ocp_codigo',
+  uf_sigla: 'uf_sigla',
+  ser_matricula_recadastro: 'ser_matricula_recadastro',
+  ser_vin_codigo_recadastro: 'ser_vin_codigo_recadastro',
+  cor: 'cor',
+  sexo: 'sexo',
+  grau_instrucao: 'grau_instrucao',
+  nome_pai: 'nome_pai',
+  naturalidade: 'naturalidade',
+  ddd_fone_residencial: 'ddd_fone_residencial',
+  fone_residencial: 'fone_residencial',
+  ddd_fone_recado: 'ddd_fone_recado',
+  fone_recado: 'fone_recado',
+  estado_civil: 'estado_civil',
+  cpf: 'cpf',
+  prontuario: 'prontuario',
+  dt_obito: 'dt_obito',
+  rg: 'rg',
+  orgao_emis_rg: 'orgao_emis_rg',
+  observacao: 'observacao',
+  prnt_ativo: 'prnt_ativo',
+  cad_confirmado: 'cad_confirmado',
+  ind_gera_prontuario: 'ind_gera_prontuario',
+  dt_ult_internacao: 'dt_ult_internacao',
+  dt_ult_alta: 'dt_ult_alta',
+  dt_ult_consulta: 'dt_ult_consulta',
+  dt_ult_procedimento: 'dt_ult_procedimento',
+  dt_ult_atend_hosp_dia: 'dt_ult_atend_hosp_dia',
+  dt_ult_alta_hosp_dia: 'dt_ult_alta_hosp_dia',
+  qrt_numero: 'qrt_numero',
+  unf_seq: 'unf_seq',
+  lto_lto_id: 'lto_lto_id',
+  reg_nascimento: 'reg_nascimento',
+  nro_cartao_saude: 'nro_cartao_saude',
+  dt_recadastro: 'dt_recadastro',
+  ind_paciente_vip: 'ind_paciente_vip',
+  pac_codigo_mae: 'pac_codigo_mae',
+  tipo_data_obito: 'tipo_data_obito',
+  dt_obito_externo: 'dt_obito_externo',
+  rna_gso_pac_codigo: 'rna_gso_pac_codigo',
+  rna_gso_seqp: 'rna_gso_seqp',
+  rna_seqp: 'rna_seqp',
+  numero_pis: 'numero_pis',
+  volumes: 'volumes',
+  ind_pac_protegido: 'ind_pac_protegido',
+  criado_em: 'criado_em',
+  ind_pac_agfa: 'ind_pac_agfa',
+  sexo_biologico: 'sexo_biologico',
+  version: 'version',
+  etn_id: 'etn_id',
+  id_sistema_legado: 'id_sistema_legado',
+  nome_social: 'nome_social',
+  cnh: 'cnh',
+  data_validade_cnh: 'data_validade_cnh',
+  email: 'email',
+  rel_codigo: 'rel_codigo',
+  dt_exp_germe_multirresistente: 'dt_exp_germe_multirresistente',
+  germe_multirresistente: 'germe_multirresistente',
+  pac_codigo_valido: 'pac_codigo_valido'
+};
+
+exports.Prisma.Rap_pessoas_fisicasScalarFieldEnum = {
+  codigo: 'codigo',
+  cpf: 'cpf',
+  nome: 'nome',
+  nome_mae: 'nome_mae',
+  pac_prontuario: 'pac_prontuario',
+  nome_pai: 'nome_pai',
+  dt_nascimento: 'dt_nascimento',
+  sexo: 'sexo',
+  nome_usual: 'nome_usual',
+  grau_instrucao: 'grau_instrucao',
+  estado_civil: 'estado_civil',
+  bcl_clo_lgr_codigo: 'bcl_clo_lgr_codigo',
+  bcl_clo_cep: 'bcl_clo_cep',
+  bcl_bai_codigo: 'bcl_bai_codigo',
+  cdd_codigo: 'cdd_codigo',
+  nac_codigo: 'nac_codigo',
+  logradouro: 'logradouro',
+  compl_logradouro: 'compl_logradouro',
+  nro_logradouro: 'nro_logradouro',
+  cep: 'cep',
+  bairro: 'bairro',
+  cidade_nascimento: 'cidade_nascimento',
+  uf_sigla: 'uf_sigla',
+  nro_identidade: 'nro_identidade',
+  nro_cart_profissional: 'nro_cart_profissional',
+  serie_cart_profissional: 'serie_cart_profissional',
+  pis_pasep: 'pis_pasep',
+  nro_tit_eleitor: 'nro_tit_eleitor',
+  zona_tit_eleitor: 'zona_tit_eleitor',
+  secao_tit_eleitor: 'secao_tit_eleitor',
+  ddd_fone_residencial: 'ddd_fone_residencial',
+  fone_residencial: 'fone_residencial',
+  ramal_fone_residencial: 'ramal_fone_residencial',
+  ddd_fone_celular: 'ddd_fone_celular',
+  fone_celular: 'fone_celular',
+  ddd_fone_pager_bip: 'ddd_fone_pager_bip',
+  fone_pager_bip: 'fone_pager_bip',
+  nro_pager_bip: 'nro_pager_bip',
+  email_particular: 'email_particular',
+  criado_em: 'criado_em',
+  ser_matricula: 'ser_matricula',
+  ser_vin_codigo: 'ser_vin_codigo',
+  pac_codigo: 'pac_codigo',
+  version: 'version',
+  cdd_codigo_municipio: 'cdd_codigo_municipio',
+  uf_orgao: 'uf_orgao',
+  dt_emissao_documento: 'dt_emissao_documento',
+  orgao_emissor_rg: 'orgao_emissor_rg'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -166,7 +359,11 @@ exports.Prisma.NullsOrder = {
 
 
 exports.Prisma.ModelName = {
-  rap_servidores: 'rap_servidores'
+  rap_servidores: 'rap_servidores',
+  ain_internacoes: 'ain_internacoes',
+  ain_leitos: 'ain_leitos',
+  aip_pacientes: 'aip_pacientes',
+  rap_pessoas_fisicas: 'rap_pessoas_fisicas'
 };
 
 /**

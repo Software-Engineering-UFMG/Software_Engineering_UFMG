@@ -38,10 +38,18 @@ import {
   deletePreceptorPaciente,
   updatePreceptorPacientePreceptor,
   getPreceptorsByName,
-  createPreceptorPaciente, // <-- add this import
-  deleteAllQuestionnairesForRelation, // <-- add this import
+  createPreceptorPaciente,
+  deleteAllQuestionnairesForRelation,
+  getPatientDischargePrediction,
+  cleanupScheduledDeletions, // <-- add this import
 } from "../../services/api";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+// Configure dayjs with timezone support
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 function AssistencialDashboard() {
   const { user, isLoading } = useAuth();
@@ -71,6 +79,9 @@ function AssistencialDashboard() {
   const [addPatientOptions, setAddPatientOptions] = useState<any[]>([]);
   const [addSelectedPatient, setAddSelectedPatient] = useState<any | null>(null);
 
+  // Add state for showing deletion status
+  const [showDeletionInfo, setShowDeletionInfo] = useState(false);
+
   // Fetch only this preceptor's relations
   const fetchRelations = async () => {
     if (!preceptorId) return;
@@ -93,50 +104,123 @@ function AssistencialDashboard() {
     // eslint-disable-next-line
   }, [preceptorId]);
 
+  // Move parseDate function outside to be reusable
+  const parseDate = (dateStr: string | null | undefined) => {
+    if (!dateStr) return "";
+    
+    // Parse the date and convert to Brazil timezone for display
+    const date = dayjs.utc(dateStr).tz('America/Sao_Paulo');
+    
+    if (date.isValid()) {
+      return date.format("DD/MM/YYYY");
+    }
+    return "";
+  };
+
   // Map backend patients to table rows
   const mappedPatients = patients.map((patient) => {
-    const parseDate = (dateStr: string | null | undefined) => {
-      if (!dateStr) return "";
-      const isoParsed = dayjs(dateStr);
-      if (isoParsed.isValid()) return isoParsed.format("DD/MM/YYYY");
-      return dayjs(dateStr, "YYYY-MM-DD HH:mm:ss").format("DD/MM/YYYY");
-    };
     let tempoInternacao = 0;
     if (patient.entranceDate) {
-      const entrance = dayjs(patient.entranceDate);
+      // Calculate days using Brazil timezone
+      const entrance = dayjs.utc(patient.entranceDate).tz('America/Sao_Paulo');
+      const now = dayjs().tz('America/Sao_Paulo');
       if (entrance.isValid()) {
-        tempoInternacao = dayjs().diff(entrance, "day");
+        tempoInternacao = now.diff(entrance, "day");
       }
     }
+    
     let statusPt = "";
     if (patient.status === "Active" || patient.status === "Ativado")
       statusPt = "Ativado";
     else if (patient.status === "Inactive" || patient.status === "Desativado")
       statusPt = "Desativado";
     else statusPt = patient.status || "";
-    const rawBirthDate =
-      patient.birthDate ||
-      patient.birthdate ||
-      patient.birth_date ||
-      "";
-    const dataNascimento = rawBirthDate
-      ? dayjs(rawBirthDate, "YYYY-MM-DD HH:mm:ss").format("DD/MM/YYYY")
-      : "";
+    
+    // Fix birth date parsing
+    const dataNascimento = parseDate(patient.birthDate);
+    
+    // Check if deletion is scheduled
+    const isDeletionScheduled = patient.scheduledDeletionAt && 
+      new Date(patient.scheduledDeletionAt) > new Date();
+    
     return {
-      id: patient.id, // This is the PreceptorPaciente relation ID
+      id: patient.id,
       paciente: patient.patientName || "",
       dataNascimento,
       leito: patient.hospitalbed || patient.hospitalBed || "",
-      // Assuming API provides medicalRecord as patient.medicalRecord or patient.patientMedicalRecord
       medicalRecord: patient.medicalRecord || patient.patientMedicalRecord || "", 
-      previsaoAlta: parseDate(patient.dischargingDate),
+      previsaoAlta: "Carregando...", // Initial value, will be updated
       tempoInternacao,
       red2Green: patient.red2green || "À preencher",
       status: statusPt,
+      isDeletionScheduled,
+      scheduledDeletionAt: patient.scheduledDeletionAt,
     };
   });
 
-  const filteredData = mappedPatients.filter(
+  // Add effect to load discharge predictions
+  useEffect(() => {
+    const loadDischargePredictions = async () => {
+      for (const patient of patients) {
+        if (patient.medicalRecord) {
+          try {
+            const result = await getPatientDischargePrediction(patient.medicalRecord);
+            // Update the patient object with the discharge prediction
+            setPatients(prevPatients => 
+              prevPatients.map(p => 
+                p.medicalRecord === patient.medicalRecord 
+                  ? { 
+                      ...p, 
+                      dischargePrediction: result.isHospitalized 
+                        ? result.dischargePrediction 
+                        : "Não está internado" // Always set this string when not hospitalized
+                    }
+                  : p
+              )
+            );
+          } catch (error) {
+            console.error(`Error loading discharge prediction for ${patient.medicalRecord}:`, error);
+            // Set error state for this patient
+            setPatients(prevPatients => 
+              prevPatients.map(p => 
+                p.medicalRecord === patient.medicalRecord 
+                  ? { ...p, dischargePrediction: "Não está internado" }
+                  : p
+              )
+            );
+          }
+        }
+      }
+    };
+
+    if (patients.length > 0) {
+      loadDischargePredictions();
+    }
+  }, [patients.length]); // Only run when patients are loaded
+
+  // Update the mappedPatients to use the new discharge prediction
+  const mappedPatientsWithPredictions = mappedPatients.map((patient, index) => {
+    const originalPatient = patients[index];
+    
+    // Handle discharge prediction display
+    let previsaoAlta = "Carregando..."; // Default loading state
+    
+    if (originalPatient?.dischargePrediction) {
+      if (originalPatient.dischargePrediction === "Não está internado") {
+        previsaoAlta = "Não está internado";
+      } else {
+        // It's a date, parse it
+        previsaoAlta = parseDate(originalPatient.dischargePrediction);
+      }
+    }
+    
+    return {
+      ...patient,
+      previsaoAlta
+    };
+  });
+
+  const filteredData = mappedPatientsWithPredictions.filter(
     (row) =>
       row.paciente.toLowerCase().includes(searchPaciente.toLowerCase()) &&
       row.leito.toLowerCase().includes(searchLeito.toLowerCase()) &&
@@ -193,10 +277,19 @@ function AssistencialDashboard() {
   const handleToggleStatus = async (patient: any) => {
     try {
       const newStatus = patient.status === "Ativado" ? "Desativado" : "Ativado";
+      
+      if (newStatus === "Desativado") {
+        // Show info about scheduled deletion
+        alert("Paciente será desativado e agendado para exclusão em 2 minutos. Você pode reativar para cancelar a exclusão.");
+      } else if (patient.isDeletionScheduled) {
+        // Show info about canceling deletion
+        alert("Reativando paciente e cancelando exclusão agendada.");
+      }
+      
       await updatePreceptorPacienteStatus(patient.id, newStatus);
       fetchRelations();
     } catch (error) {
-      // handle error
+      console.error("Error toggling status:", error);
     }
   };
 
@@ -237,10 +330,12 @@ function AssistencialDashboard() {
   const handleChangePreceptor = async () => {
     if (!relationToEdit || !selectedPreceptor) return;
     try {
-      await updatePreceptorPacientePreceptor(relationToEdit.id, selectedPreceptor.id);
+      // Use matricula (which is the ID in the hospital database) instead of id
+      const preceptorId = selectedPreceptor.matricula || selectedPreceptor.id;
+      await updatePreceptorPacientePreceptor(relationToEdit.id, preceptorId);
       fetchRelations();
     } catch (error) {
-      // handle error
+      console.error("Error changing preceptor:", error);
     }
     handleCloseModal();
   };
@@ -289,6 +384,21 @@ function AssistencialDashboard() {
     handleCloseAddModal();
     fetchRelations();
   };
+
+  // Add effect to periodically check for scheduled deletions
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        await cleanupScheduledDeletions();
+        // Refresh the data after cleanup
+        fetchRelations();
+      } catch (error) {
+        console.error("Error during scheduled cleanup:", error);
+      }
+    }, 30000); // Check every 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div style={{ padding: "16px" }}>
@@ -445,8 +555,20 @@ function AssistencialDashboard() {
           </TableHead>
           <TableBody>
             {filteredData.map((row, index) => (
-              <TableRow key={index}>
-                <TableCell>{row.paciente}</TableCell>
+              <TableRow 
+                key={index}
+                sx={{
+                  backgroundColor: row.isDeletionScheduled ? '#ffebee' : 'inherit',
+                }}
+              >
+                <TableCell>
+                  {row.paciente}
+                  {row.isDeletionScheduled && (
+                    <div style={{ fontSize: '0.8em', color: 'red', fontStyle: 'italic' }}>
+                      Exclusão agendada em: {dayjs(row.scheduledDeletionAt).tz('America/Sao_Paulo').format('HH:mm:ss')}
+                    </div>
+                  )}
+                </TableCell>
                 <TableCell>{row.dataNascimento}</TableCell>
                 <TableCell>{row.leito}</TableCell>
                 <TableCell>{row.previsaoAlta}</TableCell>
@@ -473,7 +595,7 @@ function AssistencialDashboard() {
                   {row.status === "Ativado" ? (
                     <>
                       <IconButton
-                        title="Desativar paciente"
+                        title="Desativar paciente (agenda exclusão em 2 min)"
                         onClick={() => handleToggleStatus(row)}
                       >
                         <ToggleOn style={{ color: "green" }} />
@@ -511,10 +633,10 @@ function AssistencialDashboard() {
                     </>
                   ) : (
                     <IconButton
-                      title="Ativar paciente"
+                      title={row.isDeletionScheduled ? "Ativar paciente (cancela exclusão)" : "Ativar paciente"}
                       onClick={() => handleToggleStatus(row)}
                     >
-                      <ToggleOff style={{ color: "red" }} />
+                      <ToggleOff style={{ color: row.isDeletionScheduled ? "orange" : "red" }} />
                     </IconButton>
                   )}
                 </TableCell>
@@ -523,6 +645,7 @@ function AssistencialDashboard() {
           </TableBody>
         </Table>
       </TableContainer>
+      
       {/* Delete confirmation modal */}
       <Modal open={deleteModalOpen} onClose={handleCloseDeleteModal}>
         <Box
@@ -630,18 +753,25 @@ function AssistencialDashboard() {
                   boxSizing: "border-box",
                 }}
               >
-                {preceptorOptions.map((preceptor: any) => (
-                  <ListItem key={preceptor.id} disablePadding>
-                    <ListItemButton
-                      onClick={() => {
-                        setSelectedPreceptor(preceptor);
-                        setPreceptorInput(preceptor.name);
-                      }}
-                    >
-                      <ListItemText primary={preceptor.name} />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
+                {preceptorOptions.map((preceptor: any) => {
+                  // Use matricula as key if available, fallback to id
+                  const key = preceptor.matricula || preceptor.id || Math.random();
+                  // Use nome_completo first, then fallback to name
+                  const displayName = preceptor.nome_completo || preceptor.name || 'Nome não disponível';
+                  
+                  return (
+                    <ListItem key={key} disablePadding>
+                      <ListItemButton
+                        onClick={() => {
+                          setSelectedPreceptor(preceptor);
+                          setPreceptorInput(displayName);
+                        }}
+                      >
+                        <ListItemText primary={displayName} />
+                      </ListItemButton>
+                    </ListItem>
+                  );
+                })}
               </List>
             )}
           </div>
@@ -769,3 +899,4 @@ function AssistencialDashboard() {
 }
 
 export default AssistencialDashboard;
+

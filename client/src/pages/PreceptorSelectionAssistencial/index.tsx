@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
 import { Typography, Box, TextField, List, ListItem, ListItemButton, CircularProgress } from "@mui/material";
 import { useAuth } from "../../context/AuthContext";
-import { getPreceptorsByName } from "../../services/api";
+import { getPreceptorsByName, getAllPreceptors } from "../../services/api";
 
 
 export const Preceptor = () => {
@@ -32,16 +32,16 @@ export const Preceptor = () => {
 
   // Load all preceptors on component mount
   useEffect(() => {
-    const loadPreceptors = async () => {
+    const loadAllPreceptors = async () => {
       try {
-        const data = await getPreceptorsByName(""); // Get all preceptors
-        setAllPreceptors(Array.isArray(data) ? data : []);
+        const preceptors = await getAllPreceptors();
+        setAllPreceptors(Array.isArray(preceptors) ? preceptors : []);
       } catch (error) {
         console.error("Error loading preceptors:", error);
         setAllPreceptors([]);
       }
     };
-    loadPreceptors();
+    loadAllPreceptors();
   }, []);
 
   // Debounced search effect for preceptorInput
@@ -59,14 +59,11 @@ export const Preceptor = () => {
     debounceTimeout.current = setTimeout(async () => {
       setSearchLoading(true);
       try {
-        // Filter preceptors client-side by name (since we don't have name field in hospital DB)
-        // We'll use 'usuario' field as the name identifier
-        const filtered = allPreceptors.filter(preceptor => 
-          preceptor.usuario && preceptor.usuario.toLowerCase().includes(preceptorInput.toLowerCase())
-        );
-        setPreceptorOptions(filtered);
+        // Use the API function to get filtered preceptors
+        const filtered = await getPreceptorsByName(preceptorInput);
+        setPreceptorOptions(Array.isArray(filtered) ? filtered : []);
       } catch (error) {
-        console.error("Error filtering preceptors:", error);
+        console.error("Error searching preceptors:", error);
         setPreceptorOptions([]);
       } finally {
         setSearchLoading(false);
@@ -78,11 +75,13 @@ export const Preceptor = () => {
         clearTimeout(debounceTimeout.current);
       }
     };
-  }, [preceptorInput, allPreceptors]);
+  }, [preceptorInput]);
 
   const handlePreceptorSelect = (preceptor: any) => {
     setSelectedPreceptor(preceptor);
-    setPreceptorInput(preceptor.usuario || ''); // Use 'usuario' field as name
+    // Use nome_completo first, then fall back to name or empty string
+    const displayName = preceptor.nome_completo || preceptor.name || '';
+    setPreceptorInput(displayName);
     setPreceptorOptions([]);
   };
 
@@ -90,8 +89,10 @@ export const Preceptor = () => {
     if (selectedPreceptor) {
       navigate("/preceptor/AssistencialDashboard", {
         state: { 
-          preceptorName: selectedPreceptor.usuario, 
-          preceptorId: selectedPreceptor.matricula // Use matricula as ID
+          // Use nome_completo first, then fall back to name
+          preceptorName: selectedPreceptor.nome_completo || selectedPreceptor.name, 
+          // Use matricula first, then fall back to id
+          preceptorId: selectedPreceptor.matricula || selectedPreceptor.id
         },
       });
     }
@@ -140,7 +141,7 @@ export const Preceptor = () => {
               const newValue = e.target.value;
               setPreceptorInput(newValue);
               // If user types something different from selected preceptor, deselect
-              if (selectedPreceptor && newValue !== selectedPreceptor.usuario) {
+              if (selectedPreceptor && newValue !== selectedPreceptor.nome_completo) {
                 setSelectedPreceptor(null);
               }
             }}
@@ -154,7 +155,7 @@ export const Preceptor = () => {
             <List
               sx={{
                 position: "absolute",
-                top: "100%", // Position below the TextField
+                top: "100%",
                 left: 0,
                 width: "100%",
                 backgroundColor: "#f5f5f5",
@@ -165,19 +166,26 @@ export const Preceptor = () => {
                 overflowY: "auto",
                 padding: "8px 0",
                 boxSizing: "border-box",
-                marginTop: "4px", // Small gap from TextField
+                marginTop: "4px",
               }}
             >
-              {preceptorOptions.map((preceptor: any) => (
-                <ListItem key={preceptor.matricula} disablePadding>
-                  <ListItemButton
-                    onMouseDown={e => e.preventDefault()} // Prevents TextField blur before click
-                    onClick={() => handlePreceptorSelect(preceptor)}
-                  >
-                    {preceptor.usuario}
-                  </ListItemButton>
-                </ListItem>
-              ))}
+              {preceptorOptions.map((preceptor: any) => {
+                // Use matricula first, then fall back to id, then index as last resort
+                const key = preceptor.matricula || preceptor.id || Math.random();
+                // Use nome_completo first, then fall back to name
+                const displayName = preceptor.nome_completo || preceptor.name || 'Nome não disponível';
+                
+                return (
+                  <ListItem key={key} disablePadding>
+                    <ListItemButton
+                      onMouseDown={e => e.preventDefault()}
+                      onClick={() => handlePreceptorSelect(preceptor)}
+                    >
+                      {displayName}
+                    </ListItemButton>
+                  </ListItem>
+                );
+              })}
             </List>
           )}
         </Box>
@@ -217,3 +225,4 @@ export const Preceptor = () => {
 };
 
 export default Preceptor;
+

@@ -9,6 +9,7 @@ import {
   submitQuestionnaire,
   getTodaysQuestionnaire,
   deleteAllQuestionnairesForRelation, // <-- add this import
+  deleteScheduledPreceptorPacientes, // <-- add this import
 } from "../services/preceptorPacienteService";
 
 export const createPreceptorPacienteHandler = async (
@@ -201,5 +202,22 @@ export const deleteAllQuestionnairesForRelationHandler = async (
     return reply.status(204).send();
   } catch (error) {
     reply.status(500).send({ message: "Error deleting questionnaires" });
+  }
+};
+
+// Handler to delete scheduled relations
+export const deleteScheduledPreceptorPacientesHandler = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+) => {
+  try {
+    const deletedCount = await deleteScheduledPreceptorPacientes();
+    return reply.status(200).send({ 
+      message: `Deleted ${deletedCount} scheduled relations`,
+      deletedCount 
+    });
+  } catch (error) {
+    console.error("Error deleting scheduled relations:", error);
+    reply.status(500).send({ message: "Error deleting scheduled relations" });
   }
 };
