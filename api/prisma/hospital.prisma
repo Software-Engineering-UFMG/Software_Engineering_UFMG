@@ -1,6 +1,7 @@
 generator hospitalClient {
-  provider = "prisma-client-js"
-  output   = "../generated/hospital-client"
+  provider      = "prisma-client-js"
+  output        = "../generated/hospital-client"
+  binaryTargets = ["native", "windows"]
 }
 
 datasource hospitalDb {

@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -14,20 +14,20 @@ model Usuario {
   tipo          String   @db.VarChar(20)
   especialidade String?  @db.VarChar(30)
   status        String   @db.VarChar(10)
-  createdAt     DateTime @default(now()) @db.Timestamptz
+  createdAt     DateTime @default(now()) @db.Timestamp(6)
 }
 
 model PreceptorPaciente {
   id                    Int       @id @default(autoincrement())
-  preceptorId          Int
-  medicalRecord        String
-  status               String
-  red2green            String
-  scheduledDeactivationAt DateTime? @db.Timestamptz
-  scheduledDeletionAt  DateTime? @db.Timestamptz
-  createdAt            DateTime  @default(now()) @db.Timestamptz
-  updatedAt            DateTime  @updatedAt @db.Timestamptz
-  questionnaires       Questionnaire[]
+  preceptorId           Int
+  medicalRecord         String
+  status                String
+  red2green             String
+  scheduledDeactivationAt DateTime? @db.Timestamp(6)
+  scheduledDeletionAt   DateTime? @db.Timestamp(6)
+  createdAt             DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt             DateTime  @updatedAt @db.Timestamp(6)
+  questionnaires        Questionnaire[]
 
   @@map("preceptor_paciente")
 }
@@ -35,26 +35,15 @@ model PreceptorPaciente {
 model Questionnaire {
   id                  Int               @id @default(autoincrement())
   preceptorPacienteId Int
-  dischargeDate       DateTime          @db.Timestamptz
+  dischargeDate       DateTime          @db.Timestamp(6)
   clinicalCriteria    String
-  characteristics     String[]
+  characteristics     String
   needsAdmission      String
   outpatient          String
-  waitingType         String[]
-  examDetails         String[]
+  waitingType         String
+  examDetails         String
   dischargeConfirmed  Boolean
   red2green           String            @db.VarChar(20)
-  createdAt           DateTime          @default(now()) @db.Timestamptz
+  createdAt           DateTime          @default(now()) @db.Timestamp(6)
   preceptorPaciente   PreceptorPaciente @relation(fields: [preceptorPacienteId], references: [id])
-}
-
-enum Role {
-  NIR
-  Assistencial
-  Admin
-}
-
-enum Status {
-  Active
-  Inactive
 }
