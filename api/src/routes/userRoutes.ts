@@ -53,7 +53,38 @@ export const userRoutes = (app: FastifyInstance) => {
     Body: UpdateUserByIdDTO;
   }>(
     "/user/:id",
-    { preHandler: [authMiddleware] }, // Remove validation for now to test
+    { preHandler: [authMiddleware] },
     updateUserByIdHandler
+  );
+};
+          console.log("🔍 DEBUG: PUT /user/:id route hit");
+          console.log("🔍 DEBUG: Params:", request.params);
+          console.log("🔍 DEBUG: Body:", request.body);
+          console.log("🔍 DEBUG: User from auth:", (request as any).user);
+          console.log("🔍 DEBUG: User ID from params:", request.params.id);
+          console.log("🔍 DEBUG: User ID type:", typeof request.params.id);
+          console.log("🔍 DEBUG: Authenticated user ID:", (request as any).user?.id);
+          console.log("🔍 DEBUG: Authenticated user role:", (request as any).user?.role);
+          console.log("🔍 DEBUG: Is same user?", (request as any).user?.id === parseInt(request.params.id));
+          console.log("🔍 DEBUG: Headers:", {
+            authorization: request.headers.authorization,
+            cookie: request.headers.cookie,
+            'content-type': request.headers['content-type'],
+          });
+        }
+      ]
+    },
+    async (request, reply) => {
+      console.log("🎯 CONTROLLER: updateUserByIdHandler called");
+      console.log("🎯 CONTROLLER: About to call updateUserByIdHandler");
+      try {
+        const result = await updateUserByIdHandler(request, reply);
+        console.log("🎯 CONTROLLER: updateUserByIdHandler completed successfully");
+        return result;
+      } catch (error) {
+        console.error("🎯 CONTROLLER: updateUserByIdHandler failed:", error);
+        throw error;
+      }
+    }
   );
 };

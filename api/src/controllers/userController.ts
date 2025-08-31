@@ -139,7 +139,8 @@ export const updateUserByIdHandler = async (
 
     console.log("Logged user role:", loggedUser.role); // Add debug log
 
-    if (loggedUser.role !== "Admin") {
+    // Fix: Use case-insensitive comparison or normalize the role
+    if (loggedUser.role?.toLowerCase() !== "admin") {
       return sendErrorResponse(reply, 403, `Forbidden: Admin role required. Current role: ${loggedUser.role}`);
     }
 

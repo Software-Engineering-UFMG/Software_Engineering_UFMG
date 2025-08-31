@@ -1,15 +1,18 @@
 require('dotenv').config({ path: './.env' });
 
-const { checkUserInLdap } = require('../src/services/ldapService');
+const { userExistsInLdap, checkUserInLdap } = require('../src/services/ldapService');
 
-// Replace with a real LDAP username and password for testing
-const testLogin = 'luis.tieres';
-const testPassword = 'deuspai21@';
+// Replace with a real LDAP username for existence check
+const testLogin = 'luistieres@gmail.com';
 
 (async () => {
   try {
-    const result = await checkUserInLdap(testLogin, testPassword);
-    console.log(`LDAP authentication result for ${testLogin}:`, result ? 'SUCCESS' : 'FAIL');
+    const exists = await userExistsInLdap(testLogin);
+    console.log(`LDAP user existence for ${testLogin}:`, exists ? 'FOUND' : 'NOT FOUND');
+    // If you want to also test authentication, uncomment below:
+    // const testPassword = 'Matador1234@';
+    // const authResult = await checkUserInLdap(testLogin, testPassword);
+    // console.log(`LDAP authentication result for ${testLogin}:`, authResult ? 'SUCCESS' : 'FAIL');
   } catch (error) {
     console.error('LDAP test error:', error);
   }
