@@ -83,7 +83,7 @@ export const updateUserById = async (
     name?: string;
     role?: "NIR" | "Assistencial" | "Admin";
     specialty?: string;
-    status?: string; // Change from "Active" | "Inactive" to string to match Usuario table
+    status?: string;
   }
 ) => {
   try {
@@ -161,10 +161,8 @@ export const getPreceptorByName = async (name: string) => {
 
 export const getPreceptorsByName = async (name: string) => {
   try {
-    console.log("DEBUG: Calling getPreceptorsByName with name:", name);
     // Get all preceptors and filter client-side since we don't have a specific search endpoint
     const response = await api.get(`/preceptors`);
-    console.log("DEBUG: API response received:", response.data);
     const allPreceptors = response.data;
     
     // Ensure allPreceptors is an array
@@ -172,8 +170,6 @@ export const getPreceptorsByName = async (name: string) => {
       console.error("DEBUG: allPreceptors is not an array:", allPreceptors);
       return [];
     }
-    
-    console.log("DEBUG: Number of preceptors:", allPreceptors.length);
     
     // Filter by name if provided
     if (name.trim()) {
@@ -187,7 +183,6 @@ export const getPreceptorsByName = async (name: string) => {
         const nome = preceptor.nome_completo || preceptor.name || '';
         return nome.toLowerCase().includes(name.toLowerCase());
       });
-      console.log("DEBUG: Filtered preceptors:", filtered.length);
       return filtered;
     }
     
@@ -202,9 +197,7 @@ export const getPreceptorsByName = async (name: string) => {
 // Add a new function to get all preceptors
 export const getAllPreceptors = async () => {
   try {
-    console.log("DEBUG: Calling getAllPreceptors");
     const response = await api.get(`/preceptors`);
-    console.log("DEBUG: getAllPreceptors response:", response.data);
     
     // Ensure response.data is an array
     if (!Array.isArray(response.data)) {
@@ -212,7 +205,6 @@ export const getAllPreceptors = async () => {
       return [];
     }
     
-    console.log("DEBUG: getAllPreceptors response count:", response.data.length);
     return response.data;
   } catch (error: any) {
     console.error("Erro ao obter todos os preceptores:", error);
