@@ -9,13 +9,7 @@ export const registerCors = (app: FastifyInstance) => {
       : ["http://localhost:5000", "http://localhost:81"];
 
   app.register(cors, {
-    origin: (origin, cb) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        cb(null, true);
-      } else {
-        cb(new Error(`CORS Error: Origin ${origin} is not allowed.`), false);
-      }
-    },
+    origin : true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   });

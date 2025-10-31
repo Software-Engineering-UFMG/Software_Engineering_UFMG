@@ -24,11 +24,9 @@ import {
 } from "@mui/material";
 import {
   Edit,
-  Delete,
   NoteAdd,
   ToggleOn,
   ToggleOff,
-  CalendarToday,
   HighlightOff, // <-- add this import
 } from "@mui/icons-material";
 import { useNavigate } from "react-router";
@@ -45,6 +43,11 @@ import {
 } from "../../services/api";
 
 import dayjs from "dayjs"; // For date calculations
+import utc from 'dayjs/plugin/utc'; // Import UTC plugin
+import timezone from 'dayjs/plugin/timezone'; // Import Timezone plugin
+
+dayjs.extend(utc); // Extend dayjs with UTC plugin
+dayjs.extend(timezone); // Extend dayjs with Timezone plugin
 
 function NIRDashboard() {
   const { user, isLoading } = useAuth();
@@ -83,18 +86,22 @@ function NIRDashboard() {
   // Map backend patients to table rows
   console.log(patients); // <-- Add this line to inspect the data
 
+  // Move parseDate function outside to be reusable (same as AssistencialDashboard)
+  const parseDate = (dateStr: string | null | undefined) => {
+    if (!dateStr) return "";
+    
+    // Parse the date and convert to Brazil timezone for display
+    const date = dayjs.utc(dateStr).tz('America/Sao_Paulo');
+    
+    if (date.isValid()) {
+      return date.format("DD/MM/YYYY");
+    }
+    return "";
+  };
+
   const mappedPatients = patients.map((patient) => {
     // Debug: log patient object to inspect available fields
     console.log("Patient object:", patient);
-
-    // Try to parse as ISO first, fallback to custom format if needed
-    const parseDate = (dateStr: string | null | undefined) => {
-      if (!dateStr) return "";
-      const isoParsed = dayjs(dateStr);
-      if (isoParsed.isValid()) return isoParsed.format("DD/MM/YYYY");
-      // fallback for "YYYY-MM-DD HH:mm:ss"
-      return dayjs(dateStr, "YYYY-MM-DD HH:mm:ss").format("DD/MM/YYYY");
-    };
 
     // Always use entranceDate from API for tempoInternacao calculation
     let tempoInternacao = 0;
@@ -113,17 +120,8 @@ function NIRDashboard() {
       statusPt = "Desativado";
     else statusPt = patient.status || "";
 
-    // Try all possible property names for birth date
-    const rawBirthDate =
-      patient.birthDate ||
-      patient.birthdate ||
-      patient.birth_date ||
-      "";
-
-    // Parse "YYYY-MM-DD HH:mm:ss" format and display as "DD/MM/YYYY"
-    const dataNascimento = rawBirthDate
-      ? dayjs(rawBirthDate, "YYYY-MM-DD HH:mm:ss").format("DD/MM/YYYY")
-      : "";
+    // Use the same parseDate function as AssistencialDashboard
+    const dataNascimento = parseDate(patient.birthDate);
 
     return {
       id: patient.id,
@@ -313,19 +311,7 @@ function NIRDashboard() {
     setAddSelectedPatient(null);
   };
 
-  // Dummy prontuarioSuggestions for questionnaire icon
-  const prontuarioSuggestions = [
-    { prontuario: "123456", paciente: "Riquelme Batista Gomes da Silva" },
-    { prontuario: "654321", paciente: "Oswaldo Martins" },
-    { prontuario: "111222", paciente: "Ana Maria" },
-    { prontuario: "333444", paciente: "Carlos Eduardo" },
-    { prontuario: "555666", paciente: "Maria Clara" },
-    { prontuario: "777888", paciente: "João Pedro" },
-    { prontuario: "999000", paciente: "Fernanda Lima" },
-    { prontuario: "121212", paciente: "Lucas Rocha" },
-    { prontuario: "232323", paciente: "Patrícia Souza" },
-    { prontuario: "343434", paciente: "Gabriela Santos" },
-  ];
+
 
   // State for delete confirmation modal
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -408,7 +394,7 @@ function NIRDashboard() {
           </Button>
         </Grid>
         <Grid item xs="auto">
-          <Button
+          {/*<Button
             variant="contained"
             style={{
               backgroundColor: "#90ee90",
@@ -418,7 +404,7 @@ function NIRDashboard() {
             onClick={() => navigate("/NIRMainpage/NIRDashboard/statisticsNIR")}
           >
             Painel de Estatística
-          </Button>
+          </Button>*/}
         </Grid>
         <Grid item xs="auto">
           <Button
@@ -616,7 +602,7 @@ function NIRDashboard() {
             justifyContent: "space-between",
           }}
         >
-          <div>
+          <div style={{ position: "relative" }}>
             <Typography
               variant="h6"
               gutterBottom
@@ -629,34 +615,56 @@ function NIRDashboard() {
               variant="outlined"
               fullWidth
               value={preceptorInput}
-              onChange={(e) => handlePreceptorInput(e.target.value)}
+              onChange={(e) => {
+                const newValue = e.target.value;
+                handlePreceptorInput(newValue);
+                // If user types something different from selected preceptor, deselect
+                if (selectedPreceptor && newValue !== (selectedPreceptor.nome_completo || selectedPreceptor.name)) {
+                  setSelectedPreceptor(null);
+                }
+              }}
               style={{ marginBottom: "16px" }}
               autoComplete="off"
             />
             {preceptorOptions.length > 0 && !selectedPreceptor && (
               <List
                 sx={{
+                  position: "absolute",
+                  top: "100%",
+                  left: 0,
+                  width: "100%",
                   backgroundColor: "#f5f5f5",
-                  borderRadius: 1,
-                  maxHeight: 150,
-                  overflowY: "scroll",
                   border: "1px solid #ccc",
-                  padding: "8px",
+                  borderRadius: "4px",
+                  zIndex: 10,
+                  maxHeight: "150px",
+                  overflowY: "auto",
+                  padding: "8px 0",
                   boxSizing: "border-box",
+                  marginTop: "4px",
                 }}
               >
-                {preceptorOptions.map((preceptor: any) => (
-                  <ListItem key={preceptor.id} disablePadding>
-                    <ListItemButton
-                      onClick={() => {
-                        setSelectedPreceptor(preceptor);
-                        setPreceptorInput(preceptor.name);
-                      }}
-                    >
-                      <ListItemText primary={preceptor.name} />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
+                {preceptorOptions.map((preceptor: any) => {
+                  // Use matricula first, then fall back to id, then index as last resort
+                  const key = preceptor.matricula || preceptor.id || Math.random();
+                  // Use nome_completo first, then fall back to name
+                  const displayName = preceptor.nome_completo || preceptor.name || 'Nome não disponível';
+                  
+                  return (
+                    <ListItem key={key} disablePadding>
+                      <ListItemButton
+                        onMouseDown={e => e.preventDefault()}
+                        onClick={() => {
+                          setSelectedPreceptor(preceptor);
+                          setPreceptorInput(displayName);
+                          setPreceptorOptions([]);
+                        }}
+                      >
+                        <ListItemText primary={displayName} />
+                      </ListItemButton>
+                    </ListItem>
+                  );
+                })}
               </List>
             )}
           </div>
@@ -713,7 +721,7 @@ function NIRDashboard() {
             minHeight: 400,
           }}
         >
-          <div>
+          <div style={{ position: "relative" }}>
             <Typography variant="h6" gutterBottom style={{ marginBottom: "16px" }}>
               Incluir Paciente
             </Typography>
@@ -722,26 +730,55 @@ function NIRDashboard() {
               variant="outlined"
               fullWidth
               value={addPreceptorInput}
-              onChange={e => handleAddPreceptorInput(e.target.value)}
+              onChange={e => {
+                const newValue = e.target.value;
+                handleAddPreceptorInput(newValue);
+                // If user types something different from selected preceptor, deselect
+                if (addSelectedPreceptor && newValue !== (addSelectedPreceptor.nome_completo || addSelectedPreceptor.name)) {
+                  setAddSelectedPreceptor(null);
+                }
+              }}
               style={{ marginBottom: "16px" }}
               autoComplete="off"
             />
             {/* Show suggestions only if there are options and no preceptor is selected */}
             {addPreceptorOptions.length > 0 && !addSelectedPreceptor && (
-              <List sx={{ backgroundColor: "#f5f5f5", borderRadius: 1, maxHeight: 100, overflowY: "scroll", border: "1px solid #ccc", padding: "8px", boxSizing: "border-box", marginBottom: "16px" }}>
-                {addPreceptorOptions.map((preceptor: any) => (
-                  <ListItem key={preceptor.id} disablePadding>
-                    <ListItemButton
-                      onClick={() => {
-                        setAddSelectedPreceptor(preceptor);
-                        setAddPreceptorInput(preceptor.name);
-                        // Do NOT clear addPreceptorOptions here, so user can re-edit and see suggestions again
-                      }}
-                    >
-                      <ListItemText primary={preceptor.name} />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
+              <List
+                sx={{
+                  position: "absolute",
+                  top: "100%",
+                  left: 0,
+                  width: "100%",
+                  backgroundColor: "#f5f5f5",
+                  border: "1px solid #ccc",
+                  borderRadius: "4px",
+                  zIndex: 10,
+                  maxHeight: "150px",
+                  overflowY: "auto",
+                  padding: "8px 0",
+                  boxSizing: "border-box",
+                  marginTop: "4px",
+                }}
+              >
+                {addPreceptorOptions.map((preceptor: any) => {
+                  const key = preceptor.matricula || preceptor.id || Math.random();
+                  const displayName = preceptor.nome_completo || preceptor.name || 'Nome não disponível';
+                  
+                  return (
+                    <ListItem key={key} disablePadding>
+                      <ListItemButton
+                        onMouseDown={e => e.preventDefault()}
+                        onClick={() => {
+                          setAddSelectedPreceptor(preceptor);
+                          setAddPreceptorInput(displayName);
+                          setAddPreceptorOptions([]);
+                        }}
+                      >
+                        <ListItemText primary={displayName} />
+                      </ListItemButton>
+                    </ListItem>
+                  );
+                })}
               </List>
             )}
             <TextField
@@ -754,7 +791,18 @@ function NIRDashboard() {
             />
             {/* Show suggestions only if there are options and no patient is selected */}
             {addPatientOptions.length > 0 && !addSelectedPatient && (
-              <List sx={{ backgroundColor: "#f5f5f5", borderRadius: 1, maxHeight: 100, overflowY: "scroll", border: "1px solid #ccc", padding: "8px", boxSizing: "border-box", marginBottom: "16px" }}>
+              <List
+                sx={{
+                  backgroundColor: "#f5f5f5",
+                  borderRadius: 1,
+                  maxHeight: 100,
+                  overflowY: "scroll",
+                  border: "1px solid #ccc",
+                  padding: "8px",
+                  boxSizing: "border-box",
+                  marginBottom: "16px",
+                }}
+              >
                 {addPatientOptions.map((patient: any) => (
                   <ListItem key={patient.medicalRecord} disablePadding>
                     <ListItemButton

@@ -65,8 +65,7 @@ export const Dashboard = () => {
     specialty: "",
   });
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [changePassword, setChangePassword] = useState<boolean>(false);
+  
   const [fieldErrors, setFieldErrors] = useState({
     name: false,
     username: false,
@@ -240,7 +239,7 @@ export const Dashboard = () => {
       name: false,
       username: false,
     });
-    setPasswordError(null);
+    
   };
 
   const handleEditUserSubmit = async () => {
@@ -347,7 +346,7 @@ export const Dashboard = () => {
         Painel Administrativo
       </Typography>
       
-      <Button
+      {/*<Button
         onClick={() => setIsNewUserPopupOpen(true)}
         variant="contained"
         sx={{ 
@@ -357,7 +356,7 @@ export const Dashboard = () => {
         }}
       >
         Cadastrar novo usuário
-      </Button>
+      </Button>*/}
 
       <div style={{ display: "flex", gap: "16px", marginBottom: "16px" }}>
         <TextField

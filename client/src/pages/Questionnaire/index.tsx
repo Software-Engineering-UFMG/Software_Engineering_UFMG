@@ -21,6 +21,7 @@ export const QuestionnairePage = () => {
     const [submissionError, setSubmissionError] = useState<string | null>(null); // State for error messages
     const [errorField, setErrorField] = useState<string | null>(null); // Track which field caused the error
     const [submitAttempted, setSubmitAttempted] = useState(false); // Track if submit was attempted
+    const [isSubmitting, setIsSubmitting] = useState(false); // prevent double submit
     const { user } = useAuth(); // <-- get user from context
 
     useEffect(() => {
@@ -71,47 +72,84 @@ export const QuestionnairePage = () => {
     };
 
     const handleSubmitQuestionnaire = async () => {
-        // Debug: log patientData
+        if (isSubmitting) return;
+        setIsSubmitting(true);
+        setSubmissionError(null);
+        
+        console.log("=== SUBMISSION DEBUG ===");
         console.log("patientData:", patientData);
+        console.log("user:", user);
+        console.log("user role:", user?.role);
 
         if (!patientData?.preceptorPacienteId) {
             setSubmissionError("ID do vínculo preceptor-paciente não encontrado.");
+            setIsSubmitting(false);
             return;
         }
+        
         // Ensure waitingType and examDetails are always arrays
         const safeAnswers = {
             ...answers,
             waitingType: Array.isArray(answers.waitingType) ? answers.waitingType : [],
             examDetails: Array.isArray(answers.examDetails) ? answers.examDetails : [],
+            // Ensure dischargeDate is properly formatted or null
+            dischargeDate: answers.dischargeDate && answers.dischargeDate.trim() !== '' 
+                ? answers.dischargeDate 
+                : null
         };
 
         const mappedRed2GreenValue = red2greenValue === "red" ? "Vermelho" : "Verde";
 
-        const payload = {
-            preceptorPacienteId: patientData.preceptorPacienteId, // <-- use the relation ID
+        const requestData = {
+            preceptorPacienteId: patientData.preceptorPacienteId,
             answers: safeAnswers,
             red2green: mappedRed2GreenValue,
-            dischargeConfirmed: answers.dischargeConfirmed === "yes",
+            dischargeConfirmed: answers.dischargeConfirmed === "yes"
         };
-        console.log("Questionnaire payload:", payload);
+
+        console.log("About to call API with:", requestData);
+
+        // Call backend function with the correct object format
         try {
-            await apiSubmitQuestionnaire(payload);
-            setIsDisabled(true);
-            // Redirect based on user role
+            const result = await apiSubmitQuestionnaire(requestData);
+            
+            console.log("API call successful, result:", result);
+            console.log("About to navigate based on user role:", user?.role);
+            
+            // Navigate immediately after successful submission - don't set isDisabled
             if (user?.role === "NIR") {
+                console.log("Navigating to NIR dashboard");
                 navigate("/NIRMainpage/NIRDashboard");
             } else if (user?.role === "Assistencial") {
+                console.log("Navigating to Assistencial dashboard");
+                // navigate back to Assistencial dashboard; use explicit route
                 navigate("/preceptor/AssistencialDashboard");
             } else {
+                console.log("Navigating back with navigate(-1)");
                 navigate(-1); // fallback
             }
+            
+            console.log("Navigation command executed");
+            
         } catch (e: any) {
-            if (e.response?.status === 409) {
+            console.error("Submit error:", e);
+            console.error("Error response:", e?.response);
+            console.error("Error status:", e?.response?.status);
+            console.error("Error data:", e?.response?.data);
+            
+            if (e?.response?.status === 409) {
                 setSubmissionError("O questionário já foi respondido hoje.");
                 setIsDisabled(true);
+            } else if (e?.response?.status === 415) {
+                setSubmissionError("Erro de formato na requisição. Tente novamente.");
+                console.error("415 Error - likely Content-Type issue or backend endpoint configuration");
+            } else if (e?.response?.status === 500) {
+                setSubmissionError("Erro interno do servidor. Verifique se todos os campos estão preenchidos corretamente.");
+                console.error("500 Error - likely data processing issue on backend");
             } else {
                 setSubmissionError("Erro ao enviar o questionário.");
             }
+            setIsSubmitting(false);
         }
     };
 
@@ -205,7 +243,7 @@ export const QuestionnairePage = () => {
     const handleSubmit = () => {
         setSubmitAttempted(true);
         if (validateAnswers()) {
-            setSubmitAttempted(false);
+            // keep submitAttempted true until success; call submission
             handleSubmitQuestionnaire();
         }
     };
@@ -852,21 +890,20 @@ export const QuestionnairePage = () => {
                     }}
                 >
                     <Button
-                        variant="contained" // Changed from text to contained for better styling consistency
+                        variant="contained"
                         color="success"
                         onClick={handleSubmit}
+                        disabled={isSubmitting}
                         sx={{
                             backgroundColor: "#86efac",
-                            color: "white", // Ensure text is white for better contrast on green
-                            "&:hover": {
-                                backgroundColor: "#4ade80",
-                            },
-                            px: 4, // Increased horizontal padding
-                            py: 1.5, // Increased vertical padding
-                            fontSize: "1rem", // Increased font size
+                            color: "white",
+                            "&:hover": { backgroundColor: "#4ade80" },
+                            px: 4,
+                            py: 1.5,
+                            fontSize: "1rem",
                         }}
                     >
-                        Enviar
+                        {isSubmitting ? "Enviando..." : "Enviar"}
                     </Button>
                     <Button
                         variant="contained" // Changed from text to contained for better styling consistency

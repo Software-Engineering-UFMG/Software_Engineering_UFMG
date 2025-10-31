@@ -22,7 +22,7 @@ export const getPatientByMedicalRecord = async (
       LEFT JOIN agh.ain_internacoes i ON p.codigo = i.pac_codigo 
         AND i.ind_paciente_internado = 'S'
       WHERE p.prontuario = ${parseInt(medicalRecord)}
-        AND p.prnt_ativo = 'A'
+        
     `;
     
     const patient = (result as any[])[0];
@@ -72,7 +72,7 @@ export const getPatientsByMedicalRecord = async (
       LEFT JOIN agh.ain_internacoes i ON p.codigo = i.pac_codigo 
         AND i.ind_paciente_internado = 'S'
       WHERE p.prontuario::text ILIKE ${`%${searchTerm}%`}
-        AND p.prnt_ativo = 'A'
+        
         AND p.prontuario IS NOT NULL
       ORDER BY p.prontuario
       LIMIT 10
@@ -112,7 +112,7 @@ export const getPatientDischargePrediction = async (
       LEFT JOIN agh.ain_internacoes i ON p.codigo = i.pac_codigo 
         AND i.ind_paciente_internado = 'S'
       WHERE p.prontuario = ${parseInt(medicalRecord)}
-        AND p.prnt_ativo = 'A'
+        
     `;
     
     const patient = (result as any[])[0];

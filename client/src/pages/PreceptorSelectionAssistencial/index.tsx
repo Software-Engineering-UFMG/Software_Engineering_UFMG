@@ -14,7 +14,7 @@ export const Preceptor = () => {
   const [allPreceptors, setAllPreceptors] = useState<any[]>([]);
   const [selectedPreceptor, setSelectedPreceptor] = useState<any | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
-
+  
   const { handleLogout: authLogout } = useAuth();
   const navigate = useNavigate();
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -85,6 +85,7 @@ export const Preceptor = () => {
     setPreceptorOptions([]);
   };
 
+  console.log("All preceptors:", allPreceptors);
   const handleContinue = () => {
     if (selectedPreceptor) {
       navigate("/preceptor/AssistencialDashboard", {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { login, createUser, checkLdapUser } from "../../services/api";
+import { login,  checkLdapUser } from "../../services/api";
 import { useGlobalContext } from "../../context/GlobalContext";
 import { useAuth } from "../../context/AuthContext";
 import { Input } from "../../components/Input";
@@ -24,27 +24,7 @@ export const Login = memo(() => {
   });
   const { loading, setLoading } = useGlobalContext();
 
-  const validateForm = (): boolean => {
-    let hasError = false;
-
-    if (!username.trim()) {
-      setErrorMessage((prevState) => ({
-        ...prevState,
-        username: "O campo login é obrigatório",
-      }));
-      hasError = true;
-    }
-
-    if (!password.trim()) {
-      setErrorMessage((prevState) => ({
-        ...prevState,
-        password: "O campo senha é obrigatório",
-      }));
-      hasError = true;
-    }
-
-    return !hasError;
-  };
+ 
 
   const handleUsernameChange = (value: string) => {
     setUsername(value);
@@ -233,7 +213,7 @@ export const Login = memo(() => {
 
           <div className="flex flex-col gap-5">
             <button
-              className="cursor-pointer rounded-xl bg-red-500 !p-3 text-white hover:bg-red-600"
+              className="cursor-pointer rounded-xl bg-green-300 !p-3 text-white hover:bg-green-400"
               type="submit"
               disabled={loading}
             >

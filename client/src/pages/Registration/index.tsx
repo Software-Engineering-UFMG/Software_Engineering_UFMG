@@ -16,10 +16,8 @@ import {
 } from "@mui/material";
 import { Link as RouterLink, useNavigate } from "react-router";
 import hospitalLogo from "../../assets/images/hospital-das-clinicas.jpg";
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import axios from 'axios';
 import { createUser, checkLdapUser } from "../../services/api";
+import axios from "axios";
 
 export const Registration = () => {
   const navigate = useNavigate();

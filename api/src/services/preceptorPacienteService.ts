@@ -55,7 +55,7 @@ export const getAllPreceptorPacienteWithDetails = async () => {
           p.unf_seq,
           COALESCE(i.lto_lto_id, p.lto_lto_id) as lto_lto_id,
           i.dthr_internacao as admission_date,
-          COALESCE(i.dt_prev_alta, p.dt_ult_alta) as discharge_prediction,
+          TO_CHAR(COALESCE(i.dt_prev_alta, p.dt_ult_alta), 'YYYY-MM-DD') as discharge_prediction,
           CASE 
             WHEN i.ind_paciente_internado = 'S' THEN 'hospitalized'
             ELSE 'not_hospitalized'
@@ -64,8 +64,8 @@ export const getAllPreceptorPacienteWithDetails = async () => {
         FROM agh.aip_pacientes p
         LEFT JOIN agh.ain_internacoes i ON p.codigo = i.pac_codigo 
           AND i.ind_paciente_internado = 'S'
-        WHERE p.prontuario = ${parseInt(rel.medicalRecord)}
-        AND p.prnt_ativo = 'A'
+        WHERE p.prontuario::text = ${rel.medicalRecord}
+        
       `;
       
       const patient = (patientResult as any[])[0];
@@ -91,7 +91,8 @@ export const getAllPreceptorPacienteWithDetails = async () => {
         birthDate: patient?.dt_nascimento || null,
         hospitalbed: patient?.qrt_numero || patient?.lto_lto_id || null,
         entranceDate: patient?.admission_date || null, // Now from ain_internacoes
-        dischargingDate: patient?.dt_ult_alta || null,
+        // Use the SQL alias 'discharge_prediction' returned by the query (formatted string)
+        dischargingDate: patient?.discharge_prediction || null,
         red2green: rel.red2green,
         status: rel.status,
         medicalRecord: rel.medicalRecord,
@@ -121,7 +122,7 @@ export const getPreceptorPacienteWithDetailsByPreceptorId = async (preceptorId: 
           p.unf_seq,
           COALESCE(i.lto_lto_id, p.lto_lto_id) as lto_lto_id,
           i.dthr_internacao as admission_date,
-          COALESCE(i.dt_prev_alta, p.dt_ult_alta) as discharge_prediction,
+          TO_CHAR(COALESCE(i.dt_prev_alta, p.dt_ult_alta), 'YYYY-MM-DD') as discharge_prediction,
           CASE 
             WHEN i.ind_paciente_internado = 'S' THEN 'hospitalized'
             ELSE 'not_hospitalized'
@@ -130,8 +131,8 @@ export const getPreceptorPacienteWithDetailsByPreceptorId = async (preceptorId: 
         FROM agh.aip_pacientes p
         LEFT JOIN agh.ain_internacoes i ON p.codigo = i.pac_codigo 
           AND i.ind_paciente_internado = 'S'
-        WHERE p.prontuario = ${parseInt(rel.medicalRecord)}
-        AND p.prnt_ativo = 'A'
+        WHERE p.prontuario::text = ${rel.medicalRecord}
+        
       `;
       
       const patient = (patientResult as any[])[0];
@@ -157,7 +158,8 @@ export const getPreceptorPacienteWithDetailsByPreceptorId = async (preceptorId: 
         birthDate: patient?.dt_nascimento || null,
         hospitalbed: patient?.qrt_numero || patient?.lto_lto_id || null,
         entranceDate: patient?.admission_date || null, // Now from ain_internacoes
-        dischargingDate: patient?.dt_ult_alta || null,
+        // Use the SQL alias 'discharge_prediction' returned by the query (formatted string)
+        dischargingDate: patient?.discharge_prediction || null,
         red2green: rel.red2green,
         status: rel.status,
         medicalRecord: rel.medicalRecord,
@@ -291,10 +293,9 @@ export const submitQuestionnaire = async (
       characteristics: answers.characteristics,
       needsAdmission: answers.needsAdmission,
       outpatient: answers.outpatient,
-      hospitalDischarge: answers.hospitalDischarge,
-      waiting: answers.waiting,
-      waitingType: answers.waitingType || [],
-      examDetails: answers.examDetails || [],
+      // Convert arrays to strings to match schema
+      waitingType: Array.isArray(answers.waitingType) ? answers.waitingType.join(', ') : (answers.waitingType || ''),
+      examDetails: Array.isArray(answers.examDetails) ? answers.examDetails.join(', ') : (answers.examDetails || ''),
       dischargeConfirmed,
       red2green,
       createdAt: brazilTimeToUtc(brazilNow),

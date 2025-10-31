@@ -7,7 +7,8 @@ const mockLdapUsers = [
   { login: "medstudent", password: "student123" },
   { login: "cardiologist", password: "cardio456" },
   { login: "luistieres@gmail.com", password: "luistieres" },
-  { login: "luistieres@gmail.comm", password: "luistieres" },
+  { login: "luistieres@ebserh.com", password: "luistieres" },
+  { login: "riquelme.silva@ebserh.com", password: "riquelme.silva" },
   { login: "admin", password: "admin" },
   { login: "teste", password: "teste" }
   // Add more test users as needed

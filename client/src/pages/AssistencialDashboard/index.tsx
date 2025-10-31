@@ -80,14 +80,30 @@ function AssistencialDashboard() {
   const [addSelectedPatient, setAddSelectedPatient] = useState<any | null>(null);
 
   // Add state for showing deletion status
-  const [showDeletionInfo, setShowDeletionInfo] = useState(false);
+ 
 
   // Fetch only this preceptor's relations
   const fetchRelations = async () => {
     if (!preceptorId) return;
     try {
       const data = await getPreceptorPacienteWithDetailsByPreceptorId(preceptorId);
-      setPatients(data);
+      // Preserve existing fetched dischargePrediction values (if any) to avoid UI flicker back to "Carregando..."
+      setPatients(prevPatients => {
+        const prevByMedical = new Map<string, any>();
+        for (const p of prevPatients) {
+          const key = p.medicalRecord || p.prontuario || p.patientMedicalRecord;
+          if (key) prevByMedical.set(String(key), p);
+        }
+        return data.map((d: any) => {
+          const key = d.medicalRecord || d.prontuario || d.patientMedicalRecord;
+          const prev = key ? prevByMedical.get(String(key)) : undefined;
+          return {
+            ...d,
+            // copy previously fetched prediction if present, otherwise keep any value returned by backend
+            dischargePrediction: prev?.dischargePrediction ?? d.dischargePrediction,
+          };
+        });
+      });
     } catch (error) {
       setPatients([]);
     }
@@ -149,69 +165,74 @@ function AssistencialDashboard() {
       dataNascimento,
       leito: patient.hospitalbed || patient.hospitalBed || "",
       medicalRecord: patient.medicalRecord || patient.patientMedicalRecord || "", 
-      previsaoAlta: "Carregando...", // Initial value, will be updated
+      // Prefer backend dischargingDate if available to avoid flicker,
+      // otherwise show loading until the separate prediction API returns.
+      previsaoAlta: patient.dischargingDate || "Carregando...",
       tempoInternacao,
       red2Green: patient.red2green || "À preencher",
       status: statusPt,
       isDeletionScheduled,
       scheduledDeletionAt: patient.scheduledDeletionAt,
+      // keep both fields so we can decide in final mapping
+      backendDischargingDate: patient.dischargingDate,
+      fetchedDischargePrediction: patient.dischargePrediction,
     };
   });
 
   // Add effect to load discharge predictions
   useEffect(() => {
     const loadDischargePredictions = async () => {
-      for (const patient of patients) {
-        if (patient.medicalRecord) {
-          try {
-            const result = await getPatientDischargePrediction(patient.medicalRecord);
-            // Update the patient object with the discharge prediction
-            setPatients(prevPatients => 
-              prevPatients.map(p => 
-                p.medicalRecord === patient.medicalRecord 
-                  ? { 
-                      ...p, 
-                      dischargePrediction: result.isHospitalized 
-                        ? result.dischargePrediction 
-                        : "Não está internado" // Always set this string when not hospitalized
-                    }
-                  : p
-              )
-            );
-          } catch (error) {
-            console.error(`Error loading discharge prediction for ${patient.medicalRecord}:`, error);
-            // Set error state for this patient
-            setPatients(prevPatients => 
-              prevPatients.map(p => 
-                p.medicalRecord === patient.medicalRecord 
-                  ? { ...p, dischargePrediction: "Não está internado" }
-                  : p
-              )
-            );
-          }
+      // Only request predictions for patients that do NOT already have dischargePrediction
+      const toFetch = patients.filter(p => p.medicalRecord && !p.dischargePrediction);
+      for (const patient of toFetch) {
+        try {
+          const result = await getPatientDischargePrediction(patient.medicalRecord);
+          setPatients(prevPatients =>
+            prevPatients.map(p => {
+              if (p.medicalRecord !== patient.medicalRecord) return p;
+              return {
+                ...p,
+                dischargePrediction: result.isHospitalized
+                  ? result.dischargePrediction
+                  : "Não está internado",
+              };
+            })
+          );
+        } catch (error) {
+          console.error(`Error loading discharge prediction for ${patient.medicalRecord}:`, error);
+          setPatients(prevPatients =>
+            prevPatients.map(p =>
+              p.medicalRecord === patient.medicalRecord
+                ? { ...p, dischargePrediction: "Não está internado" }
+                : p
+            )
+          );
         }
       }
     };
-
+ 
     if (patients.length > 0) {
       loadDischargePredictions();
     }
-  }, [patients.length]); // Only run when patients are loaded
+  }, [patients]); // run when patients change so newly merged entries trigger missing fetches
 
   // Update the mappedPatients to use the new discharge prediction
   const mappedPatientsWithPredictions = mappedPatients.map((patient, index) => {
     const originalPatient = patients[index];
     
     // Handle discharge prediction display
-    let previsaoAlta = "Carregando..."; // Default loading state
+    // Priority: fetched dischargePrediction (from getPatientDischargePrediction) >
+    // backend dischargingDate (from getPreceptorPacienteWithDetails) > loading
+    let previsaoAlta = "Carregando...";
     
     if (originalPatient?.dischargePrediction) {
       if (originalPatient.dischargePrediction === "Não está internado") {
         previsaoAlta = "Não está internado";
       } else {
-        // It's a date, parse it
         previsaoAlta = parseDate(originalPatient.dischargePrediction);
       }
+    } else if (originalPatient?.dischargingDate) {
+      previsaoAlta = parseDate(originalPatient.dischargingDate);
     }
     
     return {
@@ -444,7 +465,7 @@ function AssistencialDashboard() {
           </Button>
         </Grid>
         <Grid item xs="auto">
-          <Button
+          {/*<Button
             variant="contained"
             style={{
               backgroundColor: "#90ee90",
@@ -454,7 +475,7 @@ function AssistencialDashboard() {
             onClick={() => navigate("/preceptor/AssistencialDashboard/statisticsAssistencial", { state: { preceptorId, preceptorName } })}
           >
             Painel de Estatística
-          </Button>
+          </Button>*/}
         </Grid>
         <Grid item xs="auto">
           <Button
