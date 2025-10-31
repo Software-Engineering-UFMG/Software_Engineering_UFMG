@@ -299,6 +299,8 @@ export const getPreceptorPacienteWithDetailsByPreceptorId = async (preceptorId: 
   }
 };
 
+// ...existing code...
+// ...existing code...
 export const submitQuestionnaire = async (data: {
   preceptorPacienteId: number;
   answers: any;
@@ -306,12 +308,27 @@ export const submitQuestionnaire = async (data: {
   dischargeConfirmed: boolean;
 }) => {
   try {
+    console.log("API: submitQuestionnaire called with data:", data);
+    console.log("API: Request URL:", "/preceptor-paciente/questionnaire");
+    console.log("API: Request method:", "POST");
+    console.log("API: Request headers:", api.defaults.headers);
+    
     const response = await api.post("/preceptor-paciente/questionnaire", data);
+    
+    console.log("API: submitQuestionnaire response status:", response.status);
+    console.log("API: submitQuestionnaire response data:", response.data);
     return response.data;
   } catch (error: any) {
+    console.error("API: submitQuestionnaire error:", error);
+    console.error("API: Error status:", error.response?.status);
+    console.error("API: Error data:", error.response?.data);
+    console.error("API: Error message:", error.message);
+    console.error("API: Full error object:", error);
     throw error;
   }
 };
+// ...existing code...
+// ...existing code...
 
 export const getTodaysQuestionnaire = async (preceptorPacienteId: number) => {
   try {

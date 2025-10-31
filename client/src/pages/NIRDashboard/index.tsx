@@ -285,7 +285,7 @@ function NIRDashboard() {
   const handleAddPatient = async () => {
     if (!addSelectedPreceptor || !addSelectedPatient) return;
     await createPreceptorPaciente({
-      preceptorId: addSelectedPreceptor.id,
+      preceptorId: addSelectedPreceptor.matricula,
       medicalRecord: addSelectedPatient.medicalRecord,
       status: "Ativado",
       red2green: "À preencher",

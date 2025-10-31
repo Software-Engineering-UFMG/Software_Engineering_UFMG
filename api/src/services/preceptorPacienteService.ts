@@ -261,70 +261,140 @@ function getTodayWindow() {
 }
 
 // Submit a questionnaire for a preceptorPaciente relation
+// ...existing code...
 export const submitQuestionnaire = async (
   preceptorPacienteId: number,
   answers: any,
   red2green: string,
   dischargeConfirmed: boolean
 ) => {
-  // Use Brazil timezone for today's window
-  const { todayStart, todayEnd } = getTodayWindow();
-  const existing = await prisma.questionnaire.findFirst({
-    where: {
-      preceptorPacienteId,
-      createdAt: {
-        gte: todayStart,
-        lte: todayEnd,
+  console.log('=== SERVICE FUNCTION CALLED ===');
+  console.log('preceptorPacienteId:', preceptorPacienteId);
+  console.log('answers:', JSON.stringify(answers, null, 2));
+  console.log('red2green:', red2green);
+  console.log('dischargeConfirmed:', dischargeConfirmed);
+
+  try {
+    // Use Brazil timezone for today's window
+    console.log('Getting today window...');
+    const { todayStart, todayEnd } = getTodayWindow();
+    console.log('Today window:', { todayStart, todayEnd });
+    
+    console.log('Checking for existing questionnaire...');
+    const existing = await prisma.questionnaire.findFirst({
+      where: {
+        preceptorPacienteId,
+        createdAt: {
+          gte: todayStart,
+          lte: todayEnd,
+        },
       },
-    },
-  });
-  if (existing) {
-    throw new Error("Questionnaire already submitted today");
-  }
+    });
+    
+    console.log('Existing questionnaire check result:', existing);
+    
+    if (existing) {
+      console.log('Questionnaire already exists for today');
+      throw new Error("Questionnaire already submitted today");
+    }
 
-  const brazilNow = getBrazilTime();
-  
-  // Save questionnaire with Brazil local time converted to UTC
-  const questionnaire = await prisma.questionnaire.create({
-    data: {
-      preceptorPacienteId,
-      dischargeDate: brazilTimeToUtc(new Date(answers.dischargeDate)),
-      clinicalCriteria: answers.clinicalCriteria,
-      characteristics: answers.characteristics,
-      needsAdmission: answers.needsAdmission,
-      outpatient: answers.outpatient,
-      // Convert arrays to strings to match schema
-      waitingType: Array.isArray(answers.waitingType) ? answers.waitingType.join(', ') : (answers.waitingType || ''),
-      examDetails: Array.isArray(answers.examDetails) ? answers.examDetails.join(', ') : (answers.examDetails || ''),
-      dischargeConfirmed,
-      red2green,
-      createdAt: brazilTimeToUtc(brazilNow),
-    },
-  });
+    console.log('Getting Brazil time...');
+    const brazilNow = getBrazilTime();
+    console.log('Brazil time:', brazilNow);
+    
+    // Check if answers.dischargeDate is valid
+    console.log('Processing discharge date:', answers.dischargeDate);
+    let dischargeDate: Date | undefined = undefined;
+    if (answers.dischargeDate && String(answers.dischargeDate).trim() !== '') {
+      try {
+        dischargeDate = brazilTimeToUtc(new Date(answers.dischargeDate));
+        console.log('Processed discharge date:', dischargeDate);
+      } catch (dateError) {
+        console.error('Error processing discharge date:', dateError);
+        throw new Error('Invalid discharge date format');
+      }
+    }
+    
+    // Convert arrays to strings for database storage
+    const characteristicsString = Array.isArray(answers.characteristics) 
+      ? answers.characteristics.join(', ') 
+      : (answers.characteristics || '');
+    
+    const waitingTypeString = Array.isArray(answers.waitingType) 
+      ? answers.waitingType.join(', ') 
+      : (answers.waitingType || '');
+    
+    const examDetailsString = Array.isArray(answers.examDetails) 
+      ? answers.examDetails.join(', ') 
+      : (answers.examDetails || '');
+    
+    // Prepare questionnaire data
+        const questionnaireData = {
+          preceptorPacienteId,
+          clinicalCriteria: answers.clinicalCriteria || '',
+          characteristics: characteristicsString, // Convert array to string
+          needsAdmission: answers.needsAdmission || '',
+          outpatient: answers.outpatient || '',
+          waitingType: waitingTypeString, // Convert array to string
+          examDetails: examDetailsString, // Convert array to string
+          dischargeConfirmed,
+          red2green,
+          createdAt: brazilTimeToUtc(brazilNow),
+          // Only include dischargeDate if it's non-null to avoid passing `null` for a non-nullable field in Prisma
+          ...(dischargeDate ? { dischargeDate } : {}),
+        };
+    
+    console.log('Questionnaire data to create:', JSON.stringify(questionnaireData, null, 2));
+    
+    // Save questionnaire with Brazil local time converted to UTC
+    console.log('Creating questionnaire...');
+    const questionnaire = await prisma.questionnaire.create({
+      data: questionnaireData as any,
+    });
+    
+    console.log('Questionnaire created successfully:', questionnaire);
 
-  // Always update red2green in the relation to match the form
-  await prisma.preceptorPaciente.update({
-    where: { id: preceptorPacienteId },
-    data: { 
-      red2green,
-      updatedAt: brazilTimeToUtc(brazilNow)
-    },
-  });
-
-  // If dischargeConfirmed, schedule deactivation in 1 minute (for testing) in Brazil time
-  if (dischargeConfirmed) {
-    const scheduledTime = addMinutes(brazilNow, 1); // Change to 1440 for 24h in prod
+    // Always update red2green in the relation to match the form
+    console.log('Updating preceptorPaciente relation...');
     await prisma.preceptorPaciente.update({
       where: { id: preceptorPacienteId },
-      data: {
-        scheduledDeactivationAt: brazilTimeToUtc(scheduledTime),
+      data: { 
+        red2green,
         updatedAt: brazilTimeToUtc(brazilNow)
       },
     });
-  }
 
-  return questionnaire;
+    // If dischargeConfirmed, schedule deactivation in 1 minute (for testing) in Brazil time
+    if (dischargeConfirmed) {
+      console.log('Scheduling deactivation...');
+      const scheduledTime = addMinutes(brazilNow, 1); // Change to 1440 for 24h in prod
+      await prisma.preceptorPaciente.update({
+        where: { id: preceptorPacienteId },
+        data: {
+          scheduledDeactivationAt: brazilTimeToUtc(scheduledTime),
+          updatedAt: brazilTimeToUtc(brazilNow)
+        },
+      });
+      console.log('Deactivation scheduled for:', scheduledTime);
+    }
+
+    console.log('Service function completed successfully');
+    return questionnaire;
+  } catch (error) {
+    console.error('Error in submitQuestionnaire service:', error);
+    if (error instanceof Error) {
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      throw error;
+    } else {
+      // Unknown non-Error thrown — log and wrap into an Error for throwing
+      console.error('Non-Error thrown:', error);
+      throw new Error(String(error));
+    }
+  }
 };
+// ...existing code...
 
 // Set red2green to "À preencher" for relations with no questionnaire today
 export const setRed2GreenToApreencherIfNoQuestionnaireToday = async () => {

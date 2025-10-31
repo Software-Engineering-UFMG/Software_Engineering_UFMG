@@ -142,10 +142,18 @@ export const getPreceptorPacienteWithDetailsByPreceptorIdHandler = async (
 };
 
 // Handler to submit a questionnaire
+// ...existing code...
+// Handler to submit a questionnaire
 export const submitQuestionnaireHandler = async (
   request: FastifyRequest,
   reply: FastifyReply
 ) => {
+  console.log('=== QUESTIONNAIRE HANDLER CALLED ===');
+  console.log('Request method:', request.method);
+  console.log('Request URL:', request.url);
+  console.log('Request headers:', request.headers);
+  console.log('Request body:', JSON.stringify(request.body, null, 2));
+  
   try {
     const { preceptorPacienteId, answers, red2green, dischargeConfirmed } = request.body as {
       preceptorPacienteId: number;
@@ -153,23 +161,41 @@ export const submitQuestionnaireHandler = async (
       red2green: string;
       dischargeConfirmed: boolean;
     };
+    
+    console.log('Extracted parameters:', {
+      preceptorPacienteId,
+      answers,
+      red2green,
+      dischargeConfirmed
+    });
+    
     if (!preceptorPacienteId || !answers || !red2green) {
+      console.log('Missing required fields validation failed');
       return reply.status(400).send({ message: "Missing required fields" });
     }
+    
+    console.log('About to call submitQuestionnaire service...');
     const questionnaire = await submitQuestionnaire(
       preceptorPacienteId,
       answers,
       red2green,
       dischargeConfirmed
     );
+    
+    console.log('Service call successful, questionnaire:', questionnaire);
     reply.status(201).send(questionnaire);
   } catch (error: any) {
+    console.error('Error in submitQuestionnaireHandler:', error);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    
     if (error.message === "Questionnaire already submitted today") {
       return reply.status(409).send({ message: error.message });
     }
-    reply.status(500).send({ message: "Error submitting questionnaire" });
+    reply.status(500).send({ message: "Error submitting questionnaire", error: error.message });
   }
 };
+// ...existing code...
 
 // Handler to check if today's questionnaire exists for a relation
 export const getTodaysQuestionnaireHandler = async (
